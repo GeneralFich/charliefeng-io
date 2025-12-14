@@ -1,0 +1,127 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Message } from '../types';
+import { sendMessageToGemini } from '../services/geminiService';
+
+const SUGGESTED_PROMPTS = [
+  "Summarize Charlie's experience.",
+  "When will AGI arrive?",
+  "What is the 'Agentic Inflection Point'?",
+  "How should I hedge my portfolio?",
+];
+
+export const ChatInterface: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'model', text: "Hello. I am Charlie Feng's Digital Twin. I can discuss my infrastructure work at Google or my research on the AGI transition. How can I assist you?" }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMsg: Message = { role: 'user', text };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsLoading(true);
+
+    // Filter out the initial greeting from the history sent to API to save tokens/clean context
+    // strictly keeping user/model pairs after system prompt is handled in service
+    const apiHistory = messages.slice(1); 
+    
+    const responseText = await sendMessageToGemini(apiHistory, text);
+
+    const modelMsg: Message = { role: 'model', text: responseText };
+    setMessages(prev => [...prev, modelMsg]);
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto w-full">
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`flex items-start gap-3 ${
+              msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+            }`}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                msg.role === 'user' ? 'bg-blue-600' : 'bg-slate-700 border border-slate-600'
+              }`}
+            >
+              {msg.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-blue-400" />}
+            </div>
+            <div
+              className={`p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
+                  : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
+              }`}
+            >
+              <p className="whitespace-pre-wrap">{msg.text}</p>
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
+              <Sparkles size={16} className="text-blue-400 animate-pulse" />
+            </div>
+            <div className="text-slate-500 text-xs tracking-widest animate-pulse">
+              ANALYZING SIGNAL...
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
+        {messages.length < 3 && (
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+            {SUGGESTED_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => handleSend(prompt)}
+                className="whitespace-nowrap px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/50 text-xs text-slate-400 hover:border-blue-500 hover:text-blue-400 transition-colors"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        )}
+        
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
+            placeholder="Ask Charlie's Digital Twin..."
+            className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-12 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+            disabled={isLoading}
+          />
+          <button
+            onClick={() => handleSend(input)}
+            disabled={!input.trim() || isLoading}
+            className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+          >
+            <Send size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
