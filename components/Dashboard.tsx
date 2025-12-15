@@ -11,7 +11,7 @@ import {
   Bar,
   Cell,
 } from 'recharts';
-import { Activity, Zap, ShieldAlert, Cpu } from 'lucide-react';
+import { Activity, Zap, ShieldAlert, Cpu, Info } from 'lucide-react';
 
 // Data derived from Manifesto
 const TIMELINE_DATA = [
@@ -53,13 +53,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export const Dashboard: React.FC = () => {
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in">
-      <header className="mb-8 border-b border-slate-800 pb-4">
+    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fade-in print:hidden">
+      <header className="mb-4 pb-4">
         <h2 className="text-2xl font-light tracking-tight text-white flex items-center gap-3">
           <Activity className="text-blue-500" />
           Agentic Dashboard
         </h2>
-        <p className="text-slate-400 mt-2 text-sm">Real-time signals from "Preparing for AGI" Manifesto</p>
+        <div className="mt-4 bg-blue-900/20 border border-blue-500/20 rounded-lg p-4 flex gap-3">
+            <Info className="text-blue-400 flex-shrink-0" size={20} />
+            <p className="text-sm text-blue-200/80 leading-relaxed">
+                This dashboard visualizes key metrics from my "Preparing for AGI" Manifesto.
+                The <strong>Timeline</strong> projects the arrival of different AGI stages based on current research consensus.
+                The <strong>Risk Assessment</strong> estimates the displacement probability for various job sectors as AI capabilities evolve.
+            </p>
+        </div>
       </header>
 
       {/* Status Widgets */}
