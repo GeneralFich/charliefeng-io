@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 
@@ -24,7 +26,7 @@ export const ChatInterface: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -70,7 +72,41 @@ export const ChatInterface: React.FC = () => {
                   : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
               }`}
             >
-              <p className="whitespace-pre-wrap">{msg.text}</p>
+              {msg.role === 'user' ? (
+                <p className="whitespace-pre-wrap">{msg.text}</p>
+              ) : (
+                <div className="text-slate-300">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-4 space-y-1" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-4 space-y-1" {...props} />,
+                      li: ({node, ...props}) => <li className="" {...props} />,
+                      a: ({node, ...props}) => <a className="text-blue-400 hover:text-blue-300 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                      p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                      h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-slate-100" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-slate-100" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-slate-100" {...props} />,
+                      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-slate-600 pl-4 italic my-4 text-slate-400" {...props} />,
+                      code: ({node, ...props}) => {
+                          const { className, children } = props;
+                          const isInline = !String(children).includes('\n');
+                          return isInline
+                            ? <code className="bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono text-blue-200" {...props} />
+                            : <code className="block bg-slate-950 p-3 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto my-3" {...props} />;
+                      },
+                      table: ({node, ...props}) => <div className="overflow-x-auto my-4"><table className="min-w-full divide-y divide-slate-700 border border-slate-700 rounded-lg" {...props} /></div>,
+                      thead: ({node, ...props}) => <thead className="bg-slate-800" {...props} />,
+                      tbody: ({node, ...props}) => <tbody className="divide-y divide-slate-700 bg-slate-900/50" {...props} />,
+                      tr: ({node, ...props}) => <tr className="" {...props} />,
+                      th: ({node, ...props}) => <th className="px-3 py-2 text-left text-xs font-medium text-slate-300 uppercase tracking-wider" {...props} />,
+                      td: ({node, ...props}) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-300" {...props} />,
+                    }}
+                  >
+                    {msg.text}
+                  </ReactMarkdown>
+                </div>
+              )}
             </div>
           </div>
         ))}

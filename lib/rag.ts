@@ -5,9 +5,10 @@ import blogData from "./blog_data.json";
 // Calculate cosine similarity between two vectors
 function cosineSimilarity(vecA: number[], vecB: number[]): number {
   if (vecA.length !== vecB.length) {
-    // Check if one is empty (dummy data)
     if (vecA.length === 0 || vecB.length === 0) return 0;
-    throw new Error("Vector dimensions do not match");
+    // In a production environment, we might want to log this as a warning
+    // rather than throwing, to avoid crashing the request for one bad vector.
+    return 0;
   }
 
   let dotProduct = 0;
@@ -28,12 +29,24 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
   return dotProduct / (magnitudeA * magnitudeB);
 }
 
+interface BlogChunk {
+  id: string;
+  text: string;
+  url: string;
+  title: string;
+  publishedDate: string;
+  embedding?: number[];
+}
+
 export interface RelevantChunk {
   text: string;
   title: string;
   url: string;
   score: number;
 }
+
+// Cast the imported JSON to the interface
+const typedBlogData = blogData as BlogChunk[];
 
 export async function getRelevantContext(query: string, apiKey: string): Promise<RelevantChunk[]> {
   try {
@@ -52,20 +65,21 @@ export async function getRelevantContext(query: string, apiKey: string): Promise
     const queryEmbedding = response.embeddings[0].values;
 
     // Calculate similarity with all chunks
-    // Note: blogData might have dummy data with empty embeddings
-    const scoredChunks = blogData
-      .filter((chunk: any) => chunk.embedding && chunk.embedding.length > 0)
-      .map((chunk: any) => ({
+    const scoredChunks = typedBlogData
+      .filter((chunk) => chunk.embedding && chunk.embedding.length > 0)
+      .map((chunk) => ({
         text: chunk.text,
         title: chunk.title,
         url: chunk.url,
-        score: cosineSimilarity(queryEmbedding, chunk.embedding)
-      }));
+        score: cosineSimilarity(queryEmbedding, chunk.embedding!)
+      }))
+      // Filter by threshold to remove irrelevant noise
+      .filter(chunk => chunk.score > 0.5);
 
     // Sort by score descending
     scoredChunks.sort((a, b) => b.score - a.score);
 
-    // Return top 5 chunks with score > 0.5 (threshold can be adjusted)
+    // Return top 5 chunks
     return scoredChunks.slice(0, 5);
 
   } catch (error) {
