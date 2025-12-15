@@ -62,7 +62,7 @@ const App: React.FC = () => {
             <div className="hidden md:flex items-center gap-2">
               <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
               <NavItem view={View.ABOUT} label="About" icon={FileText} />
-              <NavItem view={View.DASHBOARD} label="My Research" icon={LineChart} />
+              <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} />
               <div className="h-6 w-px bg-slate-800 mx-2" />
               <a
                 href="https://blog.charliefeng.io"
@@ -70,7 +70,7 @@ const App: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-200 text-sm"
               >
-                Writing <ExternalLink size={14} />
+                Essays <ExternalLink size={14} />
               </a>
             </div>
 
@@ -91,14 +91,14 @@ const App: React.FC = () => {
           <div className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} />
-            <NavItem view={View.DASHBOARD} label="My Research" icon={LineChart} />
+            <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} />
             <a
               href="https://blog.charliefeng.io"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-3 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/50"
             >
-              <ExternalLink size={18} /> Writing
+              <ExternalLink size={18} /> Essays
             </a>
           </div>
         )}
