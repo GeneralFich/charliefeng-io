@@ -48,7 +48,7 @@ export const sendMessageToGemini = async (
       contents: contents,
       config: {
         temperature: 0.7, // Balanced creativity and precision
-        maxOutputTokens: 500,
+        maxOutputTokens: 4000,
       }
     });
 
