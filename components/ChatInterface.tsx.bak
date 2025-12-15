@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 
-const INITIAL_SUGGESTED_PROMPTS = [
+const SUGGESTED_PROMPTS = [
   "Summarize Charlie's experience.",
   "When will AGI arrive?",
   "What is the 'Agentic Inflection Point'?",
@@ -22,7 +22,6 @@ export const ChatInterface: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -40,31 +39,15 @@ export const ChatInterface: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
-    setSuggestedPrompts([]); // Clear suggestions while loading
 
     // Filter out the initial greeting from the history sent to API to save tokens/clean context
     // strictly keeping user/model pairs after system prompt is handled in service
-    const apiHistory = messages.slice(1); 
-    
-    let responseText = await sendMessageToGemini(apiHistory, text);
+    const apiHistory = messages.slice(1);
 
-    // Extract follow-up questions
-    const followUpMatch = responseText.match(/\[FOLLOW_UP\]\s*(\[.*\])/);
-    let newSuggestedPrompts: string[] = [];
-
-    if (followUpMatch && followUpMatch[1]) {
-      try {
-        newSuggestedPrompts = JSON.parse(followUpMatch[1]);
-        // Remove the follow-up section from the response text
-        responseText = responseText.replace(followUpMatch[0], '').trim();
-      } catch (e) {
-        console.error("Failed to parse follow-up prompts", e);
-      }
-    }
+    const responseText = await sendMessageToGemini(apiHistory, text);
 
     const modelMsg: Message = { role: 'model', text: responseText };
     setMessages(prev => [...prev, modelMsg]);
-    setSuggestedPrompts(newSuggestedPrompts);
     setIsLoading(false);
   };
 
@@ -137,11 +120,11 @@ export const ChatInterface: React.FC = () => {
 
       {/* Input Area */}
       <div className="p-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
-        {suggestedPrompts.length > 0 && (
+        {messages.length < 3 && (
           <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
-            {suggestedPrompts.map((prompt, idx) => (
+            {SUGGESTED_PROMPTS.map((prompt) => (
               <button
-                key={`${prompt}-${idx}`}
+                key={prompt}
                 onClick={() => handleSend(prompt)}
                 className="whitespace-nowrap px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/50 text-xs text-slate-400 hover:border-blue-500 hover:text-blue-400 transition-colors"
               >
@@ -150,7 +133,7 @@ export const ChatInterface: React.FC = () => {
             ))}
           </div>
         )}
-        
+
         <div className="relative flex items-center">
           <input
             type="text"
