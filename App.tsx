@@ -14,7 +14,7 @@ const App: React.FC = () => {
       case View.HOME:
         return <ChatInterface />;
       case View.DASHBOARD:
-        return <Dashboard />;
+        return <Dashboard />; // Kept for robustness, but unreachable via nav
       case View.ABOUT:
         return <Resume />;
       default:
@@ -61,8 +61,7 @@ const App: React.FC = () => {
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-2">
               <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
-              <NavItem view={View.DASHBOARD} label="Dashboard" icon={LayoutGrid} />
-              <NavItem view={View.ABOUT} label="Resume" icon={FileText} />
+              <NavItem view={View.ABOUT} label="About" icon={FileText} />
               <div className="h-6 w-px bg-slate-800 mx-2" />
               <a
                 href="https://blog.charliefeng.io"
@@ -90,7 +89,6 @@ const App: React.FC = () => {
         {mobileMenuOpen && (
           <div className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
-            <NavItem view={View.DASHBOARD} label="Dashboard" icon={LayoutGrid} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} />
             <a
               href="https://blog.charliefeng.io"
