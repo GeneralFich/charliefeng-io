@@ -1,6 +1,5 @@
 import React from 'react';
-import { Download, MapPin, Mail, Briefcase, GraduationCap, Activity } from 'lucide-react';
-import { Dashboard } from './Dashboard';
+import { Download, MapPin, Mail, Briefcase, GraduationCap } from 'lucide-react';
 
 export const Resume: React.FC = () => {
   return (
@@ -30,16 +29,6 @@ export const Resume: React.FC = () => {
         <p className="leading-relaxed text-slate-300 max-w-3xl print:text-slate-800">
           Infrastructure Product Leader with 8+ years of experience defining strategy for critical compute capacity and resilience. Expert in translating Hardware Engineering and ML constraints into high-leverage software products. Pioneered agentic AI tools and climate intelligence platforms at Google Data Centers that captured $50M+ in efficiency gains.
         </p>
-      </section>
-
-      {/* Live Research / Dashboard */}
-      <section className="mb-12 print:hidden">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-           <Activity size={18} /> Live Research: Preparing for AGI
-        </h2>
-        <div className="bg-slate-950/50 -mx-6 px-6 py-6 border-y border-slate-800/50 md:rounded-xl md:border md:mx-0">
-           <Dashboard />
-        </div>
       </section>
 
       {/* Experience */}
