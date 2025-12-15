@@ -3,7 +3,7 @@ import { View } from './types';
 import { ChatInterface } from './components/ChatInterface';
 import { Dashboard } from './components/Dashboard';
 import { Resume } from './components/Resume';
-import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X } from 'lucide-react';
+import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
@@ -14,7 +14,7 @@ const App: React.FC = () => {
       case View.HOME:
         return <ChatInterface />;
       case View.DASHBOARD:
-        return <Dashboard />; // Kept for robustness, but unreachable via nav
+        return <Dashboard />;
       case View.ABOUT:
         return <Resume />;
       default:
@@ -62,6 +62,7 @@ const App: React.FC = () => {
             <div className="hidden md:flex items-center gap-2">
               <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
               <NavItem view={View.ABOUT} label="About" icon={FileText} />
+              <NavItem view={View.DASHBOARD} label="My Research" icon={LineChart} />
               <div className="h-6 w-px bg-slate-800 mx-2" />
               <a
                 href="https://blog.charliefeng.io"
@@ -90,6 +91,7 @@ const App: React.FC = () => {
           <div className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} />
+            <NavItem view={View.DASHBOARD} label="My Research" icon={LineChart} />
             <a
               href="https://blog.charliefeng.io"
               target="_blank"

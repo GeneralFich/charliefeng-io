@@ -11,7 +11,10 @@ import {
   Bar,
   Cell,
 } from 'recharts';
-import { Activity, Zap, ShieldAlert, Cpu } from 'lucide-react';
+import { Activity, Zap, ShieldAlert, Cpu, FileText } from 'lucide-react';
+import { MANIFESTO_DATA } from '../lib/knowledge';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Data derived from Manifesto
 const TIMELINE_DATA = [
@@ -59,7 +62,9 @@ export const Dashboard: React.FC = () => {
           <Activity className="text-blue-500" />
           Agentic Dashboard
         </h2>
-        <p className="text-slate-400 mt-2 text-sm">Real-time signals from "Preparing for AGI" Manifesto</p>
+        <p className="text-slate-400 mt-2 text-sm">
+          This dashboard visualizes real-time signals and metrics derived explicitly from my "Preparing for AGI" Manifesto, providing context on the trajectory of Artificial General Intelligence and its economic impact.
+        </p>
       </header>
 
       {/* Status Widgets */}
@@ -178,6 +183,19 @@ export const Dashboard: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      {/* Manifesto Content */}
+      <div className="mt-12 pt-8 border-t border-slate-800">
+        <h3 className="text-xl font-light text-white mb-6 flex items-center gap-2">
+          <FileText className="text-slate-400" size={20} />
+          Full Manifesto
+        </h3>
+        <div className="bg-slate-900/30 rounded-xl p-6 border border-slate-800/50 prose prose-invert prose-sm max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {MANIFESTO_DATA}
+          </ReactMarkdown>
         </div>
       </div>
     </div>
