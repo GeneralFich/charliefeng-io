@@ -10,11 +10,15 @@ const SUGGESTED_PROMPTS = [
   "When will AGI arrive?",
   "What is the 'Agentic Inflection Point'?",
   "How should I hedge my portfolio?",
+  "How will AGI impact the labor market?",
+  "Tell me about your work at Google.",
+  "What skills are critical for the AGI era?",
+  "Explain your 'Climate Intelligence' work.",
 ];
 
 export const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Hello. I am Charlie Feng's Digital Twin. I can discuss my infrastructure work at Google or my research on the AGI transition. How can I assist you?" }
+    { role: 'model', text: "Hello! I am Charlie Feng's Digital Twin. Think of me as an interactive interface to Charlie's professional mind. I have been trained on his resume, blog posts, and public writings. You can ask me detailed questions about his experience leading AI Infrastructure at Google, his perspectives on the transition to AGI, his investment strategies, or his thoughts on the 'Agentic Inflection Point'. I'm here to have a deep conversation about technology, markets, and the future. What would you like to discuss?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
