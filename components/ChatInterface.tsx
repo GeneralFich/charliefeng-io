@@ -31,7 +31,7 @@ export const ChatInterface: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;

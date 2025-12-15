@@ -24,35 +24,30 @@ export const sendMessageToGemini = async (
     try {
       const relevantChunks = await getRelevantContext(newMessage, apiKey);
       if (relevantChunks.length > 0) {
-        additionalContext = "\n\nRelevant insights from my blog:\n" +
-          relevantChunks.map(chunk => `- [${chunk.title}](${chunk.url}): ${chunk.text}`).join("\n\n");
+        additionalContext = "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
+          relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
       }
     } catch (ragError) {
       console.warn("RAG retrieval failed, proceeding without it:", ragError);
     }
 
-    // We construct the prompt by prepending the system context.
-    // While systemInstruction is available in config, stuffing context 
-    // into the conversation flow often yields very robust results for "Digital Twin" 
-    // personas on the Flash model.
-    
-    // Construct the chat history for the API
+    // Prepare the conversation for the API
+    // We treat the "history" as the context of conversation so far.
+    // The "newMessage" is the latest user input.
+    // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
+
+    const userMessageWithContext = additionalContext
+      ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
+      : newMessage;
+
     const contents = [
-      {
-        role: "user",
-        parts: [{ text: FULL_CONTEXT + additionalContext }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Understood. I am ready to act as Charlie Feng's Digital Twin." }],
-      },
-      ...history.map((msg) => ({
+       ...history.map((msg) => ({
         role: msg.role,
         parts: [{ text: msg.text }],
       })),
       {
         role: "user",
-        parts: [{ text: newMessage }],
+        parts: [{ text: userMessageWithContext }],
       },
     ];
 
@@ -60,7 +55,8 @@ export const sendMessageToGemini = async (
       model: "gemini-2.5-flash",
       contents: contents,
       config: {
-        temperature: 0.7, // Balanced creativity and precision
+        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+        temperature: 0.7,
         maxOutputTokens: 4000,
       }
     });
