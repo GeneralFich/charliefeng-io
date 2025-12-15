@@ -1,0 +1,10 @@
+[
+  {
+    "id": "dummy-1",
+    "text": "This is a placeholder for the blog data. Run scripts/ingest_blog.ts to populate it.",
+    "url": "https://blog.charliefeng.io",
+    "title": "Placeholder",
+    "publishedDate": "2023-01-01",
+    "embedding": []
+  }
+]
