@@ -18,7 +18,7 @@ const INITIAL_SUGGESTED_PROMPTS = [
 
 export const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Hello! I am Charlie Feng's Digital Twin. Think of me as an interactive interface to Charlie's professional mind. I have been trained on his resume, blog posts, and public writings. You can ask me detailed questions about his experience leading AI Infrastructure at Google, his perspectives on the transition to AGI, his investment strategies, or his thoughts on the 'Agentic Inflection Point'. I'm here to have a deep conversation about technology, markets, and the future. What would you like to discuss?" }
+    { role: 'model', text: "Welcome to the digital extension of my work as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research through conversation." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
