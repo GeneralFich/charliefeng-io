@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 
@@ -70,7 +72,32 @@ export const ChatInterface: React.FC = () => {
                   : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
               }`}
             >
-              <p className="whitespace-pre-wrap">{msg.text}</p>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
+                  li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                  a: ({node, ...props}) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                  strong: ({node, ...props}) => <strong className="font-bold text-slate-100" {...props} />,
+                  code: ({node, ...props}) => {
+                    return <code className="bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-200" {...props} />
+                  },
+                  blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-slate-600 pl-4 italic text-slate-400 my-2" {...props} />,
+                  h1: ({node, ...props}) => <h1 className="text-lg font-bold mb-2 text-slate-100" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="text-base font-bold mb-2 text-slate-100" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="text-sm font-bold mb-2 text-slate-100" {...props} />,
+                  table: ({node, ...props}) => <div className="overflow-x-auto my-2"><table className="min-w-full divide-y divide-slate-700" {...props} /></div>,
+                  thead: ({node, ...props}) => <thead className="bg-slate-800" {...props} />,
+                  tbody: ({node, ...props}) => <tbody className="divide-y divide-slate-700" {...props} />,
+                  tr: ({node, ...props}) => <tr {...props} />,
+                  th: ({node, ...props}) => <th className="px-3 py-2 text-left text-xs font-medium text-slate-300 uppercase tracking-wider" {...props} />,
+                  td: ({node, ...props}) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-300" {...props} />,
+                }}
+              >
+                {msg.text}
+              </ReactMarkdown>
             </div>
           </div>
         ))}

@@ -15,7 +15,9 @@
     "lucide-react": "^0.561.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.5.1",
+    "remark-gfm": "^4.0.1",
     "rss-parser": "^3.13.0",
     "uuid": "^13.0.0"
   },
