@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { FULL_CONTEXT } from "../lib/knowledge";
 import { Message } from "../types";
+import { getRelevantContext } from "../lib/rag";
 
 const apiKey = process.env.API_KEY;
 
@@ -13,11 +14,23 @@ export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string
 ): Promise<string> => {
-  if (!ai) {
+  if (!ai || !apiKey) {
     return "API Key is missing. Please configure the environment variable.";
   }
 
   try {
+    // RAG: Retrieve relevant context from blog
+    let additionalContext = "";
+    try {
+      const relevantChunks = await getRelevantContext(newMessage, apiKey);
+      if (relevantChunks.length > 0) {
+        additionalContext = "\n\nRelevant insights from my blog:\n" +
+          relevantChunks.map(chunk => `- [${chunk.title}](${chunk.url}): ${chunk.text}`).join("\n\n");
+      }
+    } catch (ragError) {
+      console.warn("RAG retrieval failed, proceeding without it:", ragError);
+    }
+
     // We construct the prompt by prepending the system context.
     // While systemInstruction is available in config, stuffing context 
     // into the conversation flow often yields very robust results for "Digital Twin" 
@@ -27,7 +40,7 @@ export const sendMessageToGemini = async (
     const contents = [
       {
         role: "user",
-        parts: [{ text: FULL_CONTEXT }],
+        parts: [{ text: FULL_CONTEXT + additionalContext }],
       },
       {
         role: "model",
