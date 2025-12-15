@@ -11,7 +11,7 @@ import {
   Bar,
   Cell,
 } from 'recharts';
-import { Activity, Zap, ShieldAlert, Cpu, FileText } from 'lucide-react';
+import { Activity, Zap, ShieldAlert, Cpu, FileText, Info } from 'lucide-react';
 import { MANIFESTO_DATA } from '../lib/knowledge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -74,7 +74,15 @@ export const Dashboard: React.FC = () => {
             <Zap className="text-green-400" size={24} />
           </div>
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-widest">System Status</div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-xs text-slate-500 uppercase tracking-widest">System Status</div>
+              <div className="relative group">
+                <Info size={14} className="text-slate-500 hover:text-slate-300 cursor-help" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-800 border border-slate-700 text-slate-200 text-xs p-2 rounded shadow-lg hidden group-hover:block z-50">
+                  Current market capability of AI agents, not website backend status.
+                </div>
+              </div>
+            </div>
             <div className="text-lg font-semibold text-slate-200">Agentic Workflow: Active</div>
           </div>
         </div>
@@ -83,7 +91,15 @@ export const Dashboard: React.FC = () => {
             <Cpu className="text-blue-400" size={24} />
           </div>
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-widest">Velocity</div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-xs text-slate-500 uppercase tracking-widest">Velocity</div>
+              <div className="relative group">
+                <Info size={14} className="text-slate-500 hover:text-slate-300 cursor-help" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-800 border border-slate-700 text-slate-200 text-xs p-2 rounded shadow-lg hidden group-hover:block z-50">
+                  Accelerating rate of AGI development and research papers globally.
+                </div>
+              </div>
+            </div>
             <div className="text-lg font-semibold text-slate-200">High (2025 Inflection)</div>
           </div>
         </div>
