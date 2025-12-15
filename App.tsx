@@ -48,7 +48,11 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             
             {/* Logo Area */}
-            <div className="flex-shrink-0 flex items-center gap-3">
+            <button
+              onClick={() => setCurrentView(View.HOME)}
+              className="flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none text-left"
+              aria-label="Go to Home"
+            >
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <span className="text-white font-bold text-xs">CF</span>
               </div>
@@ -56,7 +60,7 @@ const App: React.FC = () => {
                 <h1 className="text-white font-bold tracking-tight text-lg">Charlie Feng</h1>
                 <p className="text-[10px] text-blue-400 uppercase tracking-widest font-semibold">Digital Twin</p>
               </div>
-            </div>
+            </button>
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-2">
