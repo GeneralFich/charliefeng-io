@@ -49,16 +49,28 @@ export const ChatInterface: React.FC = () => {
     let responseText = await sendMessageToGemini(apiHistory, text);
 
     // Extract follow-up questions
-    const followUpMatch = responseText.match(/\[FOLLOW_UP\]\s*(\[.*\])/);
     let newSuggestedPrompts: string[] = [];
 
-    if (followUpMatch && followUpMatch[1]) {
+    if (responseText.includes('[FOLLOW_UP]')) {
+      const parts = responseText.split('[FOLLOW_UP]');
+      responseText = parts[0].trim();
+      const potentialJson = parts.slice(1).join('[FOLLOW_UP]').trim();
+
       try {
-        newSuggestedPrompts = JSON.parse(followUpMatch[1]);
-        // Remove the follow-up section from the response text
-        responseText = responseText.replace(followUpMatch[0], '').trim();
+        newSuggestedPrompts = JSON.parse(potentialJson);
       } catch (e) {
-        console.error("Failed to parse follow-up prompts", e);
+        console.error("Failed to parse follow-up prompts directly", e);
+        // Fallback: try to find the array brackets if direct parse fails (e.g. trailing text)
+        const firstBracket = potentialJson.indexOf('[');
+        const lastBracket = potentialJson.lastIndexOf(']');
+        if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+          try {
+            const jsonSubstring = potentialJson.substring(firstBracket, lastBracket + 1);
+            newSuggestedPrompts = JSON.parse(jsonSubstring);
+          } catch (innerE) {
+            console.error("Failed to parse extracted JSON substring", innerE);
+          }
+        }
       }
     }
 
