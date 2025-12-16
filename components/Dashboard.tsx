@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { Activity, Globe, TrendingUp, Layers, FileText, AlertTriangle, Calendar } from 'lucide-react';
 import { WHITEPAPER_CONTENT } from '../lib/knowledge';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const { timeline: TIMELINE_DATA, risks: RISK_DATA, body: MANIFESTO_BODY } = WHITEPAPER_CONTENT;
@@ -36,6 +36,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   }
   return null;
 };
+
+// Extracted to avoid re-creation on every render
+const MARKDOWN_COMPONENTS: Components = {
+  a: ({ node, ...props }) => {
+    const isExternal = props.href?.startsWith('http') ?? false;
+    return (
+      <a
+        {...props}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
+      />
+    );
+  }
+};
+
+const REMARK_PLUGINS = [remarkGfm];
 
 export const Dashboard: React.FC = () => {
   return (
@@ -201,19 +217,8 @@ export const Dashboard: React.FC = () => {
         </h3>
         <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50 prose prose-invert prose-slate max-w-none">
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              a: ({ node, ...props }) => {
-                const isExternal = props.href?.startsWith('http') ?? false;
-                return (
-                  <a
-                    {...props}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                  />
-                );
-              }
-            }}
+            remarkPlugins={REMARK_PLUGINS}
+            components={MARKDOWN_COMPONENTS}
           >
             {MANIFESTO_BODY}
           </ReactMarkdown>
