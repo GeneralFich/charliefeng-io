@@ -192,8 +192,21 @@ export const Dashboard: React.FC = () => {
           <FileText className="text-slate-400" size={20} />
           Full Manifesto
         </h3>
-        <div className="bg-slate-900/30 rounded-xl p-6 border border-slate-800/50 prose prose-invert prose-sm max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({node, ...props}) => <h1 className="text-3xl font-light text-white mb-6 mt-8 border-b border-slate-800 pb-2" {...props} />,
+              h2: ({node, ...props}) => <h2 className="text-xl font-medium text-blue-100 mb-4 mt-8" {...props} />,
+              h3: ({node, ...props}) => <h3 className="text-lg font-medium text-slate-200 mb-3 mt-6" {...props} />,
+              p: ({node, ...props}) => <p className="text-slate-400 leading-relaxed mb-4" {...props} />,
+              ul: ({node, ...props}) => <ul className="list-disc list-outside ml-6 space-y-2 mb-6 text-slate-400" {...props} />,
+              li: ({node, ...props}) => <li className="pl-1 marker:text-blue-500" {...props} />,
+              strong: ({node, ...props}) => <strong className="font-semibold text-slate-200" {...props} />,
+              blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500/50 pl-4 py-1 my-6 italic text-slate-400 bg-slate-900/50 rounded-r" {...props} />,
+              a: ({node, ...props}) => <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" {...props} />,
+            }}
+          >
             {MANIFESTO_DATA}
           </ReactMarkdown>
         </div>
