@@ -192,7 +192,21 @@ export const Dashboard: React.FC = () => {
           Full Manifesto
         </h3>
         <div className="bg-slate-900/30 rounded-xl p-6 border border-slate-800/50 prose prose-invert prose-sm max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              a: ({ node, ...props }) => {
+                const isExternal = props.href?.startsWith('http') ?? false;
+                return (
+                  <a
+                    {...props}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                  />
+                );
+              }
+            }}
+          >
             {MANIFESTO_BODY}
           </ReactMarkdown>
         </div>
