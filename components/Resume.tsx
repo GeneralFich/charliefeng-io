@@ -1,9 +1,9 @@
 import React from 'react';
-import { Download, MapPin, Mail, Briefcase, GraduationCap } from 'lucide-react';
+import { Download, MapPin, Mail, Phone, Briefcase, GraduationCap, Users } from 'lucide-react';
 import { RESUME_CONTENT } from '../lib/knowledge';
 
 export const Resume: React.FC = () => {
-  const { name, location, email, summary, experience, education, skills } = RESUME_CONTENT;
+  const { name, location, email, phone, summary, experience, education, leadership, skills } = RESUME_CONTENT;
 
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-12 animate-fade-in text-slate-300 print:text-black print:p-0 print:max-w-none">
@@ -15,6 +15,7 @@ export const Resume: React.FC = () => {
           <div className="flex flex-wrap gap-4 text-sm text-slate-400 print:text-slate-600">
              <span className="flex items-center gap-1"><MapPin size={14} /> {location}</span>
              <span className="flex items-center gap-1"><Mail size={14} /> {email}</span>
+             {phone && <span className="flex items-center gap-1"><Phone size={14} /> {phone}</span>}
           </div>
         </div>
         <button
@@ -77,9 +78,30 @@ export const Resume: React.FC = () => {
         </div>
       </section>
 
+      {/* Leadership */}
+      {leadership && leadership.length > 0 && (
+        <section className="mb-12 print:mb-6">
+          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
+            <Users size={18} /> Leadership & Community
+          </h2>
+          <div className="grid gap-6 print:gap-4">
+            {leadership.map((item, index) => (
+              <div key={index} className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 print:bg-transparent print:border-slate-200 print:p-4">
+                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-2">
+                    <h3 className="text-white font-semibold print:text-black">{item.organization}</h3>
+                    <span className="text-slate-500 text-sm print:text-slate-600">{item.dates}</span>
+                  </div>
+                <p className="text-sm text-blue-300 mb-2 print:text-slate-700">{item.role}</p>
+                <p className="text-xs text-slate-500 print:text-slate-600">{item.details}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Skills */}
       <section>
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 print:text-blue-700 print:mb-4">Technical Skills</h2>
+        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 print:text-blue-700 print:mb-4">Skills</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:gap-2">
           {skills.map((skill, index) => (
             <div key={index} className="p-4 bg-slate-900/30 border border-slate-800 rounded-lg print:bg-transparent print:border-slate-200 print:p-2">
