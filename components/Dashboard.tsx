@@ -12,28 +12,11 @@ import {
   Cell,
 } from 'recharts';
 import { Activity, Zap, ShieldAlert, Cpu, FileText, Info } from 'lucide-react';
-import { MANIFESTO_DATA } from '../lib/knowledge';
+import { WHITEPAPER_CONTENT } from '../lib/knowledge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// Data derived from Manifesto
-const TIMELINE_DATA = [
-  { year: '2024', level: 20, stage: 'Generative' },
-  { year: '2025', level: 40, stage: 'Teammate Era' },
-  { year: '2026', level: 55, stage: 'Teammate Era' },
-  { year: '2027', level: 75, stage: 'Weak AGI' },
-  { year: '2028', level: 85, stage: 'Weak AGI' },
-  { year: '2029', level: 95, stage: 'Robust AGI' },
-  { year: '2030', level: 100, stage: 'Robust AGI' },
-];
-
-const RISK_DATA = [
-  { name: 'Translation', risk: 90, fill: '#ef4444' }, // Red
-  { name: 'Admin', risk: 80, fill: '#f97316' }, // Orange
-  { name: 'Coding', risk: 50, fill: '#eab308' }, // Yellow (Transformative)
-  { name: 'Trades', risk: 10, fill: '#22c55e' }, // Green
-  { name: 'Nursing', risk: 5, fill: '#3b82f6' }, // Blue
-];
+const { timeline: TIMELINE_DATA, risks: RISK_DATA, body: MANIFESTO_BODY } = WHITEPAPER_CONTENT;
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -210,7 +193,7 @@ export const Dashboard: React.FC = () => {
         </h3>
         <div className="bg-slate-900/30 rounded-xl p-6 border border-slate-800/50 prose prose-invert prose-sm max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {MANIFESTO_DATA}
+            {MANIFESTO_BODY}
           </ReactMarkdown>
         </div>
       </div>
