@@ -17,6 +17,13 @@ export interface EducationItem {
   details: string;
 }
 
+export interface LeadershipItem {
+  organization: string;
+  role: string;
+  dates: string;
+  details: string;
+}
+
 export interface SkillCategory {
   category: string;
   items: string;
@@ -27,9 +34,11 @@ export interface ResumeAttributes {
   title: string;
   location: string;
   email: string;
+  phone: string;
   summary: string;
   experience: ExperienceItem[];
   education: EducationItem[];
+  leadership: LeadershipItem[];
   skills: SkillCategory[];
 }
 
