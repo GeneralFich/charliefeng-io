@@ -121,8 +121,8 @@ export const Dashboard: React.FC = () => {
             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
             Consensus AGI Arrival Trajectory
           </h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={TIMELINE_DATA}>
                 <defs>
                   <linearGradient id="colorLevel" x1="0" y1="0" x2="0" y2="1">
@@ -164,8 +164,8 @@ export const Dashboard: React.FC = () => {
             <span className="w-2 h-2 bg-red-500 rounded-full"></span>
             Job Displacement Risk by Sector
           </h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={RISK_DATA} layout="vertical" margin={{ left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
                 <XAxis type="number" hide />
