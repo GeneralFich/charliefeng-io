@@ -18,7 +18,7 @@ const INITIAL_SUGGESTED_PROMPTS = [
 
 export const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Welcome to the digital extension of my work as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research through conversation." }
+    { role: 'model', text: "Welcome to the digital extension of my experiences, resume, and insights as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research about infrastructure and AI through conversation." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
