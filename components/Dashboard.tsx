@@ -204,7 +204,13 @@ export const Dashboard: React.FC = () => {
             remarkPlugins={[remarkGfm]}
             components={{
               a: ({ node, ...props }) => {
-                const isExternal = props.href?.startsWith('http') ?? false;
+                // Security: Prevent XSS via malicious links (e.g. javascript:)
+                const href = props.href || '';
+                const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
+                if (!isSafe) {
+                  return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
+                }
+                const isExternal = href.startsWith('http');
                 return (
                   <a
                     {...props}

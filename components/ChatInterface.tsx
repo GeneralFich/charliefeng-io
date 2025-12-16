@@ -36,6 +36,13 @@ export const ChatInterface: React.FC = () => {
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;
 
+    // Security: Input length validation
+    if (text.length > 2000) {
+      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
+      setMessages(prev => [...prev, errorMsg]);
+      return;
+    }
+
     const userMsg: Message = { role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -112,7 +119,13 @@ export const ChatInterface: React.FC = () => {
                   ul: ({node, ...props}) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
                   ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
                   li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                  a: ({node, ...props}) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                  a: ({node, ...props}) => {
+                    // Security: Prevent XSS via malicious links (e.g. javascript:)
+                    const href = props.href || '';
+                    const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
+                    if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
+                    return <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />;
+                  },
                   strong: ({node, ...props}) => <strong className="font-bold text-slate-100" {...props} />,
                   code: ({node, ...props}) => {
                     return <code className="bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-200" {...props} />
@@ -170,6 +183,7 @@ export const ChatInterface: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
             placeholder="Ask Charlie's Digital Twin..."
+            maxLength={2000} // Security: Prevent large payloads
             className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-12 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
             disabled={isLoading}
           />
