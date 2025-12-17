@@ -1,140 +1,124 @@
+import { GoogleGenAI } from '@google/genai';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+import fm from 'front-matter';
 
-import { GoogleGenAI } from "@google/genai";
-import Parser from "rss-parser";
-import * as cheerio from "cheerio";
-import fs from "fs/promises";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
+// --- Configuration ---
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-// Note: I will need to set API_KEY environment variable when running this script
-const apiKey = process.env.API_KEY;
+const POSTS_DIR = join(process.cwd(), 'content', 'posts');
+const OUTPUT_FILE = join(process.cwd(), 'lib', 'blog_data.json');
 
-if (!apiKey) {
-  console.error("API_KEY is missing. Please set the environment variable.");
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  console.error("Error: GEMINI_API_KEY not found in .env.local");
   process.exit(1);
 }
 
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-const BLOG_RSS_URL = "https://blog.charliefeng.io/feed";
-const OUTPUT_FILE = path.join(process.cwd(), "lib", "blog_data.json");
+interface PostAttributes {
+  title: string;
+  date: string;
+  author: string;
+  description: string;
+}
 
 interface BlogChunk {
   id: string;
-  text: string;
   url: string;
   title: string;
   publishedDate: string;
+  text: string;
   embedding?: number[];
 }
 
-const parser = new Parser();
-
-async function getBlogPosts() {
-  console.log("Fetching RSS feed...");
-  const feed = await parser.parseURL(BLOG_RSS_URL);
-  console.log(`Found ${feed.items.length} posts.`);
-  return feed.items;
-}
-
-function cleanText(html: string): string {
-  const $ = cheerio.load(html);
-  // Remove scripts, styles
-  $('script').remove();
-  $('style').remove();
-  $('nav').remove();
-  $('header').remove();
-  $('footer').remove();
-
-  // Get text
-  let text = $('body').text();
-  // Collapse whitespace
-  text = text.replace(/\s+/g, ' ').trim();
-  return text;
-}
-
-function chunkText(text: string, chunkSize: number = 1000, overlap: number = 100): string[] {
-  const chunks: string[] = [];
-  let start = 0;
-
-  while (start < text.length) {
-    let end = start + chunkSize;
-
-    // If we are not at the end of the text, try to break at a sentence or word
-    if (end < text.length) {
-      // Look for the last period within the chunk to break cleanly
-      const lastPeriod = text.lastIndexOf('.', end);
-      if (lastPeriod > start + chunkSize * 0.5) { // Ensure chunk isn't too small
-        end = lastPeriod + 1;
-      } else {
-        // Fallback to space
-        const lastSpace = text.lastIndexOf(' ', end);
-        if (lastSpace > start) {
-          end = lastSpace;
-        }
-      }
+async function getEmbeddings(text: string): Promise<number[]> {
+    try {
+        const result = await ai.models.embedContent({
+            model: "text-embedding-004",
+            contents: [{ parts: [{ text: text }] }]
+        });
+        const embedding = result.embeddings?.[0]?.values;
+        if (!embedding) return [];
+        return embedding;
+    } catch (e) {
+        console.error("Error generating embedding:", e);
+        return [];
     }
+}
 
-    chunks.push(text.slice(start, end).trim());
-    start = end - overlap; // Overlap for continuity
+function chunkText(text: string, maxChars: number = 1000): string[] {
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+  for (const sentence of sentences) {
+    if ((currentChunk + sentence).length > maxChars) {
+      chunks.push(currentChunk.trim());
+      currentChunk = "";
+    }
+    currentChunk += sentence + " ";
   }
-
+  if (currentChunk.trim().length > 0) {
+    chunks.push(currentChunk.trim());
+  }
   return chunks;
 }
 
-async function generateEmbedding(text: string): Promise<number[]> {
-  try {
-    const response = await ai.models.embedContent({
-      model: "text-embedding-004",
-      contents: [{ parts: [{ text }] }]
-    });
-    if (response.embeddings && response.embeddings.length > 0 && response.embeddings[0].values) {
-       return response.embeddings[0].values;
-    }
-    return [];
-  } catch (error) {
-    console.error("Error generating embedding:", error);
-    return [];
+async function ingest() {
+  console.log(`Scanning for posts in ${POSTS_DIR}...`);
+
+  if (!fs.existsSync(POSTS_DIR)) {
+      console.error(`Directory not found: ${POSTS_DIR}`);
+      process.exit(1);
   }
-}
 
-async function main() {
-  const posts = await getBlogPosts();
-  const allChunks: BlogChunk[] = [];
+  const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));
+  const chunks: BlogChunk[] = [];
 
-  for (const post of posts) {
-    if (!post.content && !post['content:encoded']) {
-      console.warn(`Skipping post "${post.title}" (no content)`);
-      continue;
-    }
+  console.log(`Found ${files.length} posts.`);
 
-    console.log(`Processing "${post.title}"...`);
-    const rawContent = post['content:encoded'] || post.content || "";
-    const cleanContent = cleanText(rawContent);
-    const textChunks = chunkText(cleanContent);
+  for (const file of files) {
+    const filePath = join(POSTS_DIR, file);
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const parsed = fm<PostAttributes>(content);
 
-    for (const chunk of textChunks) {
-      if (chunk.length < 50) continue; // Skip tiny chunks
+    console.log(`Processing: ${parsed.attributes.title}`);
 
-      const embedding = await generateEmbedding(chunk);
+    const slug = file.replace('.md', '');
+    // Using a fake URL format that could be useful later, or just informative
+    const url = `/essays/${slug}`;
 
-      allChunks.push({
-        id: uuidv4(),
-        text: chunk,
-        url: post.link || "",
-        title: post.title || "",
-        publishedDate: post.pubDate || "",
-        embedding: embedding
-      });
+    const textChunks = chunkText(parsed.body);
 
-      // Rate limiting helper (simple pause)
-      await new Promise(resolve => setTimeout(resolve, 100));
+    for (let i = 0; i < textChunks.length; i++) {
+       const chunk = textChunks[i];
+       if (chunk.length < 50) continue; // Skip tiny chunks
+
+       const embedding = await getEmbeddings(chunk);
+
+       chunks.push({
+           id: `${slug}#chunk${i}`,
+           url: url,
+           title: parsed.attributes.title,
+           publishedDate: parsed.attributes.date,
+           text: chunk,
+           embedding: embedding
+       });
+
+       // Rate limiting aid
+       await new Promise(resolve => setTimeout(resolve, 200));
     }
   }
 
-  console.log(`Generated ${allChunks.length} chunks.`);
-  await fs.writeFile(OUTPUT_FILE, JSON.stringify(allChunks, null, 2));
-  console.log(`Saved to ${OUTPUT_FILE}`);
+  writeFileSync(OUTPUT_FILE, JSON.stringify(chunks, null, 2));
+  console.log(`Successfully wrote ${chunks.length} chunks to ${OUTPUT_FILE}`);
 }
 
-main().catch(console.error);
+ingest();
