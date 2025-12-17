@@ -127,6 +127,7 @@ export const ChatInterface: React.FC = () => {
                     return <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />;
                   },
                   strong: ({node, ...props}) => <strong className="font-bold text-slate-100" {...props} />,
+                  pre: ({node, ...props}) => <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto my-2 [&>code]:bg-transparent [&>code]:p-0" {...props} />,
                   code: ({node, ...props}) => {
                     return <code className="bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-200" {...props} />
                   },
