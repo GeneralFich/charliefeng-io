@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Sparkles, ArrowRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Message } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { Message, View } from '../types';
+import { streamMessageToGemini } from '../services/geminiService';
 
 const INITIAL_SUGGESTED_PROMPTS = [
   "Summarize Charlie's experience.",
@@ -16,7 +16,11 @@ const INITIAL_SUGGESTED_PROMPTS = [
   "Explain your 'Climate Intelligence' work.",
 ];
 
-export const ChatInterface: React.FC = () => {
+interface ChatInterfaceProps {
+  onNavigate?: (view: View) => void;
+}
+
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', text: "Welcome to the digital extension of my work as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research through conversation." }
   ]);
@@ -44,23 +48,70 @@ export const ChatInterface: React.FC = () => {
 
     // Filter out the initial greeting from the history sent to API to save tokens/clean context
     // strictly keeping user/model pairs after system prompt is handled in service
-    const apiHistory = messages.slice(1); 
+    const apiHistory = messages.slice(1);
+
+    // Add a placeholder message for the model that we will update as stream chunks arrive
+    setMessages(prev => [...prev, { role: 'model', text: '' }]);
+
+    let fullResponseText = "";
     
-    let responseText = await sendMessageToGemini(apiHistory, text);
+    try {
+      const stream = streamMessageToGemini(apiHistory, text);
 
-    // Extract follow-up questions
+      for await (const chunk of stream) {
+        fullResponseText += chunk;
+
+        // Update the last message with the current full text
+        // We do not parse JSON or navigate yet, just show the text
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          if (lastMsg.role === 'model') {
+            // We want to hide the [NAVIGATE: X] and [FOLLOW_UP] tags from the visible text until the end
+            // But doing it mid-stream is tricky.
+            // For now, let's just display raw text and clean it up in the UI render if needed,
+            // or just clean it up at the very end.
+            // Actually, showing the raw tags is ugly.
+            // Let's implement a display-time cleaner or just accept it for a split second.
+            // Better: Let's clean it before setting state if possible, but the chunk boundaries might split tags.
+            // Simplest for streaming: Update state with full raw text, but handle display in the render method?
+            // No, ReactMarkdown will render it.
+            // Let's just update raw text and clean it up in the finalization step to avoid complex buffering.
+            lastMsg.text = fullResponseText;
+          }
+          return newMessages;
+        });
+      }
+    } catch (e) {
+      console.error("Streaming error", e);
+      fullResponseText += "\n[Error receiving full response]";
+    }
+
+    // Final processing after stream is complete
+    let displayText = fullResponseText;
     let newSuggestedPrompts: string[] = [];
+    let navigationTarget: View | null = null;
 
-    if (responseText.includes('[FOLLOW_UP]')) {
-      const parts = responseText.split('[FOLLOW_UP]');
-      responseText = parts[0].trim();
+    // 1. Extract Navigation Tags
+    if (displayText.includes('[NAVIGATE: DASHBOARD]')) {
+      navigationTarget = View.DASHBOARD;
+      displayText = displayText.replace('[NAVIGATE: DASHBOARD]', '');
+    } else if (displayText.includes('[NAVIGATE: ABOUT]')) {
+      navigationTarget = View.ABOUT;
+      displayText = displayText.replace('[NAVIGATE: ABOUT]', '');
+    }
+
+    // 2. Extract Follow-up Questions
+    if (displayText.includes('[FOLLOW_UP]')) {
+      const parts = displayText.split('[FOLLOW_UP]');
+      displayText = parts[0].trim();
       const potentialJson = parts.slice(1).join('[FOLLOW_UP]').trim();
 
       try {
         newSuggestedPrompts = JSON.parse(potentialJson);
       } catch (e) {
         console.error("Failed to parse follow-up prompts directly", e);
-        // Fallback: try to find the array brackets if direct parse fails (e.g. trailing text)
+        // Fallback search for brackets
         const firstBracket = potentialJson.indexOf('[');
         const lastBracket = potentialJson.lastIndexOf(']');
         if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
@@ -68,14 +119,56 @@ export const ChatInterface: React.FC = () => {
             const jsonSubstring = potentialJson.substring(firstBracket, lastBracket + 1);
             newSuggestedPrompts = JSON.parse(jsonSubstring);
           } catch (innerE) {
-            console.error("Failed to parse extracted JSON substring", innerE);
+             // ignore
           }
         }
       }
     }
 
-    const modelMsg: Message = { role: 'model', text: responseText };
-    setMessages(prev => [...prev, modelMsg]);
+    // Update the final message with cleaned text and add metadata if we supported it
+    // Since our Message type is simple, we might need to handle the navigation button via a custom render
+    // or by appending a special marker that the markdown renderer picks up?
+    // Or, we can just strictly clean the text state, and use a separate state variable?
+    // No, messages are persistent.
+    // Let's store the navigation suggestion IN the message text as a custom component marker
+    // OR we can just allow the ReactMarkdown to render the tags if we wanted, but we want a button.
+
+    // Better approach:
+    // Update the message text to be the clean text.
+    // If there is a navigation target, append a custom Markdown bit or HTML that our renderer handles?
+    // or just append a UI element? We can't easily append a UI element to the text string.
+
+    // Let's modify the text to include a clear "Call to Action" if we detected a tag.
+    // Since we want a "Passive" button, we can append a blockquote or a special link.
+    // But a real button is nicer.
+
+    // Let's hack it slightly: We will extend the Message type locally or just trust that
+    // appending a specific Markdown pattern like `:::navigation-dashboard:::` works if we wrote a plugin,
+    // but without new deps, let's just append a clear text link/button-like element.
+
+    // Actually, I can render a custom component for specific text.
+    // Let's append: `\n\n[>> View Related Dashboard Content](#action:dashboard)`
+    // And handle the `a` tag click.
+
+    if (navigationTarget) {
+      const label = navigationTarget === View.DASHBOARD ? "View Whitepaper & Timeline" : "View Resume & Experience";
+      const actionLink = `\n\n<button class="nav-action" data-view="${navigationTarget}">👉 ${label}</button>`;
+      // We can't inject HTML easily with safe ReactMarkdown unless we enable rehypeRaw, which is risky or needs setup.
+      // Standard Markdown Link approach:
+      displayText += `\n\n[👉 ${label}](#view=${navigationTarget})`;
+    }
+
+    const finalDisplayText = displayText.trim();
+
+    setMessages(prev => {
+      const newMessages = [...prev];
+      newMessages[newMessages.length - 1] = {
+        role: 'model',
+        text: finalDisplayText
+      };
+      return newMessages;
+    });
+
     setSuggestedPrompts(newSuggestedPrompts);
     setIsLoading(false);
   };
@@ -112,7 +205,24 @@ export const ChatInterface: React.FC = () => {
                   ul: ({node, ...props}) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
                   ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
                   li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                  a: ({node, ...props}) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                  a: ({node, ...props}) => {
+                    const href = props.href || "";
+                    if (href.startsWith('#view=')) {
+                        const viewTarget = href.split('=')[1] as View;
+                        return (
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (onNavigate) onNavigate(viewTarget);
+                                }}
+                                className="inline-flex items-center gap-1 mt-2 px-3 py-1.5 rounded-lg bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:bg-blue-600/30 hover:border-blue-400 transition-all font-medium text-xs no-underline"
+                            >
+                                {props.children} <ArrowRight size={12} />
+                            </button>
+                        );
+                    }
+                    return <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />;
+                  },
                   strong: ({node, ...props}) => <strong className="font-bold text-slate-100" {...props} />,
                   code: ({node, ...props}) => {
                     return <code className="bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-200" {...props} />
@@ -129,6 +239,11 @@ export const ChatInterface: React.FC = () => {
                   td: ({node, ...props}) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-300" {...props} />,
                 }}
               >
+                {/*
+                  Hide internal tags while streaming if possible,
+                  but simpler to just let them flicker or filter visually via regex in the render if essential.
+                  For now, we just pass the text.
+                */}
                 {msg.text}
               </ReactMarkdown>
             </div>
@@ -140,7 +255,7 @@ export const ChatInterface: React.FC = () => {
               <Sparkles size={16} className="text-blue-400 animate-pulse" />
             </div>
             <div className="text-slate-500 text-xs tracking-widest animate-pulse">
-              ANALYZING SIGNAL...
+              TRANSMITTING...
             </div>
           </div>
         )}

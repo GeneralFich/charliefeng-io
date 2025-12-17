@@ -12,13 +12,13 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (currentView) {
       case View.HOME:
-        return <ChatInterface />;
+        return <ChatInterface onNavigate={(view) => setCurrentView(view)} />;
       case View.DASHBOARD:
         return <Dashboard />;
       case View.ABOUT:
         return <Resume />;
       default:
-        return <ChatInterface />;
+        return <ChatInterface onNavigate={(view) => setCurrentView(view)} />;
     }
   };
 
