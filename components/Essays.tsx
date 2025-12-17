@@ -143,7 +143,7 @@ export const Essays: React.FC = () => {
                   <a
                     href={href}
                     onClick={handleClick}
-                    className={`text-blue-400 hover:text-blue-300 transition-colors ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
+                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
                     target={isInternal ? undefined : "_blank"}
                     rel={isInternal ? undefined : "noopener noreferrer"}
                     {...props}

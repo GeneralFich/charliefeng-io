@@ -204,18 +204,33 @@ export const Dashboard: React.FC = () => {
             remarkPlugins={[remarkGfm]}
             components={{
               a: ({ node, ...props }) => {
-                // Security: Prevent XSS via malicious links (e.g. javascript:)
                 const href = props.href || '';
+                const isInternal = href.startsWith('#');
+
+                // Security: Prevent XSS via malicious links (e.g. javascript:)
                 const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/') || href.startsWith('#');
                 if (!isSafe) {
                   return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
                 }
-                const isExternal = href.startsWith('http');
+
+                const handleClick = (e: React.MouseEvent) => {
+                  if (isInternal) {
+                    e.preventDefault();
+                    const id = href.slice(1);
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                };
+
                 return (
                   <a
                     {...props}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    onClick={handleClick}
+                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
+                    target={isInternal ? undefined : "_blank"}
+                    rel={isInternal ? undefined : "noopener noreferrer"}
                   />
                 );
               }
