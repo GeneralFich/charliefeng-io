@@ -2,6 +2,7 @@ export enum View {
   HOME = 'HOME',
   DASHBOARD = 'DASHBOARD',
   ABOUT = 'ABOUT',
+  ESSAYS = 'ESSAYS',
 }
 
 export interface Message {
