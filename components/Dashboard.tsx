@@ -206,7 +206,7 @@ export const Dashboard: React.FC = () => {
               a: ({ node, ...props }) => {
                 // Security: Prevent XSS via malicious links (e.g. javascript:)
                 const href = props.href || '';
-                const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
+                const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/') || href.startsWith('#');
                 if (!isSafe) {
                   return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
                 }
