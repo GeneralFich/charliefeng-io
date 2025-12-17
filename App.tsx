@@ -22,22 +22,26 @@ const App: React.FC = () => {
     }
   };
 
-  const NavItem = ({ view, label, icon: Icon }: { view: View; label: string; icon: any }) => (
-    <button
-      onClick={() => {
-        setCurrentView(view);
-        setMobileMenuOpen(false);
-      }}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-        currentView === view
-          ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-      }`}
-    >
-      <Icon size={18} />
-      <span className="font-medium tracking-wide text-sm">{label}</span>
-    </button>
-  );
+  const NavItem = ({ view, label, icon: Icon }: { view: View; label: string; icon: any }) => {
+    const isActive = currentView === view;
+    return (
+      <button
+        onClick={() => {
+          setCurrentView(view);
+          setMobileMenuOpen(false);
+        }}
+        aria-current={isActive ? 'page' : undefined}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+          isActive
+            ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+        }`}
+      >
+        <Icon size={18} />
+        <span className="font-medium tracking-wide text-sm">{label}</span>
+      </button>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black flex flex-col font-sans print:bg-white print:bg-none">
@@ -78,6 +82,7 @@ const App: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-200 text-sm"
+                aria-label="Essays (opens in a new tab)"
               >
                 Essays <ExternalLink size={14} />
               </a>
@@ -88,6 +93,9 @@ const App: React.FC = () => {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="text-slate-400 hover:text-white p-2"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -97,7 +105,7 @@ const App: React.FC = () => {
 
         {/* Mobile Nav Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
+          <div id="mobile-menu" className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} />
             <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} />
