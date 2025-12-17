@@ -53,7 +53,14 @@ export const Resume: React.FC = () => {
               <div className="text-blue-300 mb-4 text-sm font-medium print:text-slate-700 print:mb-2">{exp.role}</div>
               <ul className="space-y-3 text-sm list-disc list-outside ml-4 text-slate-400 print:text-slate-800 print:space-y-1">
                 {exp.bullets.map((bullet, bIndex) => (
-                  <li key={bIndex} dangerouslySetInnerHTML={{ __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white print:text-black">$1</strong>') }} />
+                  <li key={bIndex}>
+                    {bullet.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                      if (part.startsWith('**') && part.endsWith('**')) {
+                        return <strong key={i} className="text-white print:text-black">{part.slice(2, -2)}</strong>;
+                      }
+                      return part;
+                    })}
+                  </li>
                 ))}
               </ul>
             </div>
