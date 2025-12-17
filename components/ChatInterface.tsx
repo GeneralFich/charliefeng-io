@@ -180,6 +180,7 @@ export const ChatInterface: React.FC = () => {
         <div className="relative flex items-center">
           <input
             type="text"
+            aria-label="Chat message"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
@@ -191,6 +192,7 @@ export const ChatInterface: React.FC = () => {
           <button
             onClick={() => handleSend(input)}
             disabled={!input.trim() || isLoading}
+            aria-label="Send message"
             className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
           >
             <Send size={16} />
