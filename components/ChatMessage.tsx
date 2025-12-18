@@ -14,7 +14,24 @@ const MARKDOWN_COMPONENTS = {
   a: ({node, ...props}: any) => {
     // Security: Prevent XSS via malicious links (e.g. javascript:)
     const href = props.href || '';
-    const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
+
+    // Use URL API for robust protocol check, fallback to simple check for relative paths
+    let isSafe = false;
+
+    // Allow relative links (internal navigation)
+    if (href.startsWith('/')) {
+        isSafe = true;
+    } else {
+        try {
+            // Check protocol against allowed list (case-insensitive by design of URL)
+            const url = new URL(href);
+            isSafe = ['http:', 'https:', 'mailto:'].includes(url.protocol);
+        } catch (e) {
+            // Invalid URL format - default to unsafe
+            isSafe = false;
+        }
+    }
+
     if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
     return <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />;
   },
