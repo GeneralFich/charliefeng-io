@@ -3,7 +3,8 @@ import { View } from './types';
 import { ChatInterface } from './components/ChatInterface';
 import { Dashboard } from './components/Dashboard';
 import { Resume } from './components/Resume';
-import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart } from 'lucide-react';
+import { Essays } from './components/Essays';
+import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
@@ -17,6 +18,8 @@ const App: React.FC = () => {
         return <Dashboard />;
       case View.ABOUT:
         return <Resume />;
+      case View.ESSAYS:
+        return <Essays />;
       default:
         return <ChatInterface />;
     }
@@ -77,15 +80,7 @@ const App: React.FC = () => {
               <NavItem view={View.ABOUT} label="About" icon={FileText} />
               <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} />
               <div className="h-6 w-px bg-slate-800 mx-2" />
-              <a
-                href="https://blog.charliefeng.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-200 text-sm"
-                aria-label="Essays (opens in a new tab)"
-              >
-                Essays <ExternalLink size={14} />
-              </a>
+              <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} />
             </div>
 
             {/* Mobile Menu Button */}
@@ -109,14 +104,7 @@ const App: React.FC = () => {
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} />
             <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} />
-            <a
-              href="https://blog.charliefeng.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-3 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/50"
-            >
-              <ExternalLink size={18} /> Essays
-            </a>
+            <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} />
           </div>
         )}
       </nav>

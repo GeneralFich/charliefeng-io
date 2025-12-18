@@ -59,6 +59,19 @@ export interface WhitepaperAttributes {
   risks: RiskItem[];
 }
 
+export interface PostAttributes {
+  title: string;
+  date: string;
+  author: string;
+  description: string;
+}
+
+export interface BlogPost {
+  slug: string;
+  attributes: PostAttributes;
+  body: string;
+}
+
 // --- Parsing ---
 
 const parsedResume = fm<ResumeAttributes>(resumeRaw);
@@ -69,6 +82,19 @@ export const WHITEPAPER_CONTENT = {
   ...parsedWhitepaper.attributes,
   body: parsedWhitepaper.body,
 };
+
+// --- Blog Posts ---
+const postFiles = import.meta.glob('../content/posts/*.md', { as: 'raw', eager: true });
+
+export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) => {
+  const parsed = fm<PostAttributes>(content as string);
+  const slug = path.split('/').pop()?.replace('.md', '') || '';
+  return {
+    slug,
+    attributes: parsed.attributes,
+    body: parsed.body,
+  };
+}).sort((a, b) => new Date(b.attributes.date).getTime() - new Date(a.attributes.date).getTime());
 
 // --- Raw Data for LLM Context ---
 // We pass the raw markdown (including frontmatter) so the LLM sees the structured data as well.
@@ -86,6 +112,9 @@ ${RESUME_DATA}
 
 Here is your Manifesto "Preparing for AGI":
 ${MANIFESTO_DATA}
+
+Here is a list of your Blog Essays:
+${BLOG_POSTS.map(p => `- [${p.attributes.date}] ${p.attributes.title}: ${p.attributes.description}`).join('\n')}
 
 INSTRUCTIONS:
 1. Prioritize the provided Context Data (Resume & Manifesto) for your answers.
