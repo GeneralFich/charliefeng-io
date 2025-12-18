@@ -18,6 +18,42 @@ import remarkGfm from 'remark-gfm';
 
 const { timeline: TIMELINE_DATA, risks: RISK_DATA, body: MANIFESTO_BODY } = WHITEPAPER_CONTENT;
 
+// PERFORMANCE: Hoisted components object to prevent object recreation on every render.
+// This ensures 'ReactMarkdown' can memoize its children effectively.
+const MARKDOWN_COMPONENTS = {
+  a: ({ node, ...props }: any) => {
+    const href = props.href || '';
+    const isInternal = href.startsWith('#');
+
+    // Security: Prevent XSS via malicious links (e.g. javascript:)
+    const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/') || href.startsWith('#');
+    if (!isSafe) {
+      return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
+    }
+
+    const handleClick = (e: React.MouseEvent) => {
+      if (isInternal) {
+        e.preventDefault();
+        const id = href.slice(1);
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    return (
+      <a
+        {...props}
+        onClick={handleClick}
+        className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
+        target={isInternal ? undefined : "_blank"}
+        rel={isInternal ? undefined : "noopener noreferrer"}
+      />
+    );
+  }
+};
+
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -202,39 +238,7 @@ export const Dashboard: React.FC = () => {
         <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50 prose prose-invert prose-slate max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{
-              a: ({ node, ...props }) => {
-                const href = props.href || '';
-                const isInternal = href.startsWith('#');
-
-                // Security: Prevent XSS via malicious links (e.g. javascript:)
-                const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/') || href.startsWith('#');
-                if (!isSafe) {
-                  return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
-                }
-
-                const handleClick = (e: React.MouseEvent) => {
-                  if (isInternal) {
-                    e.preventDefault();
-                    const id = href.slice(1);
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }
-                };
-
-                return (
-                  <a
-                    {...props}
-                    onClick={handleClick}
-                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
-                    target={isInternal ? undefined : "_blank"}
-                    rel={isInternal ? undefined : "noopener noreferrer"}
-                  />
-                );
-              }
-            }}
+            components={MARKDOWN_COMPONENTS as any}
           >
             {MANIFESTO_BODY}
           </ReactMarkdown>
