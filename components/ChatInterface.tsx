@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { ChatMessage } from './ChatMessage';
@@ -137,10 +137,10 @@ export const ChatInterface: React.FC = () => {
           <button
             onClick={() => handleSend(input)}
             disabled={!input.trim() || isLoading}
-            aria-label="Send message"
+            aria-label={isLoading ? "Sending message..." : "Send message"}
             className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
           >
-            <Send size={16} />
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           </button>
         </div>
       </div>
