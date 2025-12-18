@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles } from 'lucide-react';
-import { Message } from '../types';
+import { Message, View } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { ChatMessage } from './ChatMessage';
 
@@ -15,7 +15,11 @@ const INITIAL_SUGGESTED_PROMPTS = [
   "Explain your 'Climate Intelligence' work.",
 ];
 
-export const ChatInterface: React.FC = () => {
+interface ChatInterfaceProps {
+  onNavigate?: (view: View, slug?: string) => void;
+}
+
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', text: "Welcome to the digital extension of my work as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research through conversation." }
   ]);
@@ -91,7 +95,7 @@ export const ChatInterface: React.FC = () => {
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.map((msg, idx) => (
-          <ChatMessage key={idx} message={msg} />
+          <ChatMessage key={idx} message={msg} onNavigate={onNavigate} />
         ))}
         {isLoading && (
           <div className="flex items-center gap-3">

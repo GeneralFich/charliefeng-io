@@ -9,30 +9,40 @@ import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [targetEssaySlug, setTargetEssaySlug] = useState<string | null>(null);
+
+  const handleNavigate = React.useCallback((view: View, slug?: string) => {
+    setCurrentView(view);
+    if (view === View.ESSAYS && slug) {
+      setTargetEssaySlug(slug);
+    } else {
+      setTargetEssaySlug(null);
+    }
+    setMobileMenuOpen(false);
+  }, []);
 
   const renderContent = () => {
-    switch (currentView) {
-      case View.HOME:
-        return <ChatInterface />;
-      case View.DASHBOARD:
-        return <Dashboard />;
-      case View.ABOUT:
-        return <Resume />;
-      case View.ESSAYS:
-        return <Essays />;
-      default:
-        return <ChatInterface />;
-    }
+    // We keep ChatInterface mounted to persist history and state
+    const isChatVisible = currentView === View.HOME;
+
+    return (
+      <>
+        <div className={isChatVisible ? 'block h-full' : 'hidden'}>
+          <ChatInterface onNavigate={handleNavigate} />
+        </div>
+
+        {currentView === View.DASHBOARD && <Dashboard />}
+        {currentView === View.ABOUT && <Resume />}
+        {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+      </>
+    );
   };
 
   const NavItem = ({ view, label, icon: Icon }: { view: View; label: string; icon: any }) => {
     const isActive = currentView === view;
     return (
       <button
-        onClick={() => {
-          setCurrentView(view);
-          setMobileMenuOpen(false);
-        }}
+        onClick={() => handleNavigate(view)}
         aria-current={isActive ? 'page' : undefined}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
           isActive
@@ -56,7 +66,7 @@ const App: React.FC = () => {
             
             {/* Logo Area */}
             <button
-              onClick={() => setCurrentView(View.HOME)}
+              onClick={() => handleNavigate(View.HOME)}
               className="flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none text-left"
               aria-label="Go to Home"
             >
