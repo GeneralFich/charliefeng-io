@@ -30,28 +30,12 @@ const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) 
   return false;
 };
 
-const MARKDOWN_COMPONENTS = (onNavigate?: (view: View, slug?: string) => void) => ({
+// Define static components outside to ensure stability
+const STATIC_MARKDOWN_COMPONENTS = {
   p: ({node, ...props}: any) => <p className="mb-2 last:mb-0" {...props} />,
   ul: ({node, ...props}: any) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
   ol: ({node, ...props}: any) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
   li: ({node, ...props}: any) => <li className="mb-1" {...props} />,
-  a: ({node, ...props}: any) => {
-    // Security: Prevent XSS via malicious links (e.g. javascript:)
-    const href = props.href || '';
-    const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
-    if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
-
-    // Intercept internal links
-    const handleClick = (e: React.MouseEvent) => {
-      if (href.startsWith('/')) {
-        if (handleLinkClick(href, onNavigate)) {
-          e.preventDefault();
-        }
-      }
-    };
-
-    return <a className="text-blue-400 hover:underline cursor-pointer" onClick={handleClick} target={href.startsWith('/') ? undefined : "_blank"} rel={href.startsWith('/') ? undefined : "noopener noreferrer"} {...props} />;
-  },
   strong: ({node, ...props}: any) => <strong className="font-bold text-slate-100" {...props} />,
   pre: ({node, ...props}: any) => <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto my-2 [&>code]:bg-transparent [&>code]:p-0" {...props} />,
   code: ({node, ...props}: any) => {
@@ -67,7 +51,7 @@ const MARKDOWN_COMPONENTS = (onNavigate?: (view: View, slug?: string) => void) =
   tr: ({node, ...props}: any) => <tr {...props} />,
   th: ({node, ...props}: any) => <th className="px-3 py-2 text-left text-xs font-medium text-slate-300 uppercase tracking-wider" {...props} />,
   td: ({node, ...props}: any) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-300" {...props} />,
-});
+};
 
 interface ChatMessageProps {
   message: Message;
@@ -75,6 +59,28 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate }) => {
+  // Memoize the components object to prevent re-renders on every token update
+  const markdownComponents = React.useMemo(() => ({
+    ...STATIC_MARKDOWN_COMPONENTS,
+    a: ({node, ...props}: any) => {
+      // Security: Prevent XSS via malicious links (e.g. javascript:)
+      const href = props.href || '';
+      const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
+      if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
+
+      // Intercept internal links
+      const handleClick = (e: React.MouseEvent) => {
+        if (href.startsWith('/')) {
+          if (handleLinkClick(href, onNavigate)) {
+            e.preventDefault();
+          }
+        }
+      };
+
+      return <a className="text-blue-400 hover:underline cursor-pointer" onClick={handleClick} target={href.startsWith('/') ? undefined : "_blank"} rel={href.startsWith('/') ? undefined : "noopener noreferrer"} {...props} />;
+    },
+  }), [onNavigate]);
+
   return (
     <div
       className={`flex items-start gap-3 ${
@@ -97,7 +103,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
       >
         <ReactMarkdown
           remarkPlugins={MARKDOWN_PLUGINS}
-          components={MARKDOWN_COMPONENTS(onNavigate) as any}
+          components={markdownComponents as any}
         >
           {message.text}
         </ReactMarkdown>

@@ -22,18 +22,20 @@ const App: React.FC = () => {
   }, []);
 
   const renderContent = () => {
-    switch (currentView) {
-      case View.HOME:
-        return <ChatInterface onNavigate={handleNavigate} />;
-      case View.DASHBOARD:
-        return <Dashboard />;
-      case View.ABOUT:
-        return <Resume />;
-      case View.ESSAYS:
-        return <Essays initialSlug={targetEssaySlug} />;
-      default:
-        return <ChatInterface onNavigate={handleNavigate} />;
-    }
+    // We keep ChatInterface mounted to persist history and state
+    const isChatVisible = currentView === View.HOME;
+
+    return (
+      <>
+        <div className={isChatVisible ? 'block h-full' : 'hidden'}>
+          <ChatInterface onNavigate={handleNavigate} />
+        </div>
+
+        {currentView === View.DASHBOARD && <Dashboard />}
+        {currentView === View.ABOUT && <Resume />}
+        {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+      </>
+    );
   };
 
   const NavItem = ({ view, label, icon: Icon }: { view: View; label: string; icon: any }) => {
