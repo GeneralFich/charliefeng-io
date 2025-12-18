@@ -54,13 +54,5 @@
     "publishedDate": "2023-05-03T00:00:00.000Z",
     "text": "Energy-Efficient Virtual Machines Consolidation in Cloud Data Centers Using Reinforcement Learning. \n\n[^2]: Berral, J.  L. , Goiri, I. , Nou, R. , Julià, F. , Guitart, J. , Gavaldà, R. , & Torres, J.  (2014).  Towards energy-aware scheduling in data centers using machine learning. \n\n[^3]: Berral, J.  L. , Gavalda, R. , & Torres, J.  (2012).  Adaptive Scheduling on Power-Aware Managed Data-Centers Using Machine Learning. \n\n[^4]: “Recalibrating global data center energy-use estimates”: https://www. science. org/doi/10. 1126/science. aba3758#:~:text=In%202018%2C%20we%20estimated%20that,over%20the%20same%20time%20period. \n\n[^5]: “Energy consumption in Denmark”: https://www. worlddata. info/europe/denmark/energy-consumption.",
     "embedding": []
-  },
-  {
-    "id": "sample#chunk0",
-    "url": "/essays/sample",
-    "title": "Sample Post",
-    "publishedDate": "2023-10-26T00:00:00.000Z",
-    "text": "# Sample Post\n\nThis is the body of the sample post.  It has a [link](https://example. com) and a footnote[^1]. \n\n[^1]: This is the footnote.",
-    "embedding": []
   }
 ]
