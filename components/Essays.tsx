@@ -45,9 +45,22 @@ const Highlighter = ({ children, query, as: Component = 'div', ...props }: { chi
   return <Component {...props}>{highlighted}</Component>;
 };
 
-export const Essays: React.FC = () => {
+interface EssaysProps {
+  initialSlug?: string | null;
+}
+
+export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  React.useEffect(() => {
+    if (initialSlug) {
+      const post = BLOG_POSTS.find(p => p.slug === initialSlug);
+      if (post) {
+        setSelectedPost(post);
+      }
+    }
+  }, [initialSlug]);
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
 
   // Filter posts for the main list

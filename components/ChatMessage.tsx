@@ -2,11 +2,35 @@ import React from 'react';
 import { Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Message } from '../types';
+import { Message, View } from '../types';
 
 const MARKDOWN_PLUGINS = [remarkGfm];
 
-const MARKDOWN_COMPONENTS = {
+// Helper for handling internal links
+const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) => void) => {
+  if (!onNavigate) return false;
+
+  if (href === '/whitepaper' || href === '/dashboard') {
+    onNavigate(View.DASHBOARD);
+    return true;
+  }
+  if (href === '/resume' || href === '/about') {
+    onNavigate(View.ABOUT);
+    return true;
+  }
+  if (href.startsWith('/essays/')) {
+    const slug = href.replace('/essays/', '');
+    onNavigate(View.ESSAYS, slug);
+    return true;
+  }
+  if (href === '/essays' || href === '/blog') {
+    onNavigate(View.ESSAYS);
+    return true;
+  }
+  return false;
+};
+
+const MARKDOWN_COMPONENTS = (onNavigate?: (view: View, slug?: string) => void) => ({
   p: ({node, ...props}: any) => <p className="mb-2 last:mb-0" {...props} />,
   ul: ({node, ...props}: any) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
   ol: ({node, ...props}: any) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
@@ -16,7 +40,17 @@ const MARKDOWN_COMPONENTS = {
     const href = props.href || '';
     const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
     if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
-    return <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />;
+
+    // Intercept internal links
+    const handleClick = (e: React.MouseEvent) => {
+      if (href.startsWith('/')) {
+        if (handleLinkClick(href, onNavigate)) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    return <a className="text-blue-400 hover:underline cursor-pointer" onClick={handleClick} target={href.startsWith('/') ? undefined : "_blank"} rel={href.startsWith('/') ? undefined : "noopener noreferrer"} {...props} />;
   },
   strong: ({node, ...props}: any) => <strong className="font-bold text-slate-100" {...props} />,
   pre: ({node, ...props}: any) => <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto my-2 [&>code]:bg-transparent [&>code]:p-0" {...props} />,
@@ -33,13 +67,14 @@ const MARKDOWN_COMPONENTS = {
   tr: ({node, ...props}: any) => <tr {...props} />,
   th: ({node, ...props}: any) => <th className="px-3 py-2 text-left text-xs font-medium text-slate-300 uppercase tracking-wider" {...props} />,
   td: ({node, ...props}: any) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-300" {...props} />,
-};
+});
 
 interface ChatMessageProps {
   message: Message;
+  onNavigate?: (view: View, slug?: string) => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate }) => {
   return (
     <div
       className={`flex items-start gap-3 ${
@@ -62,7 +97,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message }) 
       >
         <ReactMarkdown
           remarkPlugins={MARKDOWN_PLUGINS}
-          components={MARKDOWN_COMPONENTS as any}
+          components={MARKDOWN_COMPONENTS(onNavigate) as any}
         >
           {message.text}
         </ReactMarkdown>
