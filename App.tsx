@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { Resume } from './components/Resume';
 import { Essays } from './components/Essays';
 import { ScrollProgress } from './components/ScrollProgress';
+import { BackToTop } from './components/BackToTop';
 import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -62,6 +63,9 @@ const App: React.FC = () => {
       
       {/* Scroll Progress Bar */}
       <ScrollProgress />
+
+      {/* Back to Top Button */}
+      <BackToTop />
 
       {/* Navbar */}
       <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50 print:hidden">
