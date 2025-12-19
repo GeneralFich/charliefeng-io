@@ -4,11 +4,12 @@ import { Message } from "../types";
 import { getRelevantContext } from "../lib/rag";
 
 const apiKey = process.env.API_KEY;
+const baseUrl = process.env.GEMINI_API_BASE_URL;
 
 // Initialize the client.
 // Note: In a real production app, we might want to handle this initialization 
 // in a hook or context to handle missing keys more gracefully in the UI.
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+const ai = apiKey ? new GoogleGenAI({ apiKey, httpOptions: baseUrl ? { baseUrl } : undefined }) : null;
 
 export const sendMessageToGemini = async (
   history: Message[],

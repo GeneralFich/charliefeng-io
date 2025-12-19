@@ -50,7 +50,8 @@ const typedBlogData = blogData as BlogChunk[];
 
 export async function getRelevantContext(query: string, apiKey: string): Promise<RelevantChunk[]> {
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const baseUrl = process.env.GEMINI_API_BASE_URL;
+    const ai = new GoogleGenAI({ apiKey, httpOptions: baseUrl ? { baseUrl } : undefined });
 
     // Generate embedding for the query
     const response = await ai.models.embedContent({
