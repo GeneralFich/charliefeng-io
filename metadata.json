@@ -1,5 +1,8 @@
 {
-  "name": "Charlie Feng | Digital Twin",
-  "description": "The digital twin and professional portfolio of Charlie Feng, Infrastructure Product Leader.",
-  "requestFramePermissions": []
+  "title": "Charlie Feng | Infrastructure Product Leader",
+  "description": "Interactive Knowledge Model and portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure.",
+  "og:title": "Charlie Feng | Infrastructure Product Leader",
+  "og:description": "Interactive Knowledge Model and portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure.",
+  "twitter:title": "Charlie Feng | Infrastructure Product Leader",
+  "twitter:description": "Interactive Knowledge Model and portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure."
 }
