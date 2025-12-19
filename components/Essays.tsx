@@ -11,6 +11,12 @@ function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function calculateReadTime(text: string): number {
+  const wordsPerMinute = 200;
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
+}
+
 // Function to recursively highlight text in React nodes
 const highlightNodes = (nodes: React.ReactNode, query: string): React.ReactNode => {
   if (!query || query.trim() === '') return nodes;
@@ -129,6 +135,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                 </time>
               </div>
               <div className="flex items-center gap-2">
+                <Clock size={16} className="text-blue-400" />
+                <span>{calculateReadTime(selectedPost.body)} min read</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <User size={16} className="text-blue-400" />
                 <span>{selectedPost.attributes.author}</span>
               </div>
@@ -227,6 +237,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                       year: 'numeric'
                     })}
                   </time>
+                  <span>•</span>
+                  <span>{calculateReadTime(post.body)} min read</span>
                 </div>
                 <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors">
                   {/* Highlight match in title if searching */}
