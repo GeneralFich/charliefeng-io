@@ -120,6 +120,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     },
   }), [onNavigate]);
 
+  const [isMessageCopied, setIsMessageCopied] = React.useState(false);
+
+  const handleMessageCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.text);
+      setIsMessageCopied(true);
+      setTimeout(() => setIsMessageCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy message: ', err);
+    }
+  };
+
   return (
     <div
       className={`flex items-start gap-3 ${
@@ -134,12 +146,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
         {message.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-blue-400" />}
       </div>
       <div
-        className={`p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
+        className={`relative group p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed pr-10 ${
           message.role === 'user'
             ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
             : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
         }`}
       >
+        <button
+          onClick={handleMessageCopy}
+          className={`absolute top-2 right-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all ${
+             message.role === 'user'
+               ? 'text-blue-200 hover:bg-blue-500/30 hover:text-white'
+               : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+          }`}
+          aria-label="Copy message"
+          title="Copy message"
+        >
+          {isMessageCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+        </button>
         <ReactMarkdown
           remarkPlugins={MARKDOWN_PLUGINS}
           components={markdownComponents as any}

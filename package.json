@@ -14,6 +14,7 @@
     "dotenv": "^17.2.3",
     "front-matter": "^4.0.2",
     "lucide-react": "^0.561.0",
+    "playwright": "^1.57.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "^10.1.0",
@@ -28,5 +29,22 @@
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
-  }
+  },
+  "description": "A personal \"Digital Twin\" website for **Charlie Feng**, an Infrastructure Product Leader at Google and Strategic Thought Partner.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeneralFich/charliefeng-io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GeneralFich/charliefeng-io/issues"
+  },
+  "homepage": "https://github.com/GeneralFich/charliefeng-io#readme"
 }
