@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, User } from 'lucide-react';
+import { Bot, User, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Message, View } from '../types';
@@ -30,6 +30,45 @@ const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) 
   return false;
 };
 
+// CodeBlock component with copy functionality
+const CodeBlock = ({ node, children, ...props }: any) => {
+  const [isCopied, setIsCopied] = React.useState(false);
+  const preRef = React.useRef<HTMLPreElement>(null);
+
+  const handleCopy = async () => {
+    if (preRef.current) {
+      const text = preRef.current.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
+    }
+  };
+
+  return (
+    <div className="relative group my-2">
+      <pre
+        ref={preRef}
+        className="bg-slate-800 p-4 rounded-lg overflow-x-auto [&>code]:bg-transparent [&>code]:p-0 pr-12"
+        {...props}
+      >
+        {children}
+      </pre>
+      <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700/50 text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-600 hover:text-white"
+        aria-label="Copy code"
+        title="Copy code"
+      >
+        {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+      </button>
+    </div>
+  );
+};
+
 // Define static components outside to ensure stability
 const STATIC_MARKDOWN_COMPONENTS = {
   p: ({node, ...props}: any) => <p className="mb-2 last:mb-0" {...props} />,
@@ -37,7 +76,7 @@ const STATIC_MARKDOWN_COMPONENTS = {
   ol: ({node, ...props}: any) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
   li: ({node, ...props}: any) => <li className="mb-1" {...props} />,
   strong: ({node, ...props}: any) => <strong className="font-bold text-slate-100" {...props} />,
-  pre: ({node, ...props}: any) => <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto my-2 [&>code]:bg-transparent [&>code]:p-0" {...props} />,
+  pre: CodeBlock,
   code: ({node, ...props}: any) => {
     return <code className="bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-200" {...props} />
   },
