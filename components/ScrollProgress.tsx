@@ -29,8 +29,8 @@ export const ScrollProgress: React.FC = () => {
   if (width === 0) return null;
 
   return (
-    <div className="fixed top-[64px] left-0 h-0.5 bg-blue-500/50 z-50 print:hidden" style={{ width: `${width}%` }} aria-hidden="true">
-      <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-blue-400 to-transparent opacity-50 shadow-[0_0_10px_#3b82f6]"></div>
+    <div className="fixed top-[64px] left-0 h-1 bg-blue-500 z-50 print:hidden shadow-[0_0_10px_#3b82f6]" style={{ width: `${width}%` }} aria-hidden="true">
+      <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-blue-300 to-transparent shadow-[0_0_15px_#60a5fa]"></div>
     </div>
   );
 };
