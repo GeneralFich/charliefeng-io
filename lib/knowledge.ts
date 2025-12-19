@@ -70,6 +70,7 @@ export interface BlogPost {
   slug: string;
   attributes: PostAttributes;
   body: string;
+  readTime: number;
 }
 
 // --- Parsing ---
@@ -83,6 +84,12 @@ export const WHITEPAPER_CONTENT = {
   body: parsedWhitepaper.body,
 };
 
+function calculateReadTime(text: string): number {
+  const wordsPerMinute = 200;
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
+}
+
 // --- Blog Posts ---
 const postFiles = import.meta.glob('../content/posts/*.md', { as: 'raw', eager: true });
 
@@ -93,6 +100,7 @@ export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, cont
     slug,
     attributes: parsed.attributes,
     body: parsed.body,
+    readTime: calculateReadTime(parsed.body),
   };
 }).sort((a, b) => new Date(b.attributes.date).getTime() - new Date(a.attributes.date).getTime());
 

@@ -11,12 +11,6 @@ function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function calculateReadTime(text: string): number {
-  const wordsPerMinute = 200;
-  const words = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.ceil(words / wordsPerMinute));
-}
-
 // Function to recursively highlight text in React nodes
 const highlightNodes = (nodes: React.ReactNode, query: string): React.ReactNode => {
   if (!query || query.trim() === '') return nodes;
@@ -57,6 +51,9 @@ interface EssaysProps {
 
 type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
 
+// Define plugins outside component to maintain reference stability
+const MARKDOWN_PLUGINS = [remarkGfm];
+
 export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,14 +89,56 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         case 'oldest':
           return new Date(a.attributes.date).getTime() - new Date(b.attributes.date).getTime();
         case 'shortest':
-          return calculateReadTime(a.body) - calculateReadTime(b.body);
+          return a.readTime - b.readTime;
         case 'longest':
-          return calculateReadTime(b.body) - calculateReadTime(a.body);
+          return b.readTime - a.readTime;
         default:
           return 0;
       }
     });
   }, [searchQuery, sortBy]);
+
+  // Memoize markdown components to prevent unnecessary re-renders
+  const markdownComponents = useMemo(() => ({
+    // Custom Anchor to handle footnotes and external links
+    a: ({ node, href, children, ...props }: any) => {
+      const isInternal = href?.startsWith('#');
+      const handleClick = (e: React.MouseEvent) => {
+        if (isInternal && href) {
+          e.preventDefault();
+          const id = href.slice(1);
+          const el = document.getElementById(id);
+          if (el) {
+              el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      };
+
+      return (
+        <a
+          href={href}
+          onClick={handleClick}
+          className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
+          target={isInternal ? undefined : "_blank"}
+          rel={isInternal ? undefined : "noopener noreferrer"}
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
+    // Apply highlighter to text blocks
+    h1: ({ node, children, ...props }: any) => <Highlighter as="h1" query={articleSearchQuery} className="text-2xl font-bold text-white mt-12 mb-6" {...props}>{children}</Highlighter>,
+    h2: ({ node, children, ...props }: any) => <Highlighter as="h2" query={articleSearchQuery} className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props}>{children}</Highlighter>,
+    h3: ({ node, children, ...props }: any) => <Highlighter as="h3" query={articleSearchQuery} className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props}>{children}</Highlighter>,
+    p: ({ node, children, ...props }: any) => <Highlighter as="p" query={articleSearchQuery} className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</Highlighter>,
+    li: ({ node, children, ...props }: any) => <Highlighter as="li" query={articleSearchQuery} className="text-slate-300" {...props}>{children}</Highlighter>,
+    blockquote: ({ node, children, ...props }: any) => (
+      <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8">
+         {highlightNodes(children, articleSearchQuery)}
+      </blockquote>
+    ),
+  }), [articleSearchQuery]);
 
   if (selectedPost) {
     return (
@@ -157,7 +196,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={16} className="text-blue-400" />
-                <span>{calculateReadTime(selectedPost.body)} min read</span>
+                <span>{selectedPost.readTime} min read</span>
               </div>
               <div className="flex items-center gap-2">
                 <User size={16} className="text-blue-400" />
@@ -167,47 +206,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
           </header>
 
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              // Custom Anchor to handle footnotes and external links
-              a: ({ node, href, children, ...props }) => {
-                const isInternal = href?.startsWith('#');
-                const handleClick = (e: React.MouseEvent) => {
-                  if (isInternal && href) {
-                    e.preventDefault();
-                    const id = href.slice(1);
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }
-                };
-
-                return (
-                  <a
-                    href={href}
-                    onClick={handleClick}
-                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
-                    target={isInternal ? undefined : "_blank"}
-                    rel={isInternal ? undefined : "noopener noreferrer"}
-                    {...props}
-                  >
-                    {children}
-                  </a>
-                );
-              },
-              // Apply highlighter to text blocks
-              h1: ({ node, children, ...props }) => <Highlighter as="h1" query={articleSearchQuery} className="text-2xl font-bold text-white mt-12 mb-6" {...props}>{children}</Highlighter>,
-              h2: ({ node, children, ...props }) => <Highlighter as="h2" query={articleSearchQuery} className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props}>{children}</Highlighter>,
-              h3: ({ node, children, ...props }) => <Highlighter as="h3" query={articleSearchQuery} className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props}>{children}</Highlighter>,
-              p: ({ node, children, ...props }) => <Highlighter as="p" query={articleSearchQuery} className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</Highlighter>,
-              li: ({ node, children, ...props }) => <Highlighter as="li" query={articleSearchQuery} className="text-slate-300" {...props}>{children}</Highlighter>,
-              blockquote: ({ node, children, ...props }) => (
-                <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8">
-                   {highlightNodes(children, articleSearchQuery)}
-                </blockquote>
-              ),
-            }}
+            remarkPlugins={MARKDOWN_PLUGINS}
+            components={markdownComponents}
           >
             {selectedPost.body}
           </ReactMarkdown>
@@ -283,7 +283,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                     })}
                   </time>
                   <span>•</span>
-                  <span>{calculateReadTime(post.body)} min read</span>
+                  <span>{post.readTime} min read</span>
                 </div>
                 <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors">
                   {/* Highlight match in title if searching */}
