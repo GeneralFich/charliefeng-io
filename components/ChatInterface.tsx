@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { Message, View } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { sendMessage } from '../services/aiService';
 import { ChatMessage } from './ChatMessage';
 
 const INITIAL_SUGGESTED_PROMPTS = [
@@ -56,7 +56,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     // strictly keeping user/model pairs after system prompt is handled in service
     const apiHistory = messages.slice(1); 
     
-    let responseText = await sendMessageToGemini(apiHistory, text);
+    let responseText = await sendMessage(apiHistory, text);
 
     // Extract follow-up questions
     let newSuggestedPrompts: string[] = [];
