@@ -4,6 +4,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { Dashboard } from './components/Dashboard';
 import { Resume } from './components/Resume';
 import { Essays } from './components/Essays';
+import { ScrollProgress } from './components/ScrollProgress';
 import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -59,6 +60,9 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black flex flex-col font-sans print:bg-white print:bg-none">
       
+      {/* Scroll Progress Bar */}
+      <ScrollProgress />
+
       {/* Navbar */}
       <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
