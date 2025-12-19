@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { Message, View } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
+import { parseFollowUpPrompts } from '../lib/utils';
 import { ChatMessage } from './ChatMessage';
 
 const INITIAL_SUGGESTED_PROMPTS = [
@@ -56,37 +57,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     // strictly keeping user/model pairs after system prompt is handled in service
     const apiHistory = messages.slice(1); 
     
-    let responseText = await sendMessageToGemini(apiHistory, text);
+    const rawResponse = await sendMessageToGemini(apiHistory, text);
+    const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
 
-    // Extract follow-up questions
-    let newSuggestedPrompts: string[] = [];
-
-    if (responseText.includes('[FOLLOW_UP]')) {
-      const parts = responseText.split('[FOLLOW_UP]');
-      responseText = parts[0].trim();
-      const potentialJson = parts.slice(1).join('[FOLLOW_UP]').trim();
-
-      try {
-        newSuggestedPrompts = JSON.parse(potentialJson);
-      } catch (e) {
-        console.error("Failed to parse follow-up prompts directly", e);
-        // Fallback: try to find the array brackets if direct parse fails (e.g. trailing text)
-        const firstBracket = potentialJson.indexOf('[');
-        const lastBracket = potentialJson.lastIndexOf(']');
-        if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
-          try {
-            const jsonSubstring = potentialJson.substring(firstBracket, lastBracket + 1);
-            newSuggestedPrompts = JSON.parse(jsonSubstring);
-          } catch (innerE) {
-            console.error("Failed to parse extracted JSON substring", innerE);
-          }
-        }
-      }
-    }
-
-    const modelMsg: Message = { role: 'model', text: responseText };
+    const modelMsg: Message = { role: 'model', text: cleanText };
     setMessages(prev => [...prev, modelMsg]);
-    setSuggestedPrompts(newSuggestedPrompts);
+    setSuggestedPrompts(prompts);
     setIsLoading(false);
   };
 
