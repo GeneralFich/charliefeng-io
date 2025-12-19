@@ -4,26 +4,41 @@ export const ScrollProgress: React.FC = () => {
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
+    let rafId: number;
+
     const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY;
+      if (!ticking) {
+        rafId = window.requestAnimationFrame(() => {
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const scrollTop = window.scrollY;
 
-      const scrollableHeight = documentHeight - windowHeight;
+          const scrollableHeight = documentHeight - windowHeight;
 
-      if (scrollableHeight <= 0) {
-        setWidth(0);
-        return;
+          if (scrollableHeight <= 0) {
+            setWidth(0);
+          } else {
+            const scrolled = (scrollTop / scrollableHeight) * 100;
+            setWidth(Math.min(100, Math.max(0, scrolled)));
+          }
+
+          ticking = false;
+        });
+
+        ticking = true;
       }
-
-      const scrolled = (scrollTop / scrollableHeight) * 100;
-      setWidth(Math.min(100, Math.max(0, scrolled)));
     };
 
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Initial check
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   if (width === 0) return null;

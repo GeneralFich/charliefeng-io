@@ -5,12 +5,21 @@ export const BackToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+    let rafId: number;
+
     const toggleVisibility = () => {
-      // Show button when page is scrolled down 300px
-      if (window.scrollY > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
+      if (!ticking) {
+        rafId = window.requestAnimationFrame(() => {
+          // Show button when page is scrolled down 300px
+          if (window.scrollY > 300) {
+            setIsVisible(true);
+          } else {
+            setIsVisible(false);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -18,7 +27,12 @@ export const BackToTop: React.FC = () => {
     // Check initial scroll position
     toggleVisibility();
 
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    return () => {
+      window.removeEventListener('scroll', toggleVisibility);
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -27,13 +41,6 @@ export const BackToTop: React.FC = () => {
       behavior: 'smooth',
     });
   };
-
-  // We use CSS for visibility transition to keep the component mounted if needed,
-  // or just conditionally render. Conditional rendering is simpler for accessibility (removes from DOM).
-  // But we want a fade out effect.
-  // Tailwind `transition-opacity` works well with `opacity-0` vs `opacity-100`.
-  // However, removing from DOM when hidden prevents interaction.
-  // Let's use conditional rendering with animation classes.
 
   if (!isVisible) {
     return null;
