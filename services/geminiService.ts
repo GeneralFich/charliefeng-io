@@ -52,7 +52,7 @@ export const sendMessageToGemini = async (
     ];
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: contents,
       config: {
         systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
@@ -111,7 +111,7 @@ export const streamMessageToGemini = async function* (
     ];
 
     const result = await ai.models.generateContentStream({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: contents,
       config: {
         systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
