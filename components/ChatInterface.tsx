@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { Message, View } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { sendMessageToGemini, streamMessageToGemini } from '../services/geminiService';
 import { ChatMessage } from './ChatMessage';
 
 const INITIAL_SUGGESTED_PROMPTS = [
@@ -54,17 +54,59 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
     // Filter out the initial greeting from the history sent to API to save tokens/clean context
     // strictly keeping user/model pairs after system prompt is handled in service
-    const apiHistory = messages.slice(1); 
+    const apiHistory = messages.slice(1);
     
-    let responseText = await sendMessageToGemini(apiHistory, text);
+    // Create a placeholder for the model response
+    const placeholderMsg: Message = { role: 'model', text: '' };
+    setMessages(prev => [...prev, placeholderMsg]);
+
+    let fullResponse = "";
+
+    try {
+      const stream = streamMessageToGemini(apiHistory, text);
+
+      for await (const chunk of stream) {
+        fullResponse += chunk;
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMsg = newMessages[newMessages.length - 1];
+          // Ensure we are updating the last model message we just added
+          if (lastMsg.role === 'model') {
+             newMessages[newMessages.length - 1] = { ...lastMsg, text: fullResponse };
+          }
+          return newMessages;
+        });
+      }
+    } catch (e) {
+      console.error("Streaming error:", e);
+      fullResponse += "\n[Error: Connection interrupted]";
+      setMessages(prev => {
+          const newMessages = [...prev];
+           const lastMsg = newMessages[newMessages.length - 1];
+           newMessages[newMessages.length - 1] = { ...lastMsg, text: fullResponse };
+           return newMessages;
+      });
+    }
+
+    let responseText = fullResponse;
 
     // Extract follow-up questions
     let newSuggestedPrompts: string[] = [];
 
     if (responseText.includes('[FOLLOW_UP]')) {
       const parts = responseText.split('[FOLLOW_UP]');
-      responseText = parts[0].trim();
+      const cleanText = parts[0].trim();
       const potentialJson = parts.slice(1).join('[FOLLOW_UP]').trim();
+
+      // Update the message one last time to remove the [FOLLOW_UP] part from display
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMsg = newMessages[newMessages.length - 1];
+        if (lastMsg.role === 'model') {
+           newMessages[newMessages.length - 1] = { ...lastMsg, text: cleanText };
+        }
+        return newMessages;
+      });
 
       try {
         newSuggestedPrompts = JSON.parse(potentialJson);
@@ -84,8 +126,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
       }
     }
 
-    const modelMsg: Message = { role: 'model', text: responseText };
-    setMessages(prev => [...prev, modelMsg]);
     setSuggestedPrompts(newSuggestedPrompts);
     setIsLoading(false);
   };
@@ -99,12 +139,38 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
         ))}
         {isLoading && (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
-              <Sparkles size={16} className="text-blue-400 animate-pulse" />
-            </div>
-            <div className="text-slate-500 text-xs tracking-widest animate-pulse">
-              ANALYZING SIGNAL...
-            </div>
+             {/* Only show loader if we are waiting for the FIRST chunk,
+                 or maybe always show it at the bottom while streaming?
+                 Usually streaming replaces the loader.
+                 But here we append the message immediately.
+                 So the loader might be redundant or should be positioned differently.
+                 Let's keep it simple: if isLoading is true, but we already have a partial message,
+                 maybe we don't need the big loader.
+                 However, `isLoading` remains true until stream ends.
+                 If `messages` last item is empty (waiting for first chunk), show loader?
+                 Actually, since we added a placeholder with empty text,
+                 ChatMessage will render an empty message.
+                 Let's verify what ChatMessage does with empty text.
+              */}
+            {/*
+               If the last message is model and empty, we are waiting for the first chunk.
+               Once text appears, it's streaming.
+               We can keep the "ANALYZING SIGNAL" but maybe it looks weird if text is appearing above it.
+               Usually, streaming UI removes the "Thinking..." indicator once text starts.
+
+               Let's modify the condition: show loader only if the last message text is empty?
+               Or keep it as a "status" indicator.
+            */}
+             {messages[messages.length - 1].role === 'model' && messages[messages.length - 1].text === '' && (
+                <>
+                <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
+                  <Sparkles size={16} className="text-blue-400 animate-pulse" />
+                </div>
+                <div className="text-slate-500 text-xs tracking-widest animate-pulse">
+                  ANALYZING SIGNAL...
+                </div>
+                </>
+             )}
           </div>
         )}
         <div ref={messagesEndRef} />

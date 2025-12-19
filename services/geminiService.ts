@@ -52,7 +52,7 @@ export const sendMessageToGemini = async (
     ];
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash",
       contents: contents,
       config: {
         systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
@@ -70,5 +70,63 @@ export const sendMessageToGemini = async (
   } catch (error) {
     console.error("Gemini API Error:", error);
     return "Connection to the neural link failed. Please try again.";
+  }
+};
+
+export const streamMessageToGemini = async function* (
+  history: Message[],
+  newMessage: string
+): AsyncGenerator<string, void, unknown> {
+  if (!ai || !apiKey) {
+    yield "API Key is missing. Please configure the environment variable.";
+    return;
+  }
+
+  try {
+    // RAG: Retrieve relevant context from blog
+    let additionalContext = "";
+    try {
+      const relevantChunks = await getRelevantContext(newMessage, apiKey);
+      if (relevantChunks.length > 0) {
+        additionalContext = "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
+          relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
+      }
+    } catch (ragError) {
+      console.warn("RAG retrieval failed, proceeding without it:", ragError);
+    }
+
+    const userMessageWithContext = additionalContext
+      ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
+      : newMessage;
+
+    const contents = [
+       ...history.map((msg) => ({
+        role: msg.role,
+        parts: [{ text: msg.text }],
+      })),
+      {
+        role: "user",
+        parts: [{ text: userMessageWithContext }],
+      },
+    ];
+
+    const result = await ai.models.generateContentStream({
+      model: "gemini-1.5-flash",
+      contents: contents,
+      config: {
+        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+        temperature: 0.7,
+        maxOutputTokens: 4000,
+      }
+    });
+
+    for await (const chunk of result.stream) {
+      const text = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
+      if (text) yield text;
+    }
+
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    yield "Connection to the neural link failed. Please try again.";
   }
 };
