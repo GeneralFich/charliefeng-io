@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { Message, View } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { streamMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { ChatMessage } from './ChatMessage';
 
@@ -26,6 +26,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -35,10 +36,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isStreaming]);
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+    if (!text.trim() || isLoading || isStreaming) return;
 
     // Security: Input length validation
     if (text.length > 2000) {
@@ -57,13 +58,50 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     // strictly keeping user/model pairs after system prompt is handled in service
     const apiHistory = messages.slice(1); 
     
-    const rawResponse = await sendMessageToGemini(apiHistory, text);
-    const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
+    try {
+      const stream = streamMessageToGemini(apiHistory, text);
+      let fullResponse = "";
+      let firstChunkReceived = false;
 
-    const modelMsg: Message = { role: 'model', text: cleanText };
-    setMessages(prev => [...prev, modelMsg]);
-    setSuggestedPrompts(prompts);
-    setIsLoading(false);
+      for await (const chunk of stream) {
+        fullResponse += chunk;
+
+        if (!firstChunkReceived) {
+          setIsLoading(false);
+          setIsStreaming(true);
+          firstChunkReceived = true;
+          // Initialize the message with the first chunk
+          setMessages(prev => [...prev, { role: 'model', text: chunk }]);
+        } else {
+          // Update the last message with appended chunk, ensuring immutability
+          setMessages(prev => {
+            const newMessages = [...prev];
+            const lastMsgIndex = newMessages.length - 1;
+            newMessages[lastMsgIndex] = { ...newMessages[lastMsgIndex], text: fullResponse };
+            return newMessages;
+          });
+        }
+      }
+
+      // Final processing after stream ends
+      const { cleanText, prompts } = parseFollowUpPrompts(fullResponse);
+
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMsgIndex = newMessages.length - 1;
+        newMessages[lastMsgIndex] = { ...newMessages[lastMsgIndex], text: cleanText };
+        return newMessages;
+      });
+
+      setSuggestedPrompts(prompts);
+
+    } catch (error) {
+      console.error("Streaming error:", error);
+      setMessages(prev => [...prev, { role: 'model', text: "Connection interruption. Please try again." }]);
+    } finally {
+      setIsLoading(false);
+      setIsStreaming(false);
+    }
   };
 
   return (
@@ -112,7 +150,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             placeholder="Ask Charlie's Digital Twin..."
             maxLength={2000} // Security: Prevent large payloads
             className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
-            disabled={isLoading}
+            disabled={isLoading || isStreaming}
           />
 
           {/* Character Count */}
@@ -124,7 +162,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
           <button
             onClick={() => handleSend(input)}
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim() || isLoading || isStreaming}
             aria-label={isLoading ? "Sending message..." : "Send message"}
             className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
           >
