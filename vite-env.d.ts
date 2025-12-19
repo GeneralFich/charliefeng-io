@@ -3,6 +3,8 @@ declare module '*.md?raw' {
   export default content;
 }
 
+/// <reference types="vite/client" />
+
 declare module 'front-matter' {
   interface FrontMatterResult<T> {
     attributes: T;
