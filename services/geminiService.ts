@@ -10,10 +10,17 @@ const apiKey = process.env.API_KEY;
 // in a hook or context to handle missing keys more gracefully in the UI.
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
+const MAX_INPUT_LENGTH = 10000;
+
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string
 ): Promise<string> => {
+  // Security: Input validation to prevent large payloads (DoS/Cost)
+  if (!newMessage || newMessage.length > MAX_INPUT_LENGTH) {
+    return "Message is too long. Please shorten your query.";
+  }
+
   if (!ai || !apiKey) {
     return "API Key is missing. Please configure the environment variable.";
   }
@@ -68,7 +75,9 @@ export const sendMessageToGemini = async (
     return "I'm processing that signal, but returned no data.";
 
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Gemini API Error:", errorMessage);
     return "Connection to the neural link failed. Please try again.";
   }
 };
