@@ -34,3 +34,18 @@ export function parseFollowUpPrompts(text: string): { cleanText: string; prompts
 
   return { cleanText, prompts };
 }
+
+/**
+ * Calculates the estimated read time for a given text.
+ * Assumes a reading speed of 200 words per minute.
+ *
+ * @param text The text to calculate read time for.
+ * @returns The estimated read time in minutes (minimum 1).
+ */
+export function calculateReadTime(text: string): number {
+  if (!text) return 1;
+  const wordsPerMinute = 200;
+  // Split by whitespace and filter out empty strings to get accurate word count
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
+}

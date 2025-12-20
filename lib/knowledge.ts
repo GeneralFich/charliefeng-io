@@ -1,6 +1,7 @@
 import fm from 'front-matter';
 import resumeRaw from '../content/resume.md?raw';
 import whitepaperRaw from '../content/whitepaper.md?raw';
+import { calculateReadTime } from './utils';
 
 // --- Interfaces for Parsed Data ---
 
@@ -83,12 +84,6 @@ export const WHITEPAPER_CONTENT = {
   ...parsedWhitepaper.attributes,
   body: parsedWhitepaper.body,
 };
-
-function calculateReadTime(text: string): number {
-  const wordsPerMinute = 200;
-  const words = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.ceil(words / wordsPerMinute));
-}
 
 // --- Blog Posts ---
 const postFiles = import.meta.glob('../content/posts/*.md', { as: 'raw', eager: true });
