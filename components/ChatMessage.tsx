@@ -30,6 +30,38 @@ const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) 
   return false;
 };
 
+// CopyButton component for message actions
+const CopyButton = ({ text, className }: { text: string; className?: string }) => {
+  const [isCopied, setIsCopied] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isCopied) {
+      const timer = setTimeout(() => setIsCopied(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isCopied]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-all ${className}`}
+      aria-label={isCopied ? "Copied" : "Copy message"}
+      title="Copy message"
+    >
+      {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+    </button>
+  );
+};
+
 // CodeBlock component with copy functionality
 const CodeBlock = ({ node, children, ...props }: any) => {
   const [isCopied, setIsCopied] = React.useState(false);
@@ -134,7 +166,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
 
   return (
     <div
-      className={`flex items-start gap-3 ${
+      className={`group flex items-start gap-3 ${
         message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
       }`}
     >
@@ -171,6 +203,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
           {message.text}
         </ReactMarkdown>
       </div>
+      {message.role === 'model' && (
+        <CopyButton
+          text={message.text}
+          className="opacity-0 group-hover:opacity-100 focus:opacity-100 mt-2 self-start"
+        />
+      )}
     </div>
   );
 });
