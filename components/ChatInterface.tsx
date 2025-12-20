@@ -1,32 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
-import { Message, View } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
-import { parseFollowUpPrompts } from '../lib/utils';
+import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
-
-const INITIAL_SUGGESTED_PROMPTS = [
-  "Summarize Charlie's experience.",
-  "When will AGI arrive?",
-  "What is the 'Agentic Inflection Point'?",
-  "How should I hedge my portfolio?",
-  "How will AGI impact the labor market?",
-  "Tell me about your work at Google.",
-  "What skills are critical for the AGI era?",
-  "Explain your 'Climate Intelligence' work.",
-];
+import { useChat } from '../hooks/useChat';
 
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string) => void;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Welcome to the digital extension of my work as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research through conversation." }
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+  const {
+    messages,
+    input,
+    setInput,
+    isLoading,
+    suggestedPrompts,
+    handleSend
+  } = useChat();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -36,35 +27,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
-
-  const handleSend = async (text: string) => {
-    if (!text.trim() || isLoading) return;
-
-    // Security: Input length validation
-    if (text.length > 2000) {
-      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
-      setMessages(prev => [...prev, errorMsg]);
-      return;
-    }
-
-    const userMsg: Message = { role: 'user', text };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsLoading(true);
-    setSuggestedPrompts([]); // Clear suggestions while loading
-
-    // Filter out the initial greeting from the history sent to API to save tokens/clean context
-    // strictly keeping user/model pairs after system prompt is handled in service
-    const apiHistory = messages.slice(1); 
-    
-    const rawResponse = await sendMessageToGemini(apiHistory, text);
-    const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
-
-    const modelMsg: Message = { role: 'model', text: cleanText };
-    setMessages(prev => [...prev, modelMsg]);
-    setSuggestedPrompts(prompts);
-    setIsLoading(false);
-  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto w-full">
