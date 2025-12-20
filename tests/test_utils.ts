@@ -1,7 +1,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { parseFollowUpPrompts } from '../lib/utils';
+import { parseFollowUpPrompts, calculateReadTime } from '../lib/utils';
 
 describe('parseFollowUpPrompts', () => {
   it('should return clean text and prompts when valid JSON is present', () => {
@@ -61,5 +61,47 @@ describe('parseFollowUpPrompts', () => {
 
     assert.strictEqual(cleanText, 'Response.');
     assert.deepStrictEqual(prompts, ['Q1']);
+  });
+});
+
+describe('calculateReadTime', () => {
+  it('should return 1 minute for empty or null text', () => {
+    assert.strictEqual(calculateReadTime(''), 1);
+    // @ts-ignore
+    assert.strictEqual(calculateReadTime(null), 1);
+    // @ts-ignore
+    assert.strictEqual(calculateReadTime(undefined), 1);
+  });
+
+  it('should calculate 1 minute for short text (< 200 words)', () => {
+    const text = 'word '.repeat(100);
+    assert.strictEqual(calculateReadTime(text), 1);
+  });
+
+  it('should calculate correct minutes for longer text', () => {
+    // 201 words -> 2 minutes
+    const text = 'word '.repeat(201);
+    assert.strictEqual(calculateReadTime(text), 2);
+  });
+
+  it('should round up correctly', () => {
+    // 300 words -> 2 minutes (1.5 rounded up)
+    const text = 'word '.repeat(300);
+    assert.strictEqual(calculateReadTime(text), 2);
+
+    // 400 words -> 2 minutes
+    const text2 = 'word '.repeat(400);
+    assert.strictEqual(calculateReadTime(text2), 2);
+
+    // 401 words -> 3 minutes
+    const text3 = 'word '.repeat(401);
+    assert.strictEqual(calculateReadTime(text3), 3);
+  });
+
+  it('should handle whitespace correctly', () => {
+     // multiple spaces should not count as words
+     const text = 'word   word   word';
+     // 3 words -> 1 min
+     assert.strictEqual(calculateReadTime(text), 1);
   });
 });
