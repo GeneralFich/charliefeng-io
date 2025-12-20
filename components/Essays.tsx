@@ -45,6 +45,16 @@ const Highlighter = ({ children, query, as: Component = 'div', ...props }: { chi
   return <Component {...props}>{highlighted}</Component>;
 };
 
+// Context to avoid prop drilling and full re-renders of Markdown tree
+const HighlightContext = React.createContext<string>('');
+
+// Context-aware highlighter that doesn't require props from parent
+const SearchHighlighter = ({ children, as: Component = 'div', ...props }: { children: React.ReactNode, as?: any, [key: string]: any }) => {
+  const query = React.useContext(HighlightContext);
+  const highlighted = highlightNodes(children, query);
+  return <Component {...props}>{highlighted}</Component>;
+};
+
 interface EssaysProps {
   initialSlug?: string | null;
 }
@@ -99,6 +109,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   }, [searchQuery, sortBy]);
 
   // Memoize markdown components to prevent unnecessary re-renders
+  // Now completely stable as it doesn't depend on articleSearchQuery
   const markdownComponents = useMemo(() => ({
     // Custom Anchor to handle footnotes and external links
     a: ({ node, href, children, ...props }: any) => {
@@ -135,18 +146,29 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         </a>
       );
     },
-    // Apply highlighter to text blocks
-    h1: ({ node, children, ...props }: any) => <Highlighter as="h1" query={articleSearchQuery} className="text-2xl font-bold text-white mt-12 mb-6" {...props}>{children}</Highlighter>,
-    h2: ({ node, children, ...props }: any) => <Highlighter as="h2" query={articleSearchQuery} className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props}>{children}</Highlighter>,
-    h3: ({ node, children, ...props }: any) => <Highlighter as="h3" query={articleSearchQuery} className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props}>{children}</Highlighter>,
-    p: ({ node, children, ...props }: any) => <Highlighter as="p" query={articleSearchQuery} className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</Highlighter>,
-    li: ({ node, children, ...props }: any) => <Highlighter as="li" query={articleSearchQuery} className="text-slate-300" {...props}>{children}</Highlighter>,
+    // Apply context-aware highlighter to text blocks
+    h1: ({ node, children, ...props }: any) => <SearchHighlighter as="h1" className="text-2xl font-bold text-white mt-12 mb-6" {...props}>{children}</SearchHighlighter>,
+    h2: ({ node, children, ...props }: any) => <SearchHighlighter as="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props}>{children}</SearchHighlighter>,
+    h3: ({ node, children, ...props }: any) => <SearchHighlighter as="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props}>{children}</SearchHighlighter>,
+    p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</SearchHighlighter>,
+    li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300" {...props}>{children}</SearchHighlighter>,
     blockquote: ({ node, children, ...props }: any) => (
       <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8">
-         {highlightNodes(children, articleSearchQuery)}
+         <SearchHighlighter>{children}</SearchHighlighter>
       </blockquote>
     ),
-  }), [articleSearchQuery]);
+  }), []);
+
+  // Memoize the rendered markdown content
+  // This ensures the heavy ReactMarkdown component doesn't re-render when only the search query changes
+  const markdownContent = useMemo(() => (
+    <ReactMarkdown
+      remarkPlugins={MARKDOWN_PLUGINS}
+      components={markdownComponents}
+    >
+      {selectedPost ? selectedPost.body : ''}
+    </ReactMarkdown>
+  ), [selectedPost, markdownComponents]);
 
   if (selectedPost) {
     return (
@@ -214,12 +236,9 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </div>
           </header>
 
-          <ReactMarkdown
-            remarkPlugins={MARKDOWN_PLUGINS}
-            components={markdownComponents}
-          >
-            {selectedPost.body}
-          </ReactMarkdown>
+          <HighlightContext.Provider value={articleSearchQuery}>
+            {markdownContent}
+          </HighlightContext.Provider>
         </article>
       </div>
     );
