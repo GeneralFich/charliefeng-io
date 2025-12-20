@@ -98,6 +98,18 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate }) => {
+  const [isCopied, setIsCopied] = React.useState(false);
+
+  const handleCopyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(message.text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy message: ', err);
+    }
+  };
+
   // Memoize the components object to prevent re-renders on every token update
   const markdownComponents = React.useMemo(() => ({
     ...STATIC_MARKDOWN_COMPONENTS,
@@ -134,12 +146,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
         {message.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-blue-400" />}
       </div>
       <div
-        className={`p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
+        className={`relative group p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
           message.role === 'user'
             ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
             : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
         }`}
       >
+        {/* Copy Button for Model messages */}
+        {message.role === 'model' && (
+          <button
+            onClick={handleCopyMessage}
+            className="absolute top-2 right-2 p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-700 hover:text-white focus:opacity-100 bg-slate-800/50 backdrop-blur-sm z-10"
+            aria-label="Copy message"
+            title="Copy message"
+          >
+            {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+          </button>
+        )}
+
         <ReactMarkdown
           remarkPlugins={MARKDOWN_PLUGINS}
           components={markdownComponents as any}
