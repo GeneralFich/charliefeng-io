@@ -128,7 +128,11 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         if (isInternal && safeHref) {
           e.preventDefault();
           const id = safeHref.slice(1);
-          const el = document.getElementById(id);
+          let el = document.getElementById(id);
+          // Fallback for double-prefixed IDs (remark-gfm + rehype-sanitize conflict)
+          if (!el) {
+            el = document.getElementById(`user-content-${id}`);
+          }
           if (el) {
               el.scrollIntoView({ behavior: 'smooth' });
           }

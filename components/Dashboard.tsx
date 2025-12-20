@@ -253,7 +253,11 @@ export const Dashboard: React.FC = () => {
                   if (isInternal) {
                     e.preventDefault();
                     const id = href.slice(1);
-                    const el = document.getElementById(id);
+                    let el = document.getElementById(id);
+                    // Fallback for double-prefixed IDs (remark-gfm + rehype-sanitize conflict)
+                    if (!el) {
+                      el = document.getElementById(`user-content-${id}`);
+                    }
                     if (el) {
                         el.scrollIntoView({ behavior: 'smooth' });
                     }
