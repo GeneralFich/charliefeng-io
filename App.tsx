@@ -6,6 +6,7 @@ import { Resume } from './components/Resume';
 import { Essays } from './components/Essays';
 import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
+import { Logo } from './components/Logo';
 import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -78,9 +79,7 @@ const App: React.FC = () => {
               className="flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none text-left"
               aria-label="Go to Home"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <span className="text-white font-bold text-xs">CF</span>
-              </div>
+              <Logo className="w-8 h-8" />
               <div>
                 <h1 className="text-white font-bold tracking-tight text-lg">Charlie Feng</h1>
                 <div className="group relative cursor-help w-max">
