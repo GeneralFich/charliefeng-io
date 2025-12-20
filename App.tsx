@@ -62,7 +62,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black flex flex-col font-sans print:bg-white print:bg-none">
       
       {/* Scroll Progress Bar */}
-      <ScrollProgress />
+      {currentView !== View.HOME && <ScrollProgress />}
 
       {/* Back to Top Button */}
       <BackToTop />
