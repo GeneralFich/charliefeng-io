@@ -102,11 +102,19 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const markdownComponents = useMemo(() => ({
     // Custom Anchor to handle footnotes and external links
     a: ({ node, href, children, ...props }: any) => {
-      const isInternal = href?.startsWith('#');
+      // Security: Prevent XSS via malicious links (e.g. javascript:)
+      const safeHref = href || '';
+      const isSafe = safeHref.startsWith('http') || safeHref.startsWith('mailto') || safeHref.startsWith('/') || safeHref.startsWith('#');
+
+      if (!isSafe) {
+         return <span {...props} className="text-slate-400 cursor-not-allowed" title="Link disabled">{children}</span>;
+      }
+
+      const isInternal = safeHref.startsWith('#');
       const handleClick = (e: React.MouseEvent) => {
-        if (isInternal && href) {
+        if (isInternal && safeHref) {
           e.preventDefault();
-          const id = href.slice(1);
+          const id = safeHref.slice(1);
           const el = document.getElementById(id);
           if (el) {
               el.scrollIntoView({ behavior: 'smooth' });
@@ -116,7 +124,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
 
       return (
         <a
-          href={href}
+          href={safeHref}
           onClick={handleClick}
           className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
           target={isInternal ? undefined : "_blank"}
