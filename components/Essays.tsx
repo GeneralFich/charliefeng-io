@@ -166,7 +166,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
           {/* In-Article Search */}
           <div className="relative group w-full md:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search size={14} className="text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+              <Search size={14} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
             </div>
             <input
               type="text"
@@ -179,7 +179,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
               <button
                 onClick={() => setArticleSearchQuery('')}
                 aria-label="Clear search"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
               >
                 <X size={14} />
               </button>
@@ -239,7 +239,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
           {/* Sort Dropdown */}
           <div className="relative group w-full md:w-48">
              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <ArrowUpDown size={16} className="text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+              <ArrowUpDown size={16} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
             </div>
             <select
               value={sortBy}
@@ -261,7 +261,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
           {/* Global Search */}
           <div className="relative group w-full md:w-72">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search size={16} className="text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+              <Search size={16} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
             </div>
             <input
               type="text"
@@ -274,7 +274,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
               <button
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
               >
                 <X size={16} />
               </button>
@@ -315,7 +315,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </button>
           ))
         ) : (
-          <div className="text-center py-12 text-slate-500">
+          <div className="text-center py-12 text-slate-400">
             <p>No essays found matching "{searchQuery}"</p>
             <button
               onClick={() => setSearchQuery('')}
