@@ -4,19 +4,19 @@ import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 
 const INITIAL_SUGGESTED_PROMPTS = [
-  "Summarize Charlie's experience.",
+  "Who is Charlie?",
+  "What is his work experience?",
   "When will AGI arrive?",
-  "What is the 'Agentic Inflection Point'?",
-  "How should I hedge my portfolio?",
-  "How will AGI impact the labor market?",
-  "Tell me about your work at Google.",
-  "What skills are critical for the AGI era?",
-  "Explain your 'Climate Intelligence' work.",
+  "How will AGI impact jobs?",
+  "Explain 'Agentic Inflection Point'.",
+  "Show me his resume.",
+  "What are his core skills?",
+  "Tell me about 'Climate Intelligence'.",
 ];
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Welcome to the digital extension of my work as an infrastructure product leader. This interactive knowledge model allows you to explore my experience and research through conversation." }
+    { role: 'model', text: "Hi! I'm Charlie's digital twin. I can answer questions about his work, writing, and research. What would you like to know?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +57,6 @@ export const useChat = () => {
     setInput,
     isLoading,
     suggestedPrompts,
-    handleSend
+    sendMessage: handleSend
   };
 };
