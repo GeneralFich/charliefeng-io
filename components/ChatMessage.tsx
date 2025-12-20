@@ -2,9 +2,11 @@ import React from 'react';
 import { Bot, User, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 import { Message, View } from '../types';
 
 const MARKDOWN_PLUGINS = [remarkGfm];
+const REHYPE_PLUGINS = [rehypeSanitize];
 
 // Helper for handling internal links
 const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) => void) => {
@@ -166,6 +168,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
 
         <ReactMarkdown
           remarkPlugins={MARKDOWN_PLUGINS}
+          rehypePlugins={REHYPE_PLUGINS}
           components={markdownComponents as any}
         >
           {message.text}
