@@ -16,6 +16,33 @@ import blogData from "./blog_data.json";
  */
 
 /**
+ * Calculates the magnitude (Euclidean norm) of a vector.
+ * @param vec - The vector.
+ * @returns The magnitude.
+ */
+export function magnitude(vec: number[]): number {
+  let sum = 0;
+  for (let i = 0; i < vec.length; i++) {
+    sum += vec[i] * vec[i];
+  }
+  return Math.sqrt(sum);
+}
+
+/**
+ * Calculates the dot product of two vectors.
+ * @param vecA - The first vector.
+ * @param vecB - The second vector.
+ * @returns The dot product.
+ */
+export function dotProduct(vecA: number[], vecB: number[]): number {
+  let product = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    product += vecA[i] * vecB[i];
+  }
+  return product;
+}
+
+/**
  * Calculates the cosine similarity between two vectors.
  *
  * Cosine similarity measures the cosine of the angle between two non-zero vectors.
@@ -28,33 +55,42 @@ import blogData from "./blog_data.json";
  *
  * @param vecA - The first vector (e.g., query embedding).
  * @param vecB - The second vector (e.g., document chunk embedding).
+ * @param magA - Optional pre-calculated magnitude of vecA.
+ * @param magB - Optional pre-calculated magnitude of vecB.
  * @returns A number between -1 and 1 representing the similarity.
  *          Returns 0 if dimensions mismatch or magnitude is zero to prevent errors.
  */
-export function cosineSimilarity(vecA: number[], vecB: number[]): number {
+export function cosineSimilarity(vecA: number[], vecB: number[], magA?: number, magB?: number): number {
   if (vecA.length !== vecB.length) {
     if (vecA.length === 0 || vecB.length === 0) return 0;
-    // In a production environment, we might want to log this as a warning
-    // rather than throwing, to avoid crashing the request for one bad vector.
     return 0;
   }
 
-  let dotProduct = 0;
-  let magnitudeA = 0;
-  let magnitudeB = 0;
-
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    magnitudeA += vecA[i] * vecA[i];
-    magnitudeB += vecB[i] * vecB[i];
+  // Optimized path: Use pre-calculated magnitudes if available
+  if (magA !== undefined && magB !== undefined) {
+    if (magA === 0 || magB === 0) return 0;
+    return dotProduct(vecA, vecB) / (magA * magB);
   }
 
-  magnitudeA = Math.sqrt(magnitudeA);
-  magnitudeB = Math.sqrt(magnitudeB);
+  // Fallback path: Calculate everything in one loop to avoid iterating 3 times
+  let dot = 0;
+  let sumA = 0;
+  let sumB = 0;
 
-  if (magnitudeA === 0 || magnitudeB === 0) return 0;
+  for (let i = 0; i < vecA.length; i++) {
+    const vA = vecA[i];
+    const vB = vecB[i];
+    dot += vA * vB;
+    sumA += vA * vA;
+    sumB += vB * vB;
+  }
 
-  return dotProduct / (magnitudeA * magnitudeB);
+  const mA = Math.sqrt(sumA);
+  const mB = Math.sqrt(sumB);
+
+  if (mA === 0 || mB === 0) return 0;
+
+  return dot / (mA * mB);
 }
 
 interface BlogChunk {
@@ -64,6 +100,8 @@ interface BlogChunk {
   title: string;
   publishedDate: string;
   embedding?: number[];
+  // Optimization: Pre-calculated magnitude for the embedding
+  _magnitude?: number;
 }
 
 export interface RelevantChunk {
@@ -73,8 +111,24 @@ export interface RelevantChunk {
   score: number;
 }
 
-// Cast the imported JSON to the interface
-const typedBlogData = blogData as BlogChunk[];
+// Lazy initialization of blog data with magnitudes
+let cachedBlogData: BlogChunk[] | null = null;
+
+const getBlogData = (): BlogChunk[] => {
+  if (cachedBlogData) return cachedBlogData;
+
+  cachedBlogData = (blogData as BlogChunk[]).map(chunk => {
+    if (chunk.embedding && chunk.embedding.length > 0) {
+      return {
+        ...chunk,
+        _magnitude: magnitude(chunk.embedding)
+      };
+    }
+    return chunk;
+  });
+
+  return cachedBlogData;
+};
 
 /**
  * Retrieves relevant context chunks for a given query.
@@ -106,15 +160,18 @@ export async function getRelevantContext(query: string, apiKey: string): Promise
     }
 
     const queryEmbedding = response.embeddings[0].values;
+    const queryMagnitude = magnitude(queryEmbedding);
+    const data = getBlogData();
 
     // Calculate similarity with all chunks
-    const scoredChunks = typedBlogData
+    const scoredChunks = data
       .filter((chunk) => chunk.embedding && chunk.embedding.length > 0)
       .map((chunk) => ({
         text: chunk.text,
         title: chunk.title,
         url: chunk.url,
-        score: cosineSimilarity(queryEmbedding, chunk.embedding!)
+        // Use pre-calculated magnitude for chunk, and pre-calculated magnitude for query
+        score: cosineSimilarity(queryEmbedding, chunk.embedding!, queryMagnitude, chunk._magnitude)
       }))
       // Filter by threshold to remove irrelevant noise.
       // 0.5 is a heuristic threshold; vectors in high-dimensional space
