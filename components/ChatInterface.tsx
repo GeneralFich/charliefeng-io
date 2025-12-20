@@ -18,10 +18,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     handleSend
   } = useChat();
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   useEffect(() => {
@@ -31,7 +36,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto w-full">
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-6"
+      >
         {messages.map((msg, idx) => (
           <ChatMessage key={idx} message={msg} onNavigate={onNavigate} />
         ))}
@@ -45,7 +53,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
