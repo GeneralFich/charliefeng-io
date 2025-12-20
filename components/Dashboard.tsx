@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -11,7 +11,7 @@ import {
   Bar,
   Cell,
 } from 'recharts';
-import { Activity, Globe, TrendingUp, Layers, FileText, AlertTriangle, Calendar } from 'lucide-react';
+import { Activity, Globe, TrendingUp, Layers, FileText, AlertTriangle, Calendar, Share2, Download, Check } from 'lucide-react';
 import { WHITEPAPER_CONTENT } from '../lib/knowledge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -38,75 +38,109 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export const Dashboard: React.FC = () => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleShare = async () => {
+    try {
+      const shareText = "Check out this strategic whitepaper on the Agentic Inflection Point by Charlie Feng: " + window.location.href;
+      await navigator.clipboard.writeText(shareText);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL: ', err);
+    }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-12 animate-fade-in">
-      <header className="border-b border-slate-800 pb-8">
-        <h2 className="text-3xl font-light tracking-tight text-white flex items-center gap-3">
-          <Activity className="text-blue-500" />
-          The Agentic Inflection Point
-        </h2>
-        <p className="text-slate-400 mt-4 text-lg leading-relaxed max-w-4xl">
-          We stand at a critical juncture where AI transitions from a passive tool to an active "Teammate".
-          This dashboard visualizes the core thesis of the 2025-2030 transition: a massive economic metamorphosis
-          driven by autonomous agents, an accelerating AGI timeline, and the structural "unbundling" of human labor.
-        </p>
+    <div className="max-w-6xl mx-auto p-6 space-y-12 animate-fade-in print:p-0 print:max-w-none print:space-y-6">
+      <header className="border-b border-slate-800 pb-8 flex flex-col md:flex-row justify-between items-start gap-6 print:border-none print:pb-4">
+        <div className="max-w-4xl">
+          <h2 className="text-3xl font-light tracking-tight text-white flex items-center gap-3 print:text-black">
+            <Activity className="text-blue-500 print:text-blue-700" />
+            The Agentic Inflection Point
+          </h2>
+          <p className="text-slate-400 mt-4 text-lg leading-relaxed max-w-4xl print:text-black">
+            We stand at a critical juncture where AI transitions from a passive tool to an active "Teammate".
+            This dashboard visualizes the core thesis of the 2025-2030 transition: a massive economic metamorphosis
+            driven by autonomous agents, an accelerating AGI timeline, and the structural "unbundling" of human labor.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 shrink-0 print:hidden">
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
+            aria-label={isCopied ? "Copied to clipboard" : "Share Dashboard"}
+          >
+            {isCopied ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
+            <span>{isCopied ? 'Copied' : 'Share'}</span>
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
+          >
+            <Download size={16} />
+            <span>Export PDF</span>
+          </button>
+        </div>
       </header>
 
       {/* Executive Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 print:gap-4">
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors print:bg-white print:border-slate-300 print:p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <Calendar className="text-blue-400" size={20} />
+            <div className="p-2 bg-blue-500/10 rounded-lg print:bg-blue-100">
+              <Calendar className="text-blue-400 print:text-blue-700" size={20} />
             </div>
-            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Arrival Consensus</div>
+            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider print:text-slate-600">Arrival Consensus</div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">2030</div>
-          <div className="text-sm text-slate-400">Most likely year for Robust AGI</div>
+          <div className="text-3xl font-bold text-white mb-1 print:text-black">2030</div>
+          <div className="text-sm text-slate-400 print:text-slate-700">Most likely year for Robust AGI</div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors print:bg-white print:border-slate-300 print:p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <Globe className="text-green-400" size={20} />
+            <div className="p-2 bg-green-500/10 rounded-lg print:bg-green-100">
+              <Globe className="text-green-400 print:text-green-700" size={20} />
             </div>
-            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Economic Impact</div>
+            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider print:text-slate-600">Economic Impact</div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">$13 Trillion</div>
-          <div className="text-sm text-slate-400">Global GDP boost by 2030</div>
+          <div className="text-3xl font-bold text-white mb-1 print:text-black">$13 Trillion</div>
+          <div className="text-sm text-slate-400 print:text-slate-700">Global GDP boost by 2030</div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors print:bg-white print:border-slate-300 print:p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-amber-500/10 rounded-lg">
-              <AlertTriangle className="text-amber-400" size={20} />
+            <div className="p-2 bg-amber-500/10 rounded-lg print:bg-amber-100">
+              <AlertTriangle className="text-amber-400 print:text-amber-700" size={20} />
             </div>
-            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Near-Term Risk</div>
+            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider print:text-slate-600">Near-Term Risk</div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">25%</div>
-          <div className="text-sm text-slate-400">Probability of AGI by 2027</div>
+          <div className="text-3xl font-bold text-white mb-1 print:text-black">25%</div>
+          <div className="text-sm text-slate-400 print:text-slate-700">Probability of AGI by 2027</div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
+        <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors print:bg-white print:border-slate-300 print:p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <Layers className="text-purple-400" size={20} />
+            <div className="p-2 bg-purple-500/10 rounded-lg print:bg-purple-100">
+              <Layers className="text-purple-400 print:text-purple-700" size={20} />
             </div>
-            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Labor Shift</div>
+            <div className="text-sm text-slate-500 font-medium uppercase tracking-wider print:text-slate-600">Labor Shift</div>
           </div>
-          <div className="text-2xl font-bold text-white mb-1">Unbundling</div>
-          <div className="text-sm text-slate-400">Jobs split into agentic tasks</div>
+          <div className="text-2xl font-bold text-white mb-1 print:text-black">Unbundling</div>
+          <div className="text-sm text-slate-400 print:text-slate-700">Jobs split into agentic tasks</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:gap-6 print:break-inside-avoid">
         {/* Chart 1: AGI Timeline */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-          <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2">
-            <TrendingUp size={18} className="text-blue-500" />
+        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 print:bg-white print:border-slate-300 print:p-4">
+          <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2 print:text-black">
+            <TrendingUp size={18} className="text-blue-500 print:text-blue-700" />
             The Consensus Timeline
           </h3>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-slate-500 mb-6 print:text-slate-700">
             Aggregated forecast of AGI capability progression (0-100 scale).
           </p>
           <div className="h-[300px] w-full min-w-0">
@@ -139,7 +173,7 @@ export const Dashboard: React.FC = () => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-between text-xs text-slate-500 mt-4 px-2 font-mono">
+          <div className="flex justify-between text-xs text-slate-500 mt-4 px-2 font-mono print:text-slate-700">
             <span>2024: GEN</span>
             <span>2027: WEAK AGI</span>
             <span>2030: ROBUST</span>
@@ -147,12 +181,12 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Chart 2: Job Risk */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-          <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2">
-            <AlertTriangle size={18} className="text-red-500" />
+        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 print:bg-white print:border-slate-300 print:p-4">
+          <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2 print:text-black">
+            <AlertTriangle size={18} className="text-red-500 print:text-red-700" />
             Sector Vulnerability Index
           </h3>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-slate-500 mb-6 print:text-slate-700">
              Relative risk of displacement due to agentic automation.
           </p>
           <div className="h-[300px] w-full min-w-0">
@@ -194,12 +228,12 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Manifesto Content */}
-      <div className="mt-12 pt-8 border-t border-slate-800">
-        <h3 className="text-xl font-light text-white mb-6 flex items-center gap-2">
-          <FileText className="text-slate-400" size={20} />
+      <div className="mt-12 pt-8 border-t border-slate-800 print:border-slate-300 print:mt-6 print:pt-6">
+        <h3 className="text-xl font-light text-white mb-6 flex items-center gap-2 print:text-black">
+          <FileText className="text-slate-400 print:text-slate-600" size={20} />
           Full Manifesto
         </h3>
-        <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50 prose prose-invert prose-slate max-w-none">
+        <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50 prose prose-invert prose-slate max-w-none print:bg-white print:border-none print:p-0 print:prose-p:text-black print:prose-headings:text-black print:prose-strong:text-black print:prose-li:text-black">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -228,7 +262,7 @@ export const Dashboard: React.FC = () => {
                   <a
                     {...props}
                     onClick={handleClick}
-                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
+                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''} print:text-blue-700 print:border-blue-700/30`}
                     target={isInternal ? undefined : "_blank"}
                     rel={isInternal ? undefined : "noopener noreferrer"}
                   />
