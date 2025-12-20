@@ -15,6 +15,7 @@ import { Activity, Globe, TrendingUp, Layers, FileText, AlertTriangle, Calendar,
 import { WHITEPAPER_CONTENT } from '../lib/knowledge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 
 const { timeline: TIMELINE_DATA, risks: RISK_DATA, body: MANIFESTO_BODY } = WHITEPAPER_CONTENT;
 
@@ -236,6 +237,7 @@ export const Dashboard: React.FC = () => {
         <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50 prose prose-invert prose-slate max-w-none print:bg-white print:border-none print:p-0 print:prose-p:text-black print:prose-headings:text-black print:prose-strong:text-black print:prose-li:text-black">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
             components={{
               a: ({ node, ...props }) => {
                 const href = props.href || '';

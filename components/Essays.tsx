@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 import { ArrowLeft, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 
@@ -63,6 +64,7 @@ type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
 
 // Define plugins outside component to maintain reference stability
 const MARKDOWN_PLUGINS = [remarkGfm];
+const REHYPE_PLUGINS = [rehypeSanitize];
 
 export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -164,6 +166,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const markdownContent = useMemo(() => (
     <ReactMarkdown
       remarkPlugins={MARKDOWN_PLUGINS}
+      rehypePlugins={REHYPE_PLUGINS}
       components={markdownComponents}
     >
       {selectedPost ? selectedPost.body : ''}
