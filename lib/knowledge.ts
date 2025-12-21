@@ -1,3 +1,22 @@
+/**
+ * @fileoverview Knowledge Base & Data Layer
+ *
+ * This module serves as the "Single Source of Truth" for the application's content
+ * and the AI's context. It bridges the static Markdown files in `content/` with
+ * the runtime React application and the Gemini LLM.
+ *
+ * Key Responsibilities:
+ * 1. **Content Loading**: Uses Vite's `?raw` suffix to import Markdown files as strings at build time.
+ * 2. **Structure Parsing**: Uses `front-matter` to extract YAML metadata (attributes) from the Markdown body.
+ * 3. **Dynamic Blog Indexing**: Uses `import.meta.glob` to automatically discover and load all blog posts
+ *    without manual registration.
+ * 4. **AI Persona Construction**: Aggregates the Resume, Whitepaper, and Blog Index into a single
+ *    `FULL_CONTEXT` system prompt that defines the "Charlie Feng" digital twin persona.
+ *
+ * @see {@link https://vitejs.dev/guide/features.html#glob-import Vite Glob Import}
+ * @see {@link https://github.com/jxson/front-matter Front Matter Library}
+ */
+
 import fm from 'front-matter';
 import resumeRaw from '../content/resume.md?raw';
 import whitepaperRaw from '../content/whitepaper.md?raw';
