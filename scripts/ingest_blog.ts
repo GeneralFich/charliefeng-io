@@ -15,11 +15,10 @@ const OUTPUT_FILE = join(process.cwd(), 'lib', 'blog_data.json');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
-  console.error("Error: GEMINI_API_KEY not found in .env.local");
-  console.warn("Continuing without API key (embeddings will be empty)");
+  console.warn("Warning: GEMINI_API_KEY not found. Embeddings will be empty.");
 }
 
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+const ai = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
 
 interface PostAttributes {
   title: string;
@@ -38,6 +37,7 @@ interface BlogChunk {
 }
 
 async function getEmbeddings(text: string): Promise<number[]> {
+    if (!ai) return [];
     try {
         const result = await ai.models.embedContent({
             model: "text-embedding-004",
@@ -76,7 +76,7 @@ async function ingest() {
 
   if (!fs.existsSync(POSTS_DIR)) {
       console.error(`Directory not found: ${POSTS_DIR}`);
-      console.warn("Continuing without API key (embeddings will be empty)");
+      process.exit(1);
   }
 
   const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));
