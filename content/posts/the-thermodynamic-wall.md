@@ -1,6 +1,6 @@
 ---
 title: "The Thermodynamic Wall: The Collision of AI Scaling Laws and Physical Infrastructure"
-date: "2025-02-15"
+date: "2025-12-21"
 author: "Charlie Feng"
 description: "A deep dive into the energy constraints facing AI scaling, exploring the collision between exponential compute demand and physical infrastructure limitations."
 ---
