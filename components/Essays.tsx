@@ -163,6 +163,46 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
          <SearchHighlighter>{children}</SearchHighlighter>
       </blockquote>
     ),
+    code: ({ node, className, children, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      const isInfographic = match && match[1] === 'infographic';
+
+      if (isInfographic) {
+        const type = String(children).replace(/\n$/, '').trim();
+        const src = `/infographics/thermodynamic-wall/${type}.html`;
+
+        // Define heights based on type
+        let heightClass = "h-[400px]"; // Default
+
+        if (type === 'collision') {
+            heightClass = "h-[600px] md:h-[300px]";
+        } else if (type === 'leverage') {
+            heightClass = "h-[450px]";
+        } else if (type === 'strategy') {
+            heightClass = "h-[400px]";
+        } else if (type === 'mechanics') {
+            heightClass = "h-[400px]";
+        }
+
+        return (
+          <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-white">
+            <iframe
+              src={src}
+              className={`w-full ${heightClass}`}
+              style={{ border: 'none' }}
+              title={`Infographic: ${type}`}
+              loading="lazy"
+            />
+          </div>
+        );
+      }
+
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
   }), []);
 
   // Memoize the rendered markdown content

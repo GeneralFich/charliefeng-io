@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: "Inter", sans-serif; background: transparent; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        @media (max-width: 768px) {
+            .chart-container { height: 300px; }
+        }
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(135deg, #2563EB, #06B6D4);
+        }
+        /* Hide scrollbars if possible */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body class="antialiased overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-4 text-center">Innovation Velocity Map</h3>
+        <div class="chart-container" style="height: 350px;">
+            <canvas id="leverageChart"></canvas>
+        </div>
+    </div>
+    <script>
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.maintainAspectRatio = false;
+        const ctx = document.getElementById('leverageChart').getContext('2d');
+
+        const rawData = [
+            { x: 1, y: 9, r: 20, label: 'Liquid Cooling' },
+            { x: 2, y: 7, r: 12, label: 'Software Power Mgmt' },
+            { x: 8, y: 10, r: 25, label: 'SMRs (Nuclear)' },
+            { x: 6, y: 3, r: 8, label: 'Grid Expansion' },
+            { x: 3, y: 8, r: 10, label: 'Immersion Tanks' },
+            { x: 2, y: 5, r: 6, label: 'Optical Interconnect' }
+        ];
+
+        new Chart(ctx, {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: 'Innovations',
+                    data: rawData,
+                    backgroundColor: (ctx) => {
+                        const v = ctx.raw;
+                        if (!v) return '#ccc';
+                        if (v.x < 4 && v.y > 6) return 'rgba(37, 99, 235, 0.8)';
+                        if (v.x > 5) return 'rgba(245, 158, 11, 0.8)';
+                        if (v.label.includes('Software')) return 'rgba(16, 185, 129, 0.8)';
+                        return 'rgba(148, 163, 184, 0.8)';
+                    }
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => items[0].raw.label,
+                            label: (ctx) => `Deploy: ${ctx.raw.x} yrs | Impact: ${ctx.raw.y}/10`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Time to Deployment (Years)', font: { size: 10, weight: 'bold' } },
+                        min: 0, max: 10,
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'Impact on Density', font: { size: 10, weight: 'bold' } },
+                        min: 0, max: 12,
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
+    </script>
+</body></html>
