@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, User, Copy, Check } from 'lucide-react';
+import { Bot, User, Copy, Check, Terminal, Database, Link as LinkIcon, ChevronDown, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
@@ -97,10 +97,12 @@ const STATIC_MARKDOWN_COMPONENTS = {
 interface ChatMessageProps {
   message: Message;
   onNavigate?: (view: View, slug?: string) => void;
+  devMode?: boolean;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate, devMode }) => {
   const [isCopied, setIsCopied] = React.useState(false);
+  const [isDebugOpen, setIsDebugOpen] = React.useState(false);
 
   const handleCopyMessage = async () => {
     try {
@@ -147,32 +149,67 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
       >
         {message.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-blue-400" />}
       </div>
-      <div
-        className={`relative group p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
-          message.role === 'user'
-            ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
-            : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
-        }`}
-      >
-        {/* Copy Button for Model messages */}
-        {message.role === 'model' && (
-          <button
-            onClick={handleCopyMessage}
-            className="absolute top-2 right-2 p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-700 hover:text-white focus:opacity-100 bg-slate-800/50 backdrop-blur-sm z-10"
-            aria-label="Copy message"
-            title="Copy message"
+      <div className="max-w-[80%] flex flex-col space-y-2">
+          <div
+            className={`relative group p-4 rounded-2xl text-sm leading-relaxed ${
+              message.role === 'user'
+                ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
+                : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
+            }`}
           >
-            {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-          </button>
-        )}
+            {/* Copy Button for Model messages */}
+            {message.role === 'model' && (
+              <button
+                onClick={handleCopyMessage}
+                className="absolute top-2 right-2 p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-700 hover:text-white focus:opacity-100 bg-slate-800/50 backdrop-blur-sm z-10"
+                aria-label="Copy message"
+                title="Copy message"
+              >
+                {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+              </button>
+            )}
 
-        <ReactMarkdown
-          remarkPlugins={MARKDOWN_PLUGINS}
-          rehypePlugins={REHYPE_PLUGINS}
-          components={markdownComponents as any}
-        >
-          {message.text}
-        </ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={MARKDOWN_PLUGINS}
+              rehypePlugins={REHYPE_PLUGINS}
+              components={markdownComponents as any}
+            >
+              {message.text}
+            </ReactMarkdown>
+          </div>
+
+          {/* Debug Context (Dev Mode) */}
+          {devMode && message.role === 'model' && message.relevantChunks && message.relevantChunks.length > 0 && (
+              <div className="bg-slate-900/50 border border-emerald-500/20 rounded-lg overflow-hidden text-xs">
+                  <button
+                    onClick={() => setIsDebugOpen(!isDebugOpen)}
+                    className="w-full flex items-center justify-between p-2 hover:bg-slate-800/50 transition-colors text-emerald-400"
+                  >
+                      <div className="flex items-center space-x-2">
+                        <Terminal size={12} />
+                        <span className="font-mono">RAG Context Used ({message.relevantChunks.length})</span>
+                      </div>
+                      {isDebugOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  </button>
+                  {isDebugOpen && (
+                      <div className="p-2 space-y-2 border-t border-emerald-500/10 bg-slate-950/30">
+                          {message.relevantChunks.map((chunk, i) => (
+                              <div key={i} className="p-2 bg-slate-900 rounded border border-slate-800">
+                                  <div className="flex items-center justify-between mb-1">
+                                      <span className="font-semibold text-emerald-300 truncate max-w-[200px]">{chunk.title}</span>
+                                      <span className="text-slate-500 font-mono">{(chunk.score * 100).toFixed(1)}% match</span>
+                                  </div>
+                                  <p className="text-slate-400 line-clamp-2 font-mono text-[10px]">{chunk.text}</p>
+                                  <div className="mt-1 flex items-center space-x-1 text-slate-500">
+                                      <LinkIcon size={8} />
+                                      <span className="truncate">{chunk.url}</span>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  )}
+              </div>
+          )}
       </div>
     </div>
   );

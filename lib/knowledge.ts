@@ -86,7 +86,8 @@ export const WHITEPAPER_CONTENT = {
 };
 
 // --- Blog Posts ---
-const postFiles = import.meta.glob('../content/posts/*.md', { as: 'raw', eager: true });
+// Use query: '?raw' to avoid deprecation warning
+const postFiles = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default', eager: true });
 
 export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) => {
   const parsed = fm<PostAttributes>(content as string);
@@ -129,6 +130,8 @@ INSTRUCTIONS:
    - When referencing the Whitepaper/Dashboard, use the link format: \[Whitepaper\](/whitepaper) or \[Dashboard\](/dashboard).
    - When referencing a specific Essay, use the link format: \[Essay Title\](/essays/SLUG). Use the slug provided in the Blog Essays list above.
    - When referencing your Background/Resume, use the link format: \[Resume\](/resume).
-7. At the very end of your response, you MUST provide 3 follow-up questions that the user might want to ask next. Format them strictly as a JSON array on a new line, like this:
+7. **System Architecture**:
+   - If the user asks about how this website works, the tech stack, or the "Interactive Knowledge Model" architecture, mention that there is an interactive system map available by clicking the "System Architecture" button in the chat interface. Explain that it uses React 19, Vercel Edge Functions, and Google Gemini 2.0 Flash with an in-memory RAG vector store.
+8. At the very end of your response, you MUST provide 3 follow-up questions that the user might want to ask next. Format them strictly as a JSON array on a new line, like this:
 [FOLLOW_UP] ["Question 1", "Question 2", "Question 3"]
 `;

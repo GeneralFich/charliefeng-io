@@ -1,62 +1,89 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 
-const INITIAL_SUGGESTED_PROMPTS = [
+export const INITIAL_SUGGESTED_PROMPTS = [
   "Who is Charlie?",
-  "What is his work experience?",
-  "When will AGI arrive?",
-  "How will AGI impact jobs?",
-  "Explain 'Agentic Inflection Point'.",
-  "Show me his resume.",
-  "What are his core skills?",
-  "Tell me about 'Climate Intelligence'.",
+  "Show me his resume",
+  "What is the 'Interactive Knowledge Model'?",
+  "Does he have experience with AGI?"
 ];
 
-export const useChat = () => {
+export function useChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Hi! I'm Charlie's digital twin. I can answer questions about his work, writing, and research. What would you like to know?" }
+    {
+      role: 'model',
+      text: "Hello. I am Charlie's digital twin.\n\nI have been trained on his resume, writing, and worldview. I can answer questions about his experience, or we can discuss product strategy and engineering.\n\nHow can I help you?",
+    },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+  const [devMode, setDevMode] = useState(false);
 
-  const handleSend = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+  // Ref to track if component is mounted to prevent state updates after unmount
+  const isMounted = useRef(true);
 
-    // Security: Input length validation
-    if (text.length > 2000) {
-      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
-      setMessages(prev => [...prev, errorMsg]);
-      return;
-    }
+  const sendMessage = useCallback(async (content: string) => {
+    if (!content.trim()) return;
 
-    const userMsg: Message = { role: 'user', text };
-    setMessages(prev => [...prev, userMsg]);
+    const userMsg: Message = { role: 'user', text: content };
+
+    // Optimistic update
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
-    setSuggestedPrompts([]); // Clear suggestions while loading
+    setSuggestedPrompts([]); // Clear prompts while loading
 
-    // Filter out the initial greeting from the history sent to API to save tokens/clean context
-    // strictly keeping user/model pairs after system prompt is handled in service
-    const apiHistory = messages.slice(1);
+    try {
+        // Retrieve current history from state updater to ensure we have it all
+        let currentHistory: Message[] = [];
+        setMessages(prev => {
+            currentHistory = prev;
+            return prev; // no-op update just to get state
+        });
 
-    const rawResponse = await sendMessageToGemini(apiHistory, text);
-    const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
+        // Filter history for API
+        const apiHistory = currentHistory.filter(m => !m.isError);
 
-    const modelMsg: Message = { role: 'model', text: cleanText };
-    setMessages(prev => [...prev, modelMsg]);
-    setSuggestedPrompts(prompts);
-    setIsLoading(false);
-  };
+        const { text: responseText, relevantChunks } = await sendMessageToGemini(apiHistory, content);
+
+        if (!isMounted.current) return;
+
+        const { mainText, followUps } = parseFollowUpPrompts(responseText);
+
+        const modelMsg: Message = {
+            role: 'model',
+            text: mainText,
+            relevantChunks: relevantChunks
+        };
+        setMessages((prev) => [...prev, modelMsg]);
+
+        if (followUps && followUps.length > 0) {
+            setSuggestedPrompts(followUps);
+        }
+
+    } catch (error) {
+        console.error("Chat Error:", error);
+        if (isMounted.current) {
+             setMessages((prev) => [...prev, { role: 'model', text: "I encountered an error processing that request.", isError: true }]);
+        }
+    } finally {
+        if (isMounted.current) {
+            setIsLoading(false);
+        }
+    }
+  }, []);
 
   return {
     messages,
     input,
     setInput,
     isLoading,
+    sendMessage,
     suggestedPrompts,
-    sendMessage: handleSend
+    devMode,
+    setDevMode
   };
-};
+}

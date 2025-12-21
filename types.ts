@@ -5,10 +5,18 @@ export enum View {
   ESSAYS = 'ESSAYS',
 }
 
+export interface RelevantChunk {
+  text: string;
+  title: string;
+  url: string;
+  score: number;
+}
+
 export interface Message {
   role: 'user' | 'model';
   text: string;
   isError?: boolean;
+  relevantChunks?: RelevantChunk[];
 }
 
 export interface ChartDataPoint {

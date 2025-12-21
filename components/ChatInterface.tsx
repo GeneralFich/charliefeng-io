@@ -1,32 +1,27 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
-import { View } from '../types';
-import { ChatMessage } from './ChatMessage';
+import { Send, Loader2, Sparkles, Terminal, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
+import { ChatMessage } from './ChatMessage';
+import { View } from '../types';
+import { ArchitectureMap } from './ArchitectureMap';
 
 interface ChatInterfaceProps {
-  onNavigate?: (view: View, slug?: string) => void;
+  onNavigate: (view: View, slug?: string) => void;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
-  const {
-    messages,
-    input,
-    setInput,
-    isLoading,
-    suggestedPrompts,
-    sendMessage
-  } = useChat();
-
-  const isInitialState = messages.length === 1 && messages[0].role === 'model';
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { messages, input, setInput, isLoading, sendMessage, suggestedPrompts, devMode, setDevMode } = useChat();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+    // We use the container ref to scroll specifically the message list, not the whole window
+    if (containerRef.current) {
+        const { scrollHeight, clientHeight } = containerRef.current;
+        containerRef.current.scrollTo({
+            top: scrollHeight - clientHeight,
+            behavior: 'smooth'
+        });
     }
   };
 
@@ -34,102 +29,136 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto w-full">
-      {/* Chat Area */}
-      <div
-        ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6"
-      >
-        {isInitialState ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[400px] animate-in fade-in zoom-in-95 duration-500">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-6">
-              <span className="text-white font-bold text-2xl">CF</span>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-200 mb-3 text-center">Hello! I'm Charlie's AI.</h2>
-            <p className="text-slate-400 text-center max-w-md mb-8 leading-relaxed">
-              {messages[0].text}
-            </p>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    sendMessage(input);
+  };
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
-              {suggestedPrompts.map((prompt, idx) => (
-                <button
-                  key={`${prompt}-${idx}`}
-                  onClick={() => sendMessage(prompt)}
-                  className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:border-blue-500/30 transition-all text-left group"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Sparkles size={14} className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <span className="text-slate-300 text-sm font-medium group-hover:text-blue-400 transition-colors">
-                      {prompt}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() && !isLoading) {
+        sendMessage(input);
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+       {/* Header Controls */}
+       <div className="flex items-center justify-end space-x-4 mb-2 px-2">
+            <ArchitectureMap />
+            <button
+                onClick={() => setDevMode(!devMode)}
+                className={`flex items-center space-x-2 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+                    devMode
+                    ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-300'
+                }`}
+            >
+                <Terminal size={12} />
+                <span>Dev Mode</span>
+                {devMode ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+            </button>
+       </div>
+
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto space-y-6 p-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+      >
+        {messages.length === 0 ? (
+           // This state is effectively unreachable now due to initial message, but kept for safety
+           <div className="flex flex-col items-center justify-center h-full text-slate-500">
+             <p>No messages yet.</p>
+           </div>
         ) : (
-          <>
-            {messages.map((msg, idx) => (
-              <ChatMessage key={idx} message={msg} onNavigate={onNavigate} />
-            ))}
-            {isLoading && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
-                  <Loader2 size={16} className="text-blue-400 animate-spin" />
-                </div>
-                <div className="text-slate-500 text-xs tracking-widest animate-pulse">
-                  THINKING...
-                </div>
-              </div>
-            )}
-          </>
+            <>
+                {messages.length === 1 && (
+                    <div className="flex flex-col items-center justify-center py-12 text-center space-y-6 animate-fade-in">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full"></div>
+                            <img src="/favicon.svg" alt="Logo" className="relative w-24 h-24 text-emerald-500" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-white">
+                            Hello, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Charlie's Digital Twin</span>.
+                        </h2>
+                        <p className="max-w-md text-slate-400">
+                             I'm an Interactive Knowledge Model trained on his resume, writing, and worldview. Ask me anything about his work in Infrastructure, Product, or AGI.
+                        </p>
+                    </div>
+                )}
+
+                {messages.map((msg, idx) => (
+                  <ChatMessage
+                    key={idx}
+                    message={msg}
+                    onNavigate={onNavigate}
+                    devMode={devMode}
+                  />
+                ))}
+            </>
         )}
+
+        {isLoading && (
+          <div className="flex items-start gap-3">
+             <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
+                <Bot size={16} className="text-blue-400" />
+             </div>
+             <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl rounded-tl-sm text-slate-400 text-sm flex items-center space-x-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>
+                    {devMode ? "Retrieving context vectors..." : "Thinking..."}
+                </span>
+             </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
-        {!isInitialState && suggestedPrompts.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+      <div className="mt-4 space-y-4">
+        {suggestedPrompts.length > 0 && !isLoading && (
+          <div className="flex flex-wrap gap-2">
             {suggestedPrompts.map((prompt, idx) => (
               <button
-                key={`${prompt}-${idx}`}
+                key={idx}
                 onClick={() => sendMessage(prompt)}
-                className="whitespace-nowrap px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/50 text-xs text-slate-400 hover:border-blue-500 hover:text-blue-400 transition-colors"
+                className="flex items-center space-x-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500/30 rounded-lg text-xs text-slate-300 transition-all group"
               >
-                {prompt}
+                <Sparkles size={12} className="text-emerald-500 opacity-50 group-hover:opacity-100" />
+                <span>{prompt}</span>
               </button>
             ))}
           </div>
         )}
-        
-        <div className="relative flex items-center">
+
+        <form onSubmit={handleSubmit} className="relative group">
+            <div className={`absolute -top-6 right-0 text-[10px] font-mono transition-opacity ${input.length > 0 ? 'opacity-100' : 'opacity-0'} ${input.length > 1800 ? 'text-red-400' : 'text-slate-500'}`}>
+                {input.length}/2000
+            </div>
           <input
             type="text"
-            aria-label="Chat message"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-            placeholder="Ask anything..."
-            maxLength={2000}
-            className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+            onChange={(e) => setInput(e.target.value.slice(0, 2000))}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask me about product strategy, infrastructure, or AGI..."
+            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 pr-12 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-lg"
             disabled={isLoading}
+            aria-label="Chat input"
           />
-
-          {input.length > 0 && (
-            <span className="absolute right-12 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
-              {input.length}/2000
-            </span>
-          )}
-
           <button
-            onClick={() => sendMessage(input)}
+            type="submit"
             disabled={!input.trim() || isLoading}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-emerald-600 text-white rounded-lg opacity-0 group-focus-within:opacity-100 transition-all disabled:opacity-0 disabled:cursor-not-allowed hover:bg-emerald-500"
             aria-label={isLoading ? "Sending message..." : "Send message"}
-            className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
           >
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
+        </form>
+        <div className="text-center">
+            <p className="text-[10px] text-slate-600">
+                AI can make mistakes. Please verify important information.
+            </p>
         </div>
       </div>
     </div>

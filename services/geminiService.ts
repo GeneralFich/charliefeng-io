@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { FULL_CONTEXT } from "../lib/knowledge";
-import { Message } from "../types";
+import { Message, RelevantChunk } from "../types";
 import { getRelevantContext } from "../lib/rag";
 
 const apiKey = process.env.API_KEY;
@@ -12,24 +12,30 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const MAX_INPUT_LENGTH = 10000;
 
+interface ChatResponse {
+  text: string;
+  relevantChunks?: RelevantChunk[];
+}
+
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string
-): Promise<string> => {
+): Promise<ChatResponse> => {
   // Security: Input validation to prevent large payloads (DoS/Cost)
   if (!newMessage || newMessage.length > MAX_INPUT_LENGTH) {
-    return "Message is too long. Please shorten your query.";
+    return { text: "Message is too long. Please shorten your query." };
   }
 
   if (!ai || !apiKey) {
-    return "API Key is missing. Please configure the environment variable.";
+    return { text: "API Key is missing. Please configure the environment variable." };
   }
 
   try {
     // RAG: Retrieve relevant context from blog
     let additionalContext = "";
+    let relevantChunks: RelevantChunk[] = [];
     try {
-      const relevantChunks = await getRelevantContext(newMessage, apiKey);
+      relevantChunks = await getRelevantContext(newMessage, apiKey);
       if (relevantChunks.length > 0) {
         additionalContext = "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
           relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
@@ -59,7 +65,7 @@ export const sendMessageToGemini = async (
     ];
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash", // Updated to 2.0 Flash as it's the latest fast model
       contents: contents,
       config: {
         systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
@@ -69,15 +75,15 @@ export const sendMessageToGemini = async (
     });
 
     if (response.text) {
-      return response.text;
+      return { text: response.text, relevantChunks };
     }
     
-    return "I'm processing that signal, but returned no data.";
+    return { text: "I'm processing that signal, but returned no data.", relevantChunks };
 
   } catch (error) {
     // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Gemini API Error:", errorMessage);
-    return "Connection to the neural link failed. Please try again.";
+    return { text: "Connection to the neural link failed. Please try again." };
   }
 };

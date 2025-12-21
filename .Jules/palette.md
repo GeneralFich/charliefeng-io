@@ -1,3 +1,13 @@
-## 2024-05-23 - Dark Mode Text Contrast
-**Learning:** In dark mode interfaces (slate-950 background), `text-slate-500` can be too subtle for secondary information like character counters, failing WCAG AA standards. `text-slate-400` offers significantly better legibility while remaining visually distinct from primary text (`text-slate-100`).
-**Action:** When adding secondary text elements in dark mode, default to `text-slate-400` or lighter, verifying contrast against the background.
+# UX Patterns & Learnings
+
+## Dev Mode / Glass Box
+- **Pattern**: `DevModeToggle` and `DebugContext`
+- **Purpose**: To showcase technical depth without overwhelming non-technical users.
+- **Implementation**: A boolean state (`devMode`) controls the visibility of a "Debug Context" section within each chat message. This section displays the RAG chunks retrieved for that message.
+- **Takeaway**: Progressive disclosure is effective for portfolios that need to serve both recruiters (high-level) and engineers (low-level detail).
+
+## Architecture Map
+- **Pattern**: Interactive Node Graph Modal
+- **Purpose**: To visualize the system architecture (React -> Edge -> Vector Store -> Gemini).
+- **Implementation**: SVG-based node graph with hover states. Positioned as a modal triggered by a header button.
+- **Takeaway**: Visualizing the "invisible" work (backend logic) increases the perceived value of the application.
