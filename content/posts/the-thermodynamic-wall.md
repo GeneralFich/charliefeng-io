@@ -13,11 +13,6 @@ The central thesis of this analysis is that the era of unconstrained digital gro
 collision
 ```
 
-
-
-
-
-
 Our analysis projects that by 2030, the largest AI training runs will demand between 4 and 10 gigawatts (GW) of power—equivalent to the output of multiple nuclear power stations—while inference workloads will generate a long-tail energy demand rivaling the industrial consumption of nations.[^1] This demand curve collides directly with a US electrical grid characterized by interconnection queues averaging five years and a manufacturing base struggling to produce high-assay low-enriched uranium (HALEU) for next-generation nuclear reactors.[^2]
 This report dissects the mechanics of this collision, explores the leverage points available in infrastructure asymmetry (such as silicon photonics, active electrical cabling, and software-defined power), and outlines an optimal "Green Compute" strategy for 2025. It argues that while the Thermodynamic Wall is formidable, it acts as a forcing function for necessary architectural evolution, driving the industry toward liquid cooling, on-site generation, and optical interconnects. The analysis draws upon the concept of the "Planetary Forest" model as a counter to the "Tower of Babel" approach, suggesting a shift from monolithic centralization to distributed, biomimetic resilience.[^4]
 ---
