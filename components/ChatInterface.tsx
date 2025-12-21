@@ -59,7 +59,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
                   className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:border-blue-500/30 transition-all text-left group"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Sparkles size={14} className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Sparkles size={14} className="text-blue-500 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity" />
                     <span className="text-slate-300 text-sm font-medium group-hover:text-blue-400 transition-colors">
                       {prompt}
                     </span>

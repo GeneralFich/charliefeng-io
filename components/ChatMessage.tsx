@@ -61,7 +61,7 @@ const CodeBlock = ({ node, children, ...props }: any) => {
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700/50 text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-600 hover:text-white"
+        className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700/50 text-slate-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-slate-600 hover:text-white"
         aria-label="Copy code"
         title="Copy code"
       >
