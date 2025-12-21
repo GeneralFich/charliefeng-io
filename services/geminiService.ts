@@ -107,21 +107,56 @@ export const sendMessageStreamToGemini = async function* (
   try {
     const contents = await prepareGeminiRequest(history, newMessage);
 
-    const result = await ai.models.generateContentStream({
-      model: "gemini-3-flash-preview",
-      contents: contents,
-      config: {
-        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
-        temperature: 0.7,
-        maxOutputTokens: 4000,
-      }
-    });
+    // Hybrid Strategy:
+    // Local Development: Use direct SDK call (works without local backend proxy).
+    // Production: Use /api/chat proxy (Vercel Edge Function) to solve buffering/timeout issues.
+    if (import.meta.env.DEV) {
+        // Direct Client-Side (Prototyping / Local Dev)
+        const result = await ai.models.generateContentStream({
+            model: "gemini-3-flash-preview",
+            contents: contents,
+            config: {
+                systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+                temperature: 0.7,
+                maxOutputTokens: 4000,
+            }
+        });
 
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      if (chunkText) {
-        yield chunkText;
-      }
+        for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+                yield chunkText;
+            }
+        }
+    } else {
+        // Production Standard (Backend Proxy via Edge Function)
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents,
+                systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+                model: "gemini-3-flash-preview"
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+
+        if (!response.body) return;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            if (chunk) {
+                yield chunk;
+            }
+        }
     }
 
   } catch (error) {
