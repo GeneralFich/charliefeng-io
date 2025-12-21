@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Message } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { sendMessageStreamToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 
 const INITIAL_SUGGESTED_PROMPTS = [
@@ -33,7 +33,10 @@ export const useChat = () => {
     }
 
     const userMsg: Message = { role: 'user', text };
-    setMessages(prev => [...prev, userMsg]);
+    // Create a placeholder for the bot's response
+    const botMsgPlaceholder: Message = { role: 'model', text: '' };
+
+    setMessages(prev => [...prev, userMsg, botMsgPlaceholder]);
     setInput('');
     setIsLoading(true);
     setSuggestedPrompts([]); // Clear suggestions while loading
@@ -42,11 +45,40 @@ export const useChat = () => {
     // strictly keeping user/model pairs after system prompt is handled in service
     const apiHistory = messages.slice(1);
 
-    const rawResponse = await sendMessageToGemini(apiHistory, text);
-    const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
+    let accumulatedResponse = "";
 
-    const modelMsg: Message = { role: 'model', text: cleanText };
-    setMessages(prev => [...prev, modelMsg]);
+    try {
+        const stream = sendMessageStreamToGemini(apiHistory, text);
+
+        for await (const chunk of stream) {
+            accumulatedResponse += chunk;
+            setMessages(prev => {
+                const newMessages = [...prev];
+                const lastMsg = newMessages[newMessages.length - 1];
+                if (lastMsg.role === 'model') {
+                    // Update the last message (placeholder) with accumulated text
+                    newMessages[newMessages.length - 1] = { ...lastMsg, text: accumulatedResponse };
+                }
+                return newMessages;
+            });
+        }
+    } catch (error) {
+        console.error("Streaming error:", error);
+        accumulatedResponse += "\n[Error: Connection interrupted]";
+    }
+
+    // After stream completes, handle follow-up prompts
+    const { cleanText, prompts } = parseFollowUpPrompts(accumulatedResponse);
+
+    setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMsg = newMessages[newMessages.length - 1];
+        if (lastMsg.role === 'model') {
+            newMessages[newMessages.length - 1] = { ...lastMsg, text: cleanText };
+        }
+        return newMessages;
+    });
+
     setSuggestedPrompts(prompts);
     setIsLoading(false);
   };

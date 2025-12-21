@@ -12,6 +12,44 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const MAX_INPUT_LENGTH = 10000;
 
+async function prepareGeminiRequest(history: Message[], newMessage: string) {
+  // RAG: Retrieve relevant context from blog
+  let additionalContext = "";
+  if (apiKey) {
+      try {
+        const relevantChunks = await getRelevantContext(newMessage, apiKey);
+        if (relevantChunks.length > 0) {
+          additionalContext = "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
+            relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
+        }
+      } catch (ragError) {
+        console.warn("RAG retrieval failed, proceeding without it:", ragError);
+      }
+  }
+
+  // Prepare the conversation for the API
+  // We treat the "history" as the context of conversation so far.
+  // The "newMessage" is the latest user input.
+  // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
+
+  const userMessageWithContext = additionalContext
+    ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
+    : newMessage;
+
+  const contents = [
+     ...history.map((msg) => ({
+      role: msg.role,
+      parts: [{ text: msg.text }],
+    })),
+    {
+      role: "user",
+      parts: [{ text: userMessageWithContext }],
+    },
+  ];
+
+  return contents;
+}
+
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string
@@ -26,37 +64,7 @@ export const sendMessageToGemini = async (
   }
 
   try {
-    // RAG: Retrieve relevant context from blog
-    let additionalContext = "";
-    try {
-      const relevantChunks = await getRelevantContext(newMessage, apiKey);
-      if (relevantChunks.length > 0) {
-        additionalContext = "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
-          relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
-      }
-    } catch (ragError) {
-      console.warn("RAG retrieval failed, proceeding without it:", ragError);
-    }
-
-    // Prepare the conversation for the API
-    // We treat the "history" as the context of conversation so far.
-    // The "newMessage" is the latest user input.
-    // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
-
-    const userMessageWithContext = additionalContext
-      ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
-      : newMessage;
-
-    const contents = [
-       ...history.map((msg) => ({
-        role: msg.role,
-        parts: [{ text: msg.text }],
-      })),
-      {
-        role: "user",
-        parts: [{ text: userMessageWithContext }],
-      },
-    ];
+    const contents = await prepareGeminiRequest(history, newMessage);
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -79,5 +87,46 @@ export const sendMessageToGemini = async (
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Gemini API Error:", errorMessage);
     return "Connection to the neural link failed. Please try again.";
+  }
+};
+
+export const sendMessageStreamToGemini = async function* (
+  history: Message[],
+  newMessage: string
+): AsyncGenerator<string, void, unknown> {
+  if (!newMessage || newMessage.length > MAX_INPUT_LENGTH) {
+    yield "Message is too long. Please shorten your query.";
+    return;
+  }
+
+  if (!ai || !apiKey) {
+    yield "API Key is missing. Please configure the environment variable.";
+    return;
+  }
+
+  try {
+    const contents = await prepareGeminiRequest(history, newMessage);
+
+    const result = await ai.models.generateContentStream({
+      model: "gemini-3-flash-preview",
+      contents: contents,
+      config: {
+        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+        temperature: 0.7,
+        maxOutputTokens: 4000,
+      }
+    });
+
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      if (chunkText) {
+        yield chunkText;
+      }
+    }
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Gemini API Stream Error:", errorMessage);
+    yield "Connection to the neural link failed. Please try again.";
   }
 };
