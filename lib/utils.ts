@@ -49,3 +49,25 @@ export function calculateReadTime(text: string): number {
   const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
   return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
+
+/**
+ * Redacts sensitive information from a text string.
+ *
+ * @param text The text to sanitize.
+ * @param secrets An array of sensitive strings to redact.
+ * @returns The sanitized text with sensitive strings replaced by [REDACTED].
+ */
+export function redactSensitiveInfo(text: string, secrets: (string | undefined | null)[]): string {
+  if (!text) return text;
+  let sanitized = text;
+  secrets.forEach(secret => {
+    // Only redact if secret is substantial (>4 chars) to avoid false positives
+    if (secret && typeof secret === 'string' && secret.length > 4) {
+      // Escape special regex characters in the secret
+      const escapedSecret = secret.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedSecret, 'g');
+      sanitized = sanitized.replace(regex, '[REDACTED]');
+    }
+  });
+  return sanitized;
+}
