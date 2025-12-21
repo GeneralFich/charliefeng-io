@@ -16,7 +16,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
   console.error("Error: GEMINI_API_KEY not found in .env.local");
-  process.exit(1);
+  console.warn("Continuing without API key (embeddings will be empty)");
 }
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -76,7 +76,7 @@ async function ingest() {
 
   if (!fs.existsSync(POSTS_DIR)) {
       console.error(`Directory not found: ${POSTS_DIR}`);
-      process.exit(1);
+      console.warn("Continuing without API key (embeddings will be empty)");
   }
 
   const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));

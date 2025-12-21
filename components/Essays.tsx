@@ -163,6 +163,33 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
          <SearchHighlighter>{children}</SearchHighlighter>
       </blockquote>
     ),
+    code: ({ node, className, children, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      const isInfographic = match && match[1] === 'infographic';
+
+      if (isInfographic) {
+        const type = String(children).replace(/\n$/, '').trim();
+        const src = `/infographics/thermodynamic-wall/${type}.html`;
+
+        return (
+          <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-white">
+            <iframe
+              src={src}
+              className="w-full"
+              style={{ height: '500px', border: 'none' }}
+              title={`Infographic: ${type}`}
+              loading="lazy"
+            />
+          </div>
+        );
+      }
+
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
   }), []);
 
   // Memoize the rendered markdown content
