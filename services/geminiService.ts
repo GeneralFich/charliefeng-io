@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { FULL_CONTEXT } from "../lib/knowledge";
 import { Message } from "../types";
 import { getRelevantContext } from "../lib/rag";
+import { redactSensitiveInfo } from "../lib/utils";
 
 const apiKey = process.env.API_KEY;
 
@@ -76,7 +77,8 @@ export const sendMessageToGemini = async (
 
   } catch (error) {
     // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
     console.error("Gemini API Error:", errorMessage);
     return "Connection to the neural link failed. Please try again.";
   }
