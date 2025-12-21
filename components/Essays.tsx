@@ -179,7 +179,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         } else if (type === 'leverage') {
             heightClass = "h-[450px]";
         } else if (type === 'strategy') {
-            heightClass = "h-[400px]";
+            heightClass = "h-[380px]";
         } else if (type === 'mechanics') {
             heightClass = "h-[400px]";
         }
