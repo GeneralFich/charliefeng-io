@@ -61,32 +61,11 @@ export function dotProduct(vecA: number[], vecB: number[]): number {
  *          Returns 0 if dimensions mismatch or magnitude is zero to prevent errors.
  */
 export function cosineSimilarity(vecA: number[], vecB: number[], magA?: number, magB?: number): number {
-  if (vecA.length !== vecB.length) {
-    if (vecA.length === 0 || vecB.length === 0) return 0;
-    return 0;
-  }
+  if (vecA.length !== vecB.length || vecA.length === 0) return 0;
 
-  // Optimized path: Use pre-calculated magnitudes if available
-  if (magA !== undefined && magB !== undefined) {
-    if (magA === 0 || magB === 0) return 0;
-    return dotProduct(vecA, vecB) / (magA * magB);
-  }
-
-  // Fallback path: Calculate everything in one loop to avoid iterating 3 times
-  let dot = 0;
-  let sumA = 0;
-  let sumB = 0;
-
-  for (let i = 0; i < vecA.length; i++) {
-    const vA = vecA[i];
-    const vB = vecB[i];
-    dot += vA * vB;
-    sumA += vA * vA;
-    sumB += vB * vB;
-  }
-
-  const mA = Math.sqrt(sumA);
-  const mB = Math.sqrt(sumB);
+  const dot = dotProduct(vecA, vecB);
+  const mA = magA ?? magnitude(vecA);
+  const mB = magB ?? magnitude(vecB);
 
   if (mA === 0 || mB === 0) return 0;
 
