@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles, Terminal, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Send, Loader2, Sparkles, Terminal, ToggleLeft, ToggleRight, Bot } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
 import { ChatMessage } from './ChatMessage';
 import { View } from '../types';

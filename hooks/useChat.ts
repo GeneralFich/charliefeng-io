@@ -51,17 +51,17 @@ export function useChat() {
 
         if (!isMounted.current) return;
 
-        const { mainText, followUps } = parseFollowUpPrompts(responseText);
+        const { cleanText, prompts } = parseFollowUpPrompts(responseText);
 
         const modelMsg: Message = {
             role: 'model',
-            text: mainText,
+            text: cleanText,
             relevantChunks: relevantChunks
         };
         setMessages((prev) => [...prev, modelMsg]);
 
-        if (followUps && followUps.length > 0) {
-            setSuggestedPrompts(followUps);
+        if (prompts && prompts.length > 0) {
+            setSuggestedPrompts(prompts);
         }
 
     } catch (error) {
