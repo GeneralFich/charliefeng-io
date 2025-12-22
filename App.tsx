@@ -74,6 +74,14 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black flex flex-col font-sans print:bg-white print:bg-none">
       
+      {/* Accessibility Skip Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all"
+      >
+        Skip to content
+      </a>
+
       {/* Scroll Progress Bar */}
       {currentView !== View.HOME && <ScrollProgress />}
 
@@ -139,7 +147,11 @@ const App: React.FC = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 relative overflow-hidden print:overflow-visible">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 relative overflow-hidden print:overflow-visible focus:outline-none"
+      >
         {/* Subtle Background Grid Effect */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03] print:hidden"
              style={{
