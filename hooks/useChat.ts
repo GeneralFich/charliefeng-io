@@ -14,13 +14,21 @@ const INITIAL_SUGGESTED_PROMPTS = [
   "Tell me about 'Climate Intelligence'.",
 ];
 
+const INITIAL_MESSAGE_TEXT = "Hi! I'm Charlie's digital twin. I can answer questions about his work, writing, and research. What would you like to know?";
+
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Hi! I'm Charlie's digital twin. I can answer questions about his work, writing, and research. What would you like to know?" }
+    { role: 'model', text: INITIAL_MESSAGE_TEXT }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+
+  const clearChat = () => {
+    setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
+    setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
+    setInput('');
+  };
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -57,6 +65,7 @@ export const useChat = () => {
     setInput,
     isLoading,
     suggestedPrompts,
-    sendMessage: handleSend
+    sendMessage: handleSend,
+    clearChat
   };
 };
