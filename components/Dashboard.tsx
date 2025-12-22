@@ -19,6 +19,46 @@ import rehypeSanitize from 'rehype-sanitize';
 
 const { timeline: TIMELINE_DATA, risks: RISK_DATA, body: MANIFESTO_BODY } = WHITEPAPER_CONTENT;
 
+const MARKDOWN_PLUGINS = [remarkGfm];
+const REHYPE_PLUGINS = [rehypeSanitize];
+const MARKDOWN_COMPONENTS = {
+  a: ({ node, ...props }: any) => {
+    const href = props.href || '';
+    const isInternal = href.startsWith('#');
+
+    // Security: Prevent XSS via malicious links (e.g. javascript:)
+    const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/') || href.startsWith('#');
+    if (!isSafe) {
+      return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
+    }
+
+    const handleClick = (e: React.MouseEvent) => {
+      if (isInternal) {
+        e.preventDefault();
+        const id = href.slice(1);
+        let el = document.getElementById(id);
+        // Fallback for double-prefixed IDs (remark-gfm + rehype-sanitize conflict)
+        if (!el) {
+          el = document.getElementById(`user-content-${id}`);
+        }
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    return (
+      <a
+        {...props}
+        onClick={handleClick}
+        className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''} print:text-blue-700 print:border-blue-700/30`}
+        target={isInternal ? undefined : "_blank"}
+        rel={isInternal ? undefined : "noopener noreferrer"}
+      />
+    );
+  }
+};
+
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -236,45 +276,9 @@ export const Dashboard: React.FC = () => {
         </h3>
         <div className="bg-slate-900/30 rounded-xl p-8 border border-slate-800/50 prose prose-invert prose-slate max-w-none print:bg-white print:border-none print:p-0 print:prose-p:text-black print:prose-headings:text-black print:prose-strong:text-black print:prose-li:text-black">
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSanitize]}
-            components={{
-              a: ({ node, ...props }) => {
-                const href = props.href || '';
-                const isInternal = href.startsWith('#');
-
-                // Security: Prevent XSS via malicious links (e.g. javascript:)
-                const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/') || href.startsWith('#');
-                if (!isSafe) {
-                  return <span {...props} className="text-slate-400" title="Link disabled">{props.children}</span>;
-                }
-
-                const handleClick = (e: React.MouseEvent) => {
-                  if (isInternal) {
-                    e.preventDefault();
-                    const id = href.slice(1);
-                    let el = document.getElementById(id);
-                    // Fallback for double-prefixed IDs (remark-gfm + rehype-sanitize conflict)
-                    if (!el) {
-                      el = document.getElementById(`user-content-${id}`);
-                    }
-                    if (el) {
-                        el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }
-                };
-
-                return (
-                  <a
-                    {...props}
-                    onClick={handleClick}
-                    className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''} print:text-blue-700 print:border-blue-700/30`}
-                    target={isInternal ? undefined : "_blank"}
-                    rel={isInternal ? undefined : "noopener noreferrer"}
-                  />
-                );
-              }
-            }}
+            remarkPlugins={MARKDOWN_PLUGINS}
+            rehypePlugins={REHYPE_PLUGINS}
+            components={MARKDOWN_COMPONENTS as any}
           >
             {MANIFESTO_BODY}
           </ReactMarkdown>
