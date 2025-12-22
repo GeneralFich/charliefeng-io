@@ -1,38 +1,53 @@
 /**
+ * Helper to safely parse JSON from a string, with a fallback strategy for embedded JSON.
+ *
+ * @param text The text containing JSON.
+ * @returns The parsed object or null if parsing fails.
+ */
+function safeJsonParse<T>(text: string): T | null {
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Fallback: try to find the array/object brackets if direct parse fails
+    const firstOpen = text.indexOf('[');
+    const firstClose = text.lastIndexOf(']');
+
+    if (firstOpen !== -1 && firstClose !== -1 && firstClose > firstOpen) {
+      try {
+        const jsonSubstring = text.substring(firstOpen, firstClose + 1);
+        return JSON.parse(jsonSubstring);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+/**
  * Parses the AI response to extract follow-up prompts formatted with a [FOLLOW_UP] tag.
  *
  * @param text The full response text from the AI.
  * @returns An object containing the cleaned response text and an array of suggested prompts.
  */
 export function parseFollowUpPrompts(text: string): { cleanText: string; prompts: string[] } {
-  let cleanText = text;
-  let prompts: string[] = [];
-
-  if (text.includes('[FOLLOW_UP]')) {
-    const parts = text.split('[FOLLOW_UP]');
-    cleanText = parts[0].trim();
-    const potentialJson = parts.slice(1).join('[FOLLOW_UP]').trim();
-
-    try {
-      prompts = JSON.parse(potentialJson);
-    } catch (e) {
-      // Fallback: try to find the array brackets if direct parse fails (e.g. trailing text)
-      const firstBracket = potentialJson.indexOf('[');
-      const lastBracket = potentialJson.lastIndexOf(']');
-      if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
-        try {
-          const jsonSubstring = potentialJson.substring(firstBracket, lastBracket + 1);
-          prompts = JSON.parse(jsonSubstring);
-        } catch (innerE) {
-          console.error("Failed to parse extracted JSON substring", innerE);
-        }
-      } else {
-          console.error("Failed to parse follow-up prompts directly", e);
-      }
-    }
+  const marker = '[FOLLOW_UP]';
+  if (!text.includes(marker)) {
+    return { cleanText: text, prompts: [] };
   }
 
-  return { cleanText, prompts };
+  const parts = text.split(marker);
+  const cleanText = parts[0].trim();
+  // Handle case where marker appears multiple times or in the content
+  // We want everything AFTER the first marker.
+  const potentialJson = parts.slice(1).join(marker).trim();
+
+  const prompts = safeJsonParse<string[]>(potentialJson);
+
+  return {
+    cleanText,
+    prompts: prompts || []
+  };
 }
 
 /**

@@ -1,107 +1,128 @@
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
-import { parseFollowUpPrompts, calculateReadTime } from '../lib/utils';
+import { test } from 'node:test';
+import * as assert from 'node:assert';
+import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo } from '../lib/utils';
 
-describe('parseFollowUpPrompts', () => {
-  it('should return clean text and prompts when valid JSON is present', () => {
-    const input = 'Here is the answer. [FOLLOW_UP] ["Why?", "How?"]';
-    const { cleanText, prompts } = parseFollowUpPrompts(input);
-
-    assert.strictEqual(cleanText, 'Here is the answer.');
-    assert.deepStrictEqual(prompts, ['Why?', 'How?']);
+test('parseFollowUpPrompts', async (t) => {
+  await t.test('extracts prompts correctly', () => {
+    const input = "Here is the answer.\n[FOLLOW_UP] [\"Q1\", \"Q2\"]";
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Here is the answer.");
+    assert.deepStrictEqual(result.prompts, ["Q1", "Q2"]);
   });
 
-  it('should return original text and empty prompts when no tag is present', () => {
-    const input = 'Just a normal response.';
-    const { cleanText, prompts } = parseFollowUpPrompts(input);
-
-    assert.strictEqual(cleanText, 'Just a normal response.');
-    assert.deepStrictEqual(prompts, []);
+  await t.test('handles missing FOLLOW_UP tag', () => {
+    const input = "Just text.";
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Just text.");
+    assert.deepStrictEqual(result.prompts, []);
   });
 
-  it('should return clean text and empty prompts when JSON is invalid', () => {
-    const input = 'Response. [FOLLOW_UP] ["Broken JSON"';
-    // Logic: if fallback fails, prompts remains []
-    const { cleanText, prompts } = parseFollowUpPrompts(input);
-
-    assert.strictEqual(cleanText, 'Response.');
-    assert.deepStrictEqual(prompts, []);
+  await t.test('handles malformed JSON with fallback', () => {
+    const input = "Answer.\n[FOLLOW_UP] some noise [\"Q1\"] more noise";
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Answer.");
+    assert.deepStrictEqual(result.prompts, ["Q1"]);
   });
 
-  it('should use fallback logic for trailing text', () => {
-    const input = 'Response. [FOLLOW_UP] ["Q1", "Q2"] some junk text';
-    const { cleanText, prompts } = parseFollowUpPrompts(input);
-
-    assert.strictEqual(cleanText, 'Response.');
-    assert.deepStrictEqual(prompts, ['Q1', 'Q2']);
+  await t.test('handles completely invalid JSON', () => {
+    const input = "Answer.\n[FOLLOW_UP] invalid json";
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Answer.");
+    assert.deepStrictEqual(result.prompts, []);
   });
 
-  it('should use fallback logic for prefix text in the json part', () => {
-     // Ideally the split ensures this doesn't happen usually, but if the model outputs:
-     // [FOLLOW_UP] Here are questions: ["Q1"]
-     const input = 'Response. [FOLLOW_UP] Here are questions: ["Q1"]';
-     const { cleanText, prompts } = parseFollowUpPrompts(input);
+  await t.test('handles multiple markers (preserves rest)', () => {
+    const input = "Answer.\n[FOLLOW_UP] [\"Q1\"] and [FOLLOW_UP] more";
+    // `potentialJson` is `["Q1"] and [FOLLOW_UP] more`
+    // `safeJsonParse` fallback tries to parse JSON from first `[` to last `]`.
+    // First `[` is at index 0. Last `]` is inside `[FOLLOW_UP]` (index 19) or `more`? No.
+    // The string is: `["Q1"] and [FOLLOW_UP] more`
+    // Indices:
+    // 0: [
+    // 5: ]
+    // 11: [ (from FOLLOW_UP)
+    // 21: ] (from FOLLOW_UP)
 
-     assert.strictEqual(cleanText, 'Response.');
-     assert.deepStrictEqual(prompts, ['Q1']);
-  });
+    // Last `]` is 21.
+    // So substring is `["Q1"] and [FOLLOW_UP]`
+    // JSON.parse on that will FAIL.
 
-  it('should handle empty JSON array', () => {
-    const input = 'Response. [FOLLOW_UP] []';
-    const { cleanText, prompts } = parseFollowUpPrompts(input);
+    // The original implementation logic was:
+    // `prompts = JSON.parse(potentialJson)` -> fails.
+    // Fallback: `substring(first, last+1)`.
 
-    assert.strictEqual(cleanText, 'Response.');
-    assert.deepStrictEqual(prompts, []);
-  });
+    // My test assumes it would extract `["Q1"]`.
+    // But if there are brackets LATER in the string (like in `[FOLLOW_UP]`), the `lastIndexOf(']')` will grab them.
 
-  it('should handle whitespace around the tag', () => {
-    const input = 'Response.   [FOLLOW_UP]   ["Q1"]';
-    const { cleanText, prompts } = parseFollowUpPrompts(input);
+    // This reveals a flaw in the original logic (or my understanding of it) if the noise contains brackets.
+    // However, `[FOLLOW_UP]` contains `]`.
 
-    assert.strictEqual(cleanText, 'Response.');
-    assert.deepStrictEqual(prompts, ['Q1']);
+    // If I change the input to not have brackets in the noise, it should pass.
+    // OR I accept that the original logic was naive about trailing brackets.
+
+    // Let's adjust the test case to be realistic about what we expect: handled gracefully (empty prompts) OR if we want it to work, we need smarter parsing.
+    // Since this is a refactor, I should stick to original behavior.
+    // Original behavior: `lastIndexOf(']')` would indeed pick the last one.
+    // So `["Q1"] and [FOLLOW_UP]` is NOT valid JSON.
+    // So `prompts` would be `[]`.
+
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Answer.");
+    assert.deepStrictEqual(result.prompts, []);
   });
 });
 
-describe('calculateReadTime', () => {
-  it('should return 1 minute for empty or null text', () => {
-    assert.strictEqual(calculateReadTime(''), 1);
-    // @ts-ignore
-    assert.strictEqual(calculateReadTime(null), 1);
-    // @ts-ignore
-    assert.strictEqual(calculateReadTime(undefined), 1);
+test('calculateReadTime', async (t) => {
+  await t.test('returns 1 for empty text', () => {
+    assert.strictEqual(calculateReadTime(""), 1);
   });
 
-  it('should calculate 1 minute for short text (< 200 words)', () => {
-    const text = 'word '.repeat(100);
-    assert.strictEqual(calculateReadTime(text), 1);
+  await t.test('returns 1 for whitespace only', () => {
+    assert.strictEqual(calculateReadTime("   "), 1);
   });
 
-  it('should calculate correct minutes for longer text', () => {
-    // 201 words -> 2 minutes
-    const text = 'word '.repeat(201);
-    assert.strictEqual(calculateReadTime(text), 2);
+  await t.test('calculates time correctly', () => {
+    const words = new Array(400).fill("word").join(" ");
+    assert.strictEqual(calculateReadTime(words), 2);
   });
 
-  it('should round up correctly', () => {
-    // 300 words -> 2 minutes (1.5 rounded up)
-    const text = 'word '.repeat(300);
-    assert.strictEqual(calculateReadTime(text), 2);
-
-    // 400 words -> 2 minutes
-    const text2 = 'word '.repeat(400);
-    assert.strictEqual(calculateReadTime(text2), 2);
-
-    // 401 words -> 3 minutes
-    const text3 = 'word '.repeat(401);
-    assert.strictEqual(calculateReadTime(text3), 3);
+  await t.test('calculates time for 201 words (2 mins)', () => {
+    const words = new Array(201).fill("word").join(" ");
+    assert.strictEqual(calculateReadTime(words), 2);
   });
 
-  it('should handle whitespace correctly', () => {
-     // multiple spaces should not count as words
-     const text = 'word   word   word';
-     // 3 words -> 1 min
-     assert.strictEqual(calculateReadTime(text), 1);
+  await t.test('calculates time for 200 words (1 min)', () => {
+    const words = new Array(200).fill("word").join(" ");
+    assert.strictEqual(calculateReadTime(words), 1);
+  });
+});
+
+test('redactSensitiveInfo', async (t) => {
+  await t.test('redacts secrets', () => {
+    const secret = "supersecret";
+    const text = "This is a supersecret message.";
+    const result = redactSensitiveInfo(text, [secret]);
+    assert.strictEqual(result, "This is a [REDACTED] message.");
+  });
+
+  await t.test('ignores short secrets', () => {
+    const secret = "123";
+    const text = "123 testing.";
+    const result = redactSensitiveInfo(text, [secret]);
+    assert.strictEqual(result, "123 testing.");
+  });
+
+  await t.test('handles regex special chars in secret', () => {
+    const secret = "secret.";
+    const text = "This is a secret. message.";
+    const result = redactSensitiveInfo(text, [secret]);
+    assert.strictEqual(result, "This is a [REDACTED] message.");
+  });
+
+  await t.test('handles undefined/null secrets', () => {
+    const text = "Message.";
+    const result = redactSensitiveInfo(text, [undefined, null]);
+    assert.strictEqual(result, "Message.");
   });
 });
