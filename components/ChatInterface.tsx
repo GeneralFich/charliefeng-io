@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Sparkles, Loader2, X } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { useChat } from '../hooks/useChat';
@@ -20,6 +20,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -33,6 +34,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  const handleClearInput = () => {
+    setInput('');
+    inputRef.current?.focus();
+  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto w-full">
@@ -105,6 +111,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
         
         <div className="relative flex items-center">
           <input
+            ref={inputRef}
             type="text"
             aria-label="Chat message"
             value={input}
@@ -112,14 +119,28 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
             placeholder="Ask anything..."
             maxLength={2000}
-            className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+            className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-40 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
             disabled={isLoading}
           />
 
           {input.length > 0 && (
-            <span className="absolute right-12 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
-              {input.length}/2000
-            </span>
+            <>
+              {/* Clear Button */}
+              {!isLoading && (
+                <button
+                  onClick={handleClearInput}
+                  aria-label="Clear input"
+                  className="absolute right-14 p-1.5 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                >
+                  <X size={14} />
+                </button>
+              )}
+
+              {/* Character Count */}
+              <span className="absolute right-24 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
+                {input.length}/2000
+              </span>
+            </>
           )}
 
           <button
