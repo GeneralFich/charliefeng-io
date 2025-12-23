@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Sparkles, Loader2, RotateCcw } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { useChat } from '../hooks/useChat';
@@ -15,7 +15,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     setInput,
     isLoading,
     suggestedPrompts,
-    sendMessage
+    sendMessage,
+    clearChat
   } = useChat();
 
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
@@ -103,33 +104,46 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
           </div>
         )}
         
-        <div className="relative flex items-center">
-          <input
-            type="text"
-            aria-label="Chat message"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-            placeholder="Ask anything..."
-            maxLength={2000}
-            className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
-            disabled={isLoading}
-          />
-
-          {input.length > 0 && (
-            <span className="absolute right-12 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
-              {input.length}/2000
-            </span>
+        <div className="flex items-center gap-3">
+          {!isInitialState && (
+            <button
+              onClick={clearChat}
+              aria-label="Clear chat"
+              className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
+              title="Clear chat history"
+            >
+              <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+            </button>
           )}
 
-          <button
-            onClick={() => sendMessage(input)}
-            disabled={!input.trim() || isLoading}
-            aria-label={isLoading ? "Sending message..." : "Send message"}
-            className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
-          >
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-          </button>
+          <div className="relative flex-1">
+            <input
+              type="text"
+              aria-label="Chat message"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
+              placeholder="Ask anything..."
+              maxLength={2000}
+              className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+              disabled={isLoading}
+            />
+
+            {input.length > 0 && (
+              <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
+                {input.length}/2000
+              </span>
+            )}
+
+            <button
+              onClick={() => sendMessage(input)}
+              disabled={!input.trim() || isLoading}
+              aria-label={isLoading ? "Sending message..." : "Send message"}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+            >
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            </button>
+          </div>
         </div>
       </div>
     </div>
