@@ -1,6 +1,46 @@
-import React from 'react';
-import { Download, MapPin, Mail, Phone, Briefcase, GraduationCap, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, MapPin, Mail, Phone, Briefcase, GraduationCap, Users, Check, Copy } from 'lucide-react';
 import { RESUME_CONTENT } from '../lib/knowledge';
+
+const CopyableContactInfo: React.FC<{
+  icon: React.ElementType;
+  text: string;
+  label: string;
+}> = ({ icon: Icon, text, label }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="flex items-center gap-1 hover:text-blue-400 transition-colors cursor-pointer group relative print:cursor-text print:hover:text-slate-600"
+      title={`Copy ${label}`}
+      aria-label={`Copy ${label}: ${text}`}
+      type="button"
+    >
+      <div className="relative">
+        <Icon size={14} className={`transition-opacity duration-200 ${isCopied ? 'opacity-0' : 'opacity-100'}`} />
+        <Check size={14} className={`text-green-400 absolute top-0 left-0 transition-opacity duration-200 ${isCopied ? 'opacity-100' : 'opacity-0'}`} />
+      </div>
+      <span className={isCopied ? "text-green-400 transition-colors duration-200" : "transition-colors duration-200"}>
+        {text}
+      </span>
+      {/* Tooltip for non-touch devices */}
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-slate-700 print:hidden">
+        {isCopied ? 'Copied!' : 'Click to copy'}
+      </span>
+    </button>
+  );
+};
 
 export const Resume: React.FC = () => {
   const { name, location, email, phone, summary, experience, education, leadership, skills } = RESUME_CONTENT;
@@ -13,9 +53,9 @@ export const Resume: React.FC = () => {
         <div>
           <h1 className="text-4xl font-bold text-white tracking-tight mb-2 print:text-black">{name}</h1>
           <div className="flex flex-wrap gap-4 text-sm text-slate-400 print:text-slate-600">
-             <span className="flex items-center gap-1"><MapPin size={14} /> {location}</span>
-             <span className="flex items-center gap-1"><Mail size={14} /> {email}</span>
-             {phone && <span className="flex items-center gap-1"><Phone size={14} /> {phone}</span>}
+             <span className="flex items-center gap-1 cursor-default"><MapPin size={14} /> {location}</span>
+             <CopyableContactInfo icon={Mail} text={email} label="Email" />
+             {phone && <CopyableContactInfo icon={Phone} text={phone} label="Phone" />}
           </div>
         </div>
         <button
