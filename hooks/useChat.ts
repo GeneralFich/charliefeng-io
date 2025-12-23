@@ -61,6 +61,10 @@ export const useChat = () => {
 
     try {
       const rawResponse = await sendMessageToGemini(apiHistory, text, controller.signal);
+
+      // If aborted during processing (race condition check)
+      if (controller.signal.aborted) return;
+
       const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
 
       const modelMsg: Message = { role: 'model', text: cleanText };

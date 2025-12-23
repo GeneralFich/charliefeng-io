@@ -116,7 +116,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             </button>
           )}
 
-          <div className="relative flex-1 items-center">
+          <div className="relative flex-1">
             <input
               type="text"
               aria-label="Chat message"
@@ -130,7 +130,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             />
 
             {input.length > 0 && (
-              <span className="absolute right-12 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
+              <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
                 {input.length}/2000
               </span>
             )}
@@ -139,7 +139,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isLoading}
               aria-label={isLoading ? "Sending message..." : "Send message"}
-              className="absolute right-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
             >
               {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             </button>
