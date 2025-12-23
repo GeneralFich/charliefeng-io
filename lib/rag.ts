@@ -96,15 +96,18 @@ let cachedBlogData: BlogChunk[] | null = null;
 const getBlogData = (): BlogChunk[] => {
   if (cachedBlogData) return cachedBlogData;
 
-  cachedBlogData = (blogData as BlogChunk[]).map(chunk => {
+  // Optimization: Filter out chunks without embeddings during initialization
+  // and pre-calculate magnitude for valid chunks.
+  // This avoids checking `chunk.embedding` exists in the hot loop.
+  cachedBlogData = (blogData as BlogChunk[]).reduce<BlogChunk[]>((acc, chunk) => {
     if (chunk.embedding && chunk.embedding.length > 0) {
-      return {
+      acc.push({
         ...chunk,
         _magnitude: magnitude(chunk.embedding)
-      };
+      });
     }
-    return chunk;
-  });
+    return acc;
+  }, []);
 
   return cachedBlogData;
 };
@@ -142,20 +145,24 @@ export async function getRelevantContext(query: string, apiKey: string): Promise
     const queryMagnitude = magnitude(queryEmbedding);
     const data = getBlogData();
 
-    // Calculate similarity with all chunks
-    const scoredChunks = data
-      .filter((chunk) => chunk.embedding && chunk.embedding.length > 0)
-      .map((chunk) => ({
-        text: chunk.text,
-        title: chunk.title,
-        url: chunk.url,
-        // Use pre-calculated magnitude for chunk, and pre-calculated magnitude for query
-        score: cosineSimilarity(queryEmbedding, chunk.embedding!, queryMagnitude, chunk._magnitude)
-      }))
-      // Filter by threshold to remove irrelevant noise.
-      // 0.5 is a heuristic threshold; vectors in high-dimensional space
-      // often have positive cosine similarity even if unrelated.
-      .filter(chunk => chunk.score > 0.5);
+    // Optimization: Use a single loop to calculate score and filter,
+    // avoiding intermediate array allocations (map + filter).
+    const scoredChunks: RelevantChunk[] = [];
+
+    for (const chunk of data) {
+      // data only contains chunks with embeddings and magnitudes, so ! assertion is safe
+      const score = cosineSimilarity(queryEmbedding, chunk.embedding!, queryMagnitude, chunk._magnitude);
+
+      // Filter by threshold (0.5) directly to avoid allocating objects for irrelevant chunks
+      if (score > 0.5) {
+        scoredChunks.push({
+          text: chunk.text,
+          title: chunk.title,
+          url: chunk.url,
+          score
+        });
+      }
+    }
 
     // Sort by score descending (highest similarity first)
     scoredChunks.sort((a, b) => b.score - a.score);
