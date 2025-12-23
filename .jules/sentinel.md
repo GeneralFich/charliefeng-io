@@ -4,3 +4,8 @@
 **Vulnerability:** The application `index.html` lacked a Content Security Policy (CSP), allowing potential execution of malicious scripts if XSS vulnerabilities were present, and unrestricted loading of external resources.
 **Learning:** Even in modern React apps that mitigate XSS, a CSP is a critical defense-in-depth layer. The memory incorrectly stated a CSP existed, highlighting that documentation/memory can drift from implementation.
 **Prevention:** Implement a strict CSP in `index.html` during the initial setup and verify it against the actual code, not just documentation. Use `connect-src` to explicitly whitelist necessary APIs (Gemini).
+
+## 2025-02-12 - Protocol-Relative URL Open Redirect
+**Vulnerability:** The link handling logic in `ChatMessage.tsx` checked `href.startsWith('/')` to identify internal links, incorrectly capturing protocol-relative URLs (e.g., `//malicious.com`) as internal. This caused them to open in the same tab/window instead of a new tab with `noopener`, creating a potential open redirect or tabnabbing risk.
+**Learning:** Checking for internal paths via `startsWith('/')` is insufficient because `//` is a valid start for external URLs. Security logic must explicitly distinguish between root-relative paths and protocol-relative URLs.
+**Prevention:** Use stricter checks for internal links (e.g., `href.startsWith('/') && !href.startsWith('//')`) or leverage URL parsing APIs to determine origin reliability. Always verify "edge case" URL formats like protocol-relative links.
