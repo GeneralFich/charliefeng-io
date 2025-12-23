@@ -32,8 +32,8 @@
     </style>
 </head>
 <body class="antialiased overflow-hidden">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-4 text-center">Innovation Velocity Map</h3>
+    <div class="bg-slate-900/50 rounded-2xl shadow-lg border border-slate-800 p-4 backdrop-blur-sm">
+        <h3 class="font-bold text-white text-sm mb-4 text-center">Innovation Velocity Map</h3>
         <div class="chart-container" style="height: 350px;">
             <canvas id="leverageChart"></canvas>
         </div>
@@ -41,6 +41,9 @@
     <script>
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.maintainAspectRatio = false;
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
+
         const ctx = document.getElementById('leverageChart').getContext('2d');
 
         const rawData = [
@@ -60,18 +63,25 @@
                     data: rawData,
                     backgroundColor: (ctx) => {
                         const v = ctx.raw;
-                        if (!v) return '#ccc';
-                        if (v.x < 4 && v.y > 6) return 'rgba(37, 99, 235, 0.8)';
-                        if (v.x > 5) return 'rgba(245, 158, 11, 0.8)';
-                        if (v.label.includes('Software')) return 'rgba(16, 185, 129, 0.8)';
-                        return 'rgba(148, 163, 184, 0.8)';
-                    }
+                        if (!v) return '#475569';
+                        if (v.x < 4 && v.y > 6) return 'rgba(59, 130, 246, 0.8)'; // blue-500
+                        if (v.x > 5) return 'rgba(245, 158, 11, 0.8)'; // amber-500
+                        if (v.label.includes('Software')) return 'rgba(16, 185, 129, 0.8)'; // emerald-500
+                        return 'rgba(148, 163, 184, 0.8)'; // slate-400
+                    },
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1
                 }]
             },
             options: {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#334155',
+                        borderWidth: 1,
                         callbacks: {
                             title: (items) => items[0].raw.label,
                             label: (ctx) => `Deploy: ${ctx.raw.x} yrs | Impact: ${ctx.raw.y}/10`
@@ -80,14 +90,16 @@
                 },
                 scales: {
                     x: {
-                        title: { display: true, text: 'Time to Deployment (Years)', font: { size: 10, weight: 'bold' } },
+                        title: { display: true, text: 'Time to Deployment (Years)', font: { size: 10, weight: 'bold' }, color: '#94a3b8' },
                         min: 0, max: 10,
-                        grid: { display: false }
+                        grid: { display: false, color: '#334155' },
+                        ticks: { color: '#94a3b8' }
                     },
                     y: {
-                        title: { display: true, text: 'Impact on Density', font: { size: 10, weight: 'bold' } },
+                        title: { display: true, text: 'Impact on Density', font: { size: 10, weight: 'bold' }, color: '#94a3b8' },
                         min: 0, max: 12,
-                        grid: { color: '#f1f5f9' }
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' }
                     }
                 }
             }

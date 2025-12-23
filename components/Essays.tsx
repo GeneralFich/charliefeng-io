@@ -135,7 +135,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         }
 
         return (
-          <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-white">
+          <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
             <iframe
               src={src}
               className={`w-full ${heightClass}`}
