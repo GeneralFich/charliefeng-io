@@ -34,42 +34,11 @@ test('parseFollowUpPrompts', async (t) => {
 
   await t.test('handles multiple markers (preserves rest)', () => {
     const input = "Answer.\n[FOLLOW_UP] [\"Q1\"] and [FOLLOW_UP] more";
-    // `potentialJson` is `["Q1"] and [FOLLOW_UP] more`
-    // `safeJsonParse` fallback tries to parse JSON from first `[` to last `]`.
-    // First `[` is at index 0. Last `]` is inside `[FOLLOW_UP]` (index 19) or `more`? No.
-    // The string is: `["Q1"] and [FOLLOW_UP] more`
-    // Indices:
-    // 0: [
-    // 5: ]
-    // 11: [ (from FOLLOW_UP)
-    // 21: ] (from FOLLOW_UP)
-
-    // Last `]` is 21.
-    // So substring is `["Q1"] and [FOLLOW_UP]`
-    // JSON.parse on that will FAIL.
-
-    // The original implementation logic was:
-    // `prompts = JSON.parse(potentialJson)` -> fails.
-    // Fallback: `substring(first, last+1)`.
-
-    // My test assumes it would extract `["Q1"]`.
-    // But if there are brackets LATER in the string (like in `[FOLLOW_UP]`), the `lastIndexOf(']')` will grab them.
-
-    // This reveals a flaw in the original logic (or my understanding of it) if the noise contains brackets.
-    // However, `[FOLLOW_UP]` contains `]`.
-
-    // If I change the input to not have brackets in the noise, it should pass.
-    // OR I accept that the original logic was naive about trailing brackets.
-
-    // Let's adjust the test case to be realistic about what we expect: handled gracefully (empty prompts) OR if we want it to work, we need smarter parsing.
-    // Since this is a refactor, I should stick to original behavior.
-    // Original behavior: `lastIndexOf(']')` would indeed pick the last one.
-    // So `["Q1"] and [FOLLOW_UP]` is NOT valid JSON.
-    // So `prompts` would be `[]`.
-
+    // With robust parsing, this should extract the first valid JSON array `["Q1"]`
+    // and ignore the trailing noise even if it contains brackets.
     const result = parseFollowUpPrompts(input);
     assert.strictEqual(result.cleanText, "Answer.");
-    assert.deepStrictEqual(result.prompts, []);
+    assert.deepStrictEqual(result.prompts, ["Q1"]);
   });
 });
 

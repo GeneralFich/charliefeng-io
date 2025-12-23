@@ -8,16 +8,30 @@ function safeJsonParse<T>(text: string): T | null {
   try {
     return JSON.parse(text);
   } catch {
-    // Fallback: try to find the array/object brackets if direct parse fails
+    // Fallback: try to find the outermost array/object brackets
     const firstOpen = text.indexOf('[');
-    const firstClose = text.lastIndexOf(']');
+    if (firstOpen === -1) return null;
 
-    if (firstOpen !== -1 && firstClose !== -1 && firstClose > firstOpen) {
+    // Try to parse increasingly larger substrings starting from firstOpen
+    // This is safer than lastIndexOf(']') which might catch irrelevant trailing brackets
+    // Optimization: find all closing brackets
+    let currentPos = text.indexOf(']', firstOpen);
+    while (currentPos !== -1) {
       try {
-        const jsonSubstring = text.substring(firstOpen, firstClose + 1);
-        return JSON.parse(jsonSubstring);
+        const jsonSubstring = text.substring(firstOpen, currentPos + 1);
+        const result = JSON.parse(jsonSubstring);
+        // If it parses successfully, it might be the valid JSON we want.
+        // However, `JSON.parse` is lenient (e.g. `[1]` parses even if text is `[1] junk`).
+        // Wait, JSON.parse throws if there is trailing junk?
+        // JSON.parse(" [1] junk ") throws? Yes.
+        // JSON.parse("[1]") works.
+
+        // So if this succeeds, it means `jsonSubstring` is a valid JSON.
+        // And since we extracted it from the larger string, we found our match.
+        return result;
       } catch {
-        return null;
+        // Continue searching for the next closing bracket
+        currentPos = text.indexOf(']', currentPos + 1);
       }
     }
     return null;

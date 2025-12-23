@@ -1,3 +1,3 @@
-## 2024-05-23 - Testing Vite-dependent Logic in Node
-**Learning:** Logic embedded in files that use `import.meta.glob` or `?raw` imports (Vite specific) cannot be easily tested with `node:test` because `tsx` doesn't handle these non-standard imports.
-**Action:** Extract pure logic into separate utility files (like `lib/utils.ts`) that don't depend on Vite, allowing them to be unit tested in isolation.
+## 2024-05-24 - Robust JSON Extraction
+**Learning:** Naive JSON extraction using `lastIndexOf(']')` fails when trailing noise contains brackets (e.g. `["Q1"] and [More]`).
+**Action:** Implement iterative parsing that attempts to parse valid JSON from the first open bracket, expanding the substring until valid JSON is found or brackets are exhausted.
