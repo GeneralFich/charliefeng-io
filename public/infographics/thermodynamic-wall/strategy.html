@@ -32,7 +32,7 @@
     </style>
 </head>
 <body class="antialiased overflow-hidden">
-    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+    <div class="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 backdrop-blur-sm shadow-lg">
         <h3 class="text-sm font-semibold text-slate-400 uppercase mb-4 text-center">Strategic Profile Comparison</h3>
         <div class="chart-container" style="height: 300px;">
             <canvas id="strategyChart"></canvas>
@@ -41,6 +41,8 @@
     <script>
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.maintainAspectRatio = false;
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
 
         function formatLabel(str) {
             if (str.length <= 16) return str;
@@ -60,9 +62,9 @@
                     label: 'Green Compute',
                     data: [90, 85, 95, 75, 60],
                     fill: true,
-                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                    borderColor: '#2563EB',
-                    pointBackgroundColor: '#2563EB',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3B82F6',
+                    pointBackgroundColor: '#3B82F6',
                     pointBorderColor: '#fff'
                 }, {
                     label: 'Status Quo',
@@ -76,14 +78,21 @@
             },
             options: {
                 plugins: {
-                    legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+                    legend: { labels: { color: '#e2e8f0', font: { size: 10 } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#334155',
+                        borderWidth: 1
+                    }
                 },
                 scales: {
                     r: {
                         angleLines: { color: '#334155' },
                         grid: { color: '#334155' },
-                        pointLabels: { color: '#e2e8f0', font: { size: 9 } },
-                        ticks: { display: false }
+                        pointLabels: { color: '#e2e8f0', font: { size: 9, weight: '600' } },
+                        ticks: { display: false, backdropColor: 'transparent' }
                     }
                 }
             }

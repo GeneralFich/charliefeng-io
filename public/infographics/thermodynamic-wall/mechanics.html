@@ -32,10 +32,10 @@
     </style>
 </head>
 <body class="antialiased overflow-hidden">
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+    <div class="bg-slate-900/50 p-4 rounded-2xl shadow-lg border border-slate-800 backdrop-blur-sm">
         <div class="mb-2 flex justify-between items-end">
-            <h3 class="font-bold text-slate-800 text-sm">Global AI Energy Consumption (Index)</h3>
-            <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">2024-2030</span>
+            <h3 class="font-bold text-white text-sm">Global AI Energy Consumption (Index)</h3>
+            <span class="text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">2024-2030</span>
         </div>
         <div class="chart-container" style="height: 300px;">
             <canvas id="mechanicsChart"></canvas>
@@ -43,7 +43,8 @@
     </div>
     <script>
         Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = '#64748b';
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
         Chart.defaults.maintainAspectRatio = false;
 
         const ctx = document.getElementById('mechanicsChart').getContext('2d');
@@ -59,24 +60,51 @@
                         borderColor: '#F59E0B',
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointBackgroundColor: '#F59E0B',
+                        pointBorderColor: '#fff'
                     },
                     {
                         label: 'Inference Load',
                         data: [10, 20, 35, 55, 80, 110, 150],
                         backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                        borderColor: '#2563EB',
+                        borderColor: '#3B82F6',
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#fff'
                     }
                 ]
             },
             options: {
-                plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            font: { size: 10 },
+                            color: '#e2e8f0'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#334155',
+                        borderWidth: 1
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { borderDash: [5, 5] }, ticks: { display: false } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5], color: '#334155' },
+                        ticks: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 }, color: '#94a3b8' }
+                    }
                 }
             }
         });
