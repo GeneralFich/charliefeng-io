@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
@@ -23,11 +23,17 @@ export const useChat = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const clearChat = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
     setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
     setInput('');
+    setIsLoading(false);
   };
 
   const handleSend = async (text: string) => {
@@ -50,13 +56,26 @@ export const useChat = () => {
     // strictly keeping user/model pairs after system prompt is handled in service
     const apiHistory = messages.slice(1);
 
-    const rawResponse = await sendMessageToGemini(apiHistory, text);
-    const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-    const modelMsg: Message = { role: 'model', text: cleanText };
-    setMessages(prev => [...prev, modelMsg]);
-    setSuggestedPrompts(prompts);
-    setIsLoading(false);
+    try {
+      const rawResponse = await sendMessageToGemini(apiHistory, text, controller.signal);
+      const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
+
+      const modelMsg: Message = { role: 'model', text: cleanText };
+      setMessages(prev => [...prev, modelMsg]);
+      setSuggestedPrompts(prompts);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Generation aborted via clearChat');
+        return;
+      }
+      console.error("Chat error:", error);
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
   };
 
   return {

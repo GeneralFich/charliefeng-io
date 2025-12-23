@@ -15,7 +15,8 @@ const MAX_INPUT_LENGTH = 10000;
 
 export const sendMessageToGemini = async (
   history: Message[],
-  newMessage: string
+  newMessage: string,
+  abortSignal?: AbortSignal
 ): Promise<string> => {
   // Security: Input validation to prevent large payloads (DoS/Cost)
   if (!newMessage || newMessage.length > MAX_INPUT_LENGTH) {
@@ -66,7 +67,8 @@ export const sendMessageToGemini = async (
         systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
         temperature: 0.7,
         maxOutputTokens: 4000,
-      }
+        abortSignal: abortSignal,
+      },
     });
 
     if (response.text) {
@@ -76,6 +78,9 @@ export const sendMessageToGemini = async (
     return "I'm processing that signal, but returned no data.";
 
   } catch (error) {
+    if (abortSignal?.aborted) {
+      throw error; // Allow AbortError to propagate
+    }
     // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
     const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
     const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
