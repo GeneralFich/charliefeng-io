@@ -4,6 +4,21 @@ import { Message } from "../types";
 import { getRelevantContext } from "../lib/rag";
 import { redactSensitiveInfo } from "../lib/utils";
 
+/**
+ * @fileoverview Gemini AI Service
+ *
+ * This module orchestrates the interaction with the Google Gemini API.
+ * It acts as the "Cognitive Layer" of the Digital Twin, responsible for:
+ * 1. Validating user input (length, safety).
+ * 2. Retrieving relevant context (RAG) from the blog index.
+ * 3. Constructing the final prompt with System Instructions (Persona) and RAG Context.
+ * 4. Handling API errors gracefully and redacting sensitive info.
+ *
+ * "Why": This abstraction separates the AI logic from the UI (ChatInterface),
+ * allowing us to easily swap models, adjust RAG strategies, or mock responses
+ * without touching the React components.
+ */
+
 const apiKey = process.env.API_KEY;
 
 // Initialize the client.
@@ -13,6 +28,18 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const MAX_INPUT_LENGTH = 10000;
 
+/**
+ * Sends a message to the Gemini API with context-awareness.
+ *
+ * The strategy here is "Retrieval-Augmented Generation" (RAG):
+ * 1. We search the local blog index (`lib/blog_data.json`) for chunks relevant to the *new message*.
+ * 2. If found, we inject them into the prompt as "Context for this query".
+ * 3. We send the full conversation history (mapped to API format) plus the System Instruction (`FULL_CONTEXT`).
+ *
+ * @param history - The conversation history so far (excluding the new message).
+ * @param newMessage - The user's current question/input.
+ * @returns A Promise resolving to the model's text response (markdown formatted).
+ */
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string
