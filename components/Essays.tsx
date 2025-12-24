@@ -5,6 +5,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { ArrowLeft, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
+import { CodeBlock } from './CodeBlock';
 
 interface EssaysProps {
   initialSlug?: string | null;
@@ -113,6 +114,20 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
          <SearchHighlighter>{children}</SearchHighlighter>
       </blockquote>
     ),
+    pre: ({ node, children, ...props }: any) => {
+      // Check for infographic in children
+      // The structure is typically pre > code.language-infographic
+      const codeChild = node.children && node.children.length > 0 ? node.children[0] : null;
+      const className = codeChild && codeChild.properties ? (codeChild.properties.className || []) : [];
+      const classList = Array.isArray(className) ? className : [className];
+      const isInfographic = classList.some((c: string) => c.includes('language-infographic'));
+
+      if (isInfographic) {
+        return <>{children}</>;
+      }
+
+      return <CodeBlock node={node} {...props}>{children}</CodeBlock>;
+    },
     code: ({ node, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || '');
       const isInfographic = match && match[1] === 'infographic';
