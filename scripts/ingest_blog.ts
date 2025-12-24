@@ -58,6 +58,12 @@ interface BlogChunk {
   embedding?: number[];
 }
 
+/**
+ * Generates vector embeddings for a given text using the Gemini `text-embedding-004` model.
+ *
+ * @param text - The text content to embed.
+ * @returns A promise resolving to the embedding vector (array of numbers).
+ */
 async function getEmbeddings(text: string): Promise<number[]> {
     if (!ai) return [];
     try {
@@ -74,6 +80,23 @@ async function getEmbeddings(text: string): Promise<number[]> {
     }
 }
 
+/**
+ * Splits text into manageable chunks while preserving sentence boundaries.
+ *
+ * Why: Splitting by sentences rather than arbitrary character counts ensures that
+ * semantic meaning is preserved, which significantly improves the quality of vector embeddings
+ * and the relevance of RAG retrieval. Truncating a sentence in the middle often results in lost context.
+ *
+ * Strategy:
+ * 1. Split text into sentences using regex `/[^.!?]+[.!?]+/g`.
+ * 2. Accumulate sentences into a chunk until `maxChars` is reached.
+ * 3. Push the chunk and start a new one.
+ *
+ * @param text - The raw text content to be chunked.
+ * @param maxChars - The target maximum length for each chunk (default 1000).
+ *                   1000 chars is roughly 200-250 words, a balanced size for the model's context window.
+ * @returns An array of text strings (chunks).
+ */
 function chunkText(text: string, maxChars: number = 1000): string[] {
   const chunks: string[] = [];
   let currentChunk = "";
@@ -93,6 +116,11 @@ function chunkText(text: string, maxChars: number = 1000): string[] {
   return chunks;
 }
 
+/**
+ * Main ingestion routine.
+ * Scans `content/posts/`, chunks the markdown body, generates embeddings,
+ * and saves the result to `lib/blog_data.json`.
+ */
 async function ingest() {
   console.log(`Scanning for posts in ${POSTS_DIR}...`);
 
