@@ -118,19 +118,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     a: ({node, ...props}: any) => {
       // Security: Prevent XSS via malicious links (e.g. javascript:)
       const href = props.href || '';
-      const isSafe = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('/');
+      const isInternal = href.startsWith('/') && !href.startsWith('//');
+      // Treat protocol-relative URLs (//) as external to prevent open redirects
+      const isSafe = href.startsWith('http') || href.startsWith('mailto') || isInternal;
+
       if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
 
       // Intercept internal links
       const handleClick = (e: React.MouseEvent) => {
-        if (href.startsWith('/')) {
+        if (isInternal) {
           if (handleLinkClick(href, onNavigate)) {
             e.preventDefault();
           }
         }
       };
 
-      return <a className="text-blue-400 hover:underline cursor-pointer" onClick={handleClick} target={href.startsWith('/') ? undefined : "_blank"} rel={href.startsWith('/') ? undefined : "noopener noreferrer"} {...props} />;
+      return <a className="text-blue-400 hover:underline cursor-pointer" onClick={handleClick} target={isInternal ? undefined : "_blank"} rel={isInternal ? undefined : "noopener noreferrer"} {...props} />;
     },
   }), [onNavigate]);
 
