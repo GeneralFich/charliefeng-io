@@ -35,7 +35,7 @@ const CopyableContactInfo: React.FC<{
         {text}
       </span>
       {/* Tooltip for non-touch devices */}
-      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-slate-700 print:hidden">
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-slate-700 print:hidden z-10">
         {isCopied ? 'Copied!' : 'Click to copy'}
       </span>
     </button>
