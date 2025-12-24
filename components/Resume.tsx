@@ -62,7 +62,7 @@ export const Resume: React.FC = () => {
           onClick={() => window.print()}
           title="Print or Save as PDF"
           aria-label="Print or Save as PDF"
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors border border-slate-700 print:hidden"
+          className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm print:hidden"
         >
           <Download size={16} />
           <span>Download PDF</span>
