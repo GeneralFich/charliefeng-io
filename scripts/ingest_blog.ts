@@ -1,3 +1,25 @@
+/**
+ * @fileoverview RAG Ingestion Script
+ *
+ * This script is responsible for "teaching" the AI about the blog posts.
+ * It reads all Markdown files from `content/posts/`, generates embeddings
+ * for their content using Google's Gemini API, and saves the result to a JSON file.
+ *
+ * "Why": The main application needs a fast way to find relevant blog context
+ * without reading and embedding files on every request. This script pre-calculates
+ * everything so the runtime is fast (O(1) lookup + cosine similarity).
+ *
+ * Usage:
+ *   npx tsx scripts/ingest_blog.ts
+ *
+ * Output:
+ *   lib/blog_data.json - Contains text chunks and their 768-dimensional embeddings.
+ *
+ * Requirements:
+ *   - `GEMINI_API_KEY` must be set in `.env.local` or environment.
+ *   - `content/posts/*.md` files must exist.
+ */
+
 import { GoogleGenAI } from '@google/genai';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
