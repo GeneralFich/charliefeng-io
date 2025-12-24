@@ -60,22 +60,66 @@ export const useChat = () => {
     abortControllerRef.current = controller;
 
     try {
-      const rawResponse = await sendMessageToGemini(apiHistory, text, controller.signal);
+      const stream = await sendMessageToGemini(apiHistory, text, controller.signal);
+      const reader = stream.getReader();
 
-      // If aborted during processing (race condition check)
-      if (controller.signal.aborted) return;
-
-      const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
-
-      const modelMsg: Message = { role: 'model', text: cleanText };
+      // Create a placeholder message for the incoming stream
+      const modelMsg: Message = { role: 'model', text: '' };
       setMessages(prev => [...prev, modelMsg]);
+
+      let fullText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        fullText += value;
+
+        // Update the last message with the accumulated text
+        setMessages(prev => {
+          const newMsgs = [...prev];
+          if (newMsgs.length > 0) {
+             newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], text: fullText };
+          }
+          return newMsgs;
+        });
+      }
+
+      // After streaming is complete, parse follow-up prompts from the full text
+      const { cleanText, prompts } = parseFollowUpPrompts(fullText);
+
+      // Update the message one last time with the clean text (removing the JSON block)
+      setMessages(prev => {
+        const newMsgs = [...prev];
+        if (newMsgs.length > 0) {
+           newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], text: cleanText };
+        }
+        return newMsgs;
+      });
+
       setSuggestedPrompts(prompts);
+
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         console.log('Generation aborted via clearChat');
         return;
       }
       console.error("Chat error:", error);
+      // Ensure we append an error message if something failed drastically without streaming anything
+      setMessages(prev => {
+         const lastMsg = prev[prev.length - 1];
+         if (lastMsg.role === 'model' && lastMsg.text === '') {
+             // If we have an empty placeholder, update it to error
+             const newMsgs = [...prev];
+             newMsgs[newMsgs.length - 1] = { role: 'model', text: "An error occurred while generating response." };
+             return newMsgs;
+         } else if (lastMsg.role === 'user') {
+             // If we haven't added the model message yet
+             return [...prev, { role: 'model', text: "An error occurred." }];
+         }
+         return prev;
+      });
+
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
