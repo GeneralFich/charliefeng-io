@@ -110,3 +110,35 @@ export function redactSensitiveInfo(text: string, secrets: (string | undefined |
 export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/**
+ * Splits a long text into smaller chunks based on sentence boundaries.
+ *
+ * @param text The text to chunk.
+ * @param maxChars The maximum number of characters per chunk.
+ * @returns An array of text chunks.
+ */
+export function chunkText(text: string, maxChars: number = 1000): string[] {
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  // Split by sentence ending punctuation (. ! ?)
+  // This regex keeps the delimiter with the sentence
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+  for (const sentence of sentences) {
+    // If a single sentence is longer than maxChars, we force split it (edge case)
+    // But for now, we just append it to the current chunk or start a new one.
+    if ((currentChunk + sentence).length > maxChars) {
+      if (currentChunk.trim().length > 0) {
+         chunks.push(currentChunk.trim());
+      }
+      currentChunk = "";
+    }
+    currentChunk += sentence;
+  }
+  if (currentChunk.trim().length > 0) {
+    chunks.push(currentChunk.trim());
+  }
+  return chunks;
+}

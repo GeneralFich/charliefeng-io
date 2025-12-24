@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import fm from 'front-matter';
+import { chunkText } from '../lib/utils';
 
 // --- Configuration ---
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -52,24 +53,6 @@ async function getEmbeddings(text: string): Promise<number[]> {
     }
 }
 
-function chunkText(text: string, maxChars: number = 1000): string[] {
-  const chunks: string[] = [];
-  let currentChunk = "";
-
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-
-  for (const sentence of sentences) {
-    if ((currentChunk + sentence).length > maxChars) {
-      chunks.push(currentChunk.trim());
-      currentChunk = "";
-    }
-    currentChunk += sentence + " ";
-  }
-  if (currentChunk.trim().length > 0) {
-    chunks.push(currentChunk.trim());
-  }
-  return chunks;
-}
 
 async function ingest() {
   console.log(`Scanning for posts in ${POSTS_DIR}...`);
