@@ -53,8 +53,8 @@ export interface ResumeAttributes {
   name: string;
   title: string;
   location: string;
-  email: string;
-  phone: string;
+  // email: string; // Removed for PII protection
+  // phone: string; // Removed for PII protection
   summary: string;
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -105,7 +105,7 @@ export const WHITEPAPER_CONTENT = {
 };
 
 // --- Blog Posts ---
-const postFiles = import.meta.glob('../content/posts/*.md', { as: 'raw', eager: true });
+const postFiles = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default', eager: true });
 
 export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) => {
   const parsed = fm<PostAttributes>(content as string);
