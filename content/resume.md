@@ -2,8 +2,6 @@
 name: CHARLIE FENG
 title: Infrastructure Product Leader
 location: Mercer Island, WA
-email: charliefengsq@gmail.com
-phone: (917) 865-5411
 summary: |
   Infrastructure Product Leader with 8+ years of experience defining strategy for critical compute capacity and resilience. Expert in translating Hardware Engineering and ML constraints into high-leverage software products. Pioneered agentic AI tools and climate intelligence platforms at Google Data Centers that captured $50M+ in efficiency gains.
 experience:

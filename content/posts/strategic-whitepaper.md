@@ -1,44 +1,17 @@
 ---
-timeline:
-  - year: '2024'
-    level: 20
-    stage: 'Generative'
-  - year: '2025'
-    level: 40
-    stage: 'Teammate Era'
-  - year: '2026'
-    level: 55
-    stage: 'Teammate Era'
-  - year: '2027'
-    level: 75
-    stage: 'Weak AGI'
-  - year: '2028'
-    level: 85
-    stage: 'Weak AGI'
-  - year: '2029'
-    level: 95
-    stage: 'Robust AGI'
-  - year: '2030'
-    level: 100
-    stage: 'Robust AGI'
-risks:
-  - name: 'Translation'
-    risk: 90
-    fill: '#ef4444'
-  - name: 'Admin'
-    risk: 80
-    fill: '#f97316'
-  - name: 'Coding'
-    risk: 50
-    fill: '#eab308'
-  - name: 'Trades'
-    risk: 10
-    fill: '#22c55e'
-  - name: 'Nursing'
-    risk: 5
-    fill: '#3b82f6'
+title: "The Asymptotic Trajectory: A Comprehensive Analysis of the Path, Timing, and Impact of Artificial General Intelligence (2025–2030)"
+date: 2025-12-14
+author: Charlie Feng
+description: "A strategic whitepaper analyzing the 'Agentic Inflection Point', the economic metamorphosis driven by autonomous agents, and the timeline to robust AGI."
 ---
-# The Asymptotic Trajectory: A Comprehensive Analysis of the Path, Timing, and Impact of Artificial General Intelligence (2025–2030)
+
+```infographic
+whitepaper-summary
+```
+
+```infographic
+whitepaper-charts
+```
 
 ## 1. Introduction: The Agentic Inflection Point
 

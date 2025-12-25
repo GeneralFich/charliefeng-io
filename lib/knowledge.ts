@@ -19,7 +19,6 @@
 
 import fm from 'front-matter';
 import resumeRaw from '../content/resume.md?raw';
-import whitepaperRaw from '../content/whitepaper.md?raw';
 import { calculateReadTime } from './utils';
 
 // --- Interfaces for Parsed Data ---
@@ -53,30 +52,13 @@ export interface ResumeAttributes {
   name: string;
   title: string;
   location: string;
-  email: string;
-  phone: string;
+  // email: string; // Removed for PII protection
+  // phone: string; // Removed for PII protection
   summary: string;
   experience: ExperienceItem[];
   education: EducationItem[];
   leadership: LeadershipItem[];
   skills: SkillCategory[];
-}
-
-export interface TimelineItem {
-  year: string;
-  level: number;
-  stage: string;
-}
-
-export interface RiskItem {
-  name: string;
-  risk: number;
-  fill: string;
-}
-
-export interface WhitepaperAttributes {
-  timeline: TimelineItem[];
-  risks: RiskItem[];
 }
 
 export interface PostAttributes {
@@ -96,16 +78,11 @@ export interface BlogPost {
 // --- Parsing ---
 
 const parsedResume = fm<ResumeAttributes>(resumeRaw);
-const parsedWhitepaper = fm<WhitepaperAttributes>(whitepaperRaw);
 
 export const RESUME_CONTENT = parsedResume.attributes;
-export const WHITEPAPER_CONTENT = {
-  ...parsedWhitepaper.attributes,
-  body: parsedWhitepaper.body,
-};
 
 // --- Blog Posts ---
-const postFiles = import.meta.glob('../content/posts/*.md', { as: 'raw', eager: true });
+const postFiles = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default', eager: true });
 
 export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) => {
   const parsed = fm<PostAttributes>(content as string);
@@ -121,7 +98,6 @@ export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, cont
 // --- Raw Data for LLM Context ---
 // We pass the raw markdown (including frontmatter) so the LLM sees the structured data as well.
 export const RESUME_DATA = resumeRaw;
-export const MANIFESTO_DATA = whitepaperRaw;
 
 export const FULL_CONTEXT = `
 You are the AI Digital Twin of Charlie Feng. You are acting as Charlie Feng for the purposes of this chat.
@@ -132,20 +108,17 @@ You have an "Conductor" aesthetic in your tone—precise, orchestrating complex 
 Here is your Resume:
 ${RESUME_DATA}
 
-Here is your Manifesto "Preparing for AGI":
-${MANIFESTO_DATA}
-
 Here is a list of your Blog Essays:
 ${BLOG_POSTS.map(p => `- [${p.attributes.date}] ${p.attributes.title} (Slug: ${p.slug}): ${p.attributes.description}`).join('\n')}
 
 INSTRUCTIONS:
 1. Prioritize the provided Context Data (Resume & Manifesto) for your answers.
 2. If asked about your background, summarize from the Resume.
-3. If asked about AGI, future trends, or economics, cite the Manifesto data.
+3. If asked about AGI, future trends, or economics, cite the relevant essays from the blog list (e.g. "The Asymptotic Trajectory").
 4. If asked about something outside the provided context, you may answer using your general knowledge. However, you must maintain your persona as Charlie Feng: answer through the lens of an Infrastructure Product Leader and Strategic Thought Partner. Be professional, data-driven, and forward-looking.
 5. Keep answers insightful but under 200 words unless requested otherwise.
 6. **Linking to Content**:
-   - When referencing the Whitepaper/Dashboard, use the link format: \[Whitepaper\](/whitepaper) or \[Dashboard\](/dashboard).
+   - When referencing the Whitepaper/Dashboard, refer to it as the "Whitepaper Essay" and link to: \[Whitepaper\](/essays/strategic-whitepaper).
    - When referencing a specific Essay, use the link format: \[Essay Title\](/essays/SLUG). Use the slug provided in the Blog Essays list above.
    - When referencing your Background/Resume, use the link format: \[Resume\](/resume).
 7. At the very end of your response, you MUST provide 3 follow-up questions that the user might want to ask next. Format them strictly as a JSON array on a new line, like this:
