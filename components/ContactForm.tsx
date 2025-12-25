@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 export const ContactForm: React.FC = () => {
+  const form = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,9 +14,9 @@ export const ContactForm: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Use environment variable for the Formspree ID, or fallback to a placeholder/demo mode
-  // The user should set VITE_FORMSPREE_FORM_ID in their .env file
-  const FORM_ID = import.meta.env.VITE_FORMSPREE_FORM_ID;
+  const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -27,9 +29,9 @@ export const ContactForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!FORM_ID) {
-      // DEMO MODE: If no ID is present, simulate a success for dev/demo purposes
-      console.warn('VITE_FORMSPREE_FORM_ID is missing. Running in DEMO MODE (email will not actually send).');
+    if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+      // DEMO MODE: If credentials are missing, simulate a success for dev/demo purposes
+      console.warn('EmailJS credentials are missing. Running in DEMO MODE (email will not actually send).');
       setStatus('submitting');
       setErrorMessage('');
 
@@ -44,32 +46,25 @@ export const ContactForm: React.FC = () => {
     setStatus('submitting');
     setErrorMessage('');
 
-    try {
-      const response = await fetch(`https://formspree.io/f/${FORM_ID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
+    if (form.current) {
+      try {
+        await emailjs.sendForm(
+          SERVICE_ID,
+          TEMPLATE_ID,
+          form.current,
+          PUBLIC_KEY
+        );
         setStatus('success');
         setFormData({ name: '', email: '', subject: '', message: '' });
-      } else {
+      } catch (error: any) {
         setStatus('error');
-        if (Object.hasOwn(data, 'errors')) {
-          setErrorMessage(data.errors.map((err: any) => err.message).join(', '));
+        console.error('EmailJS Error:', error);
+        if (error.text) {
+          setErrorMessage(error.text);
         } else {
           setErrorMessage('Oops! There was a problem submitting your form');
         }
       }
-    } catch (error) {
-      setStatus('error');
-      setErrorMessage('Network error. Please try again later.');
     }
   };
 
@@ -92,7 +87,7 @@ export const ContactForm: React.FC = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form ref={form} onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-slate-300">Name</label>
