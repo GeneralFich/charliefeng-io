@@ -125,23 +125,32 @@ const getBlogData = (): BlogChunk[] => {
  *
  * @param query - The user's search query or question.
  * @param apiKey - The Google Gemini API key.
+ * @param customEmbedder - Optional custom function to generate embeddings (for testing).
  * @returns A promise resolving to an array of the top 5 relevant text chunks.
  */
-export async function getRelevantContext(query: string, apiKey: string): Promise<RelevantChunk[]> {
+export async function getRelevantContext(
+  query: string,
+  apiKey: string,
+  customEmbedder?: (text: string) => Promise<number[]>
+): Promise<RelevantChunk[]> {
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    let queryEmbedding: number[];
 
-    // Generate embedding for the query
-    const response = await ai.models.embedContent({
-      model: "text-embedding-004",
-      contents: [{ parts: [{ text: query }] }]
-    });
+    if (customEmbedder) {
+      queryEmbedding = await customEmbedder(query);
+    } else {
+      const ai = new GoogleGenAI({ apiKey });
+      // Generate embedding for the query
+      const response = await ai.models.embedContent({
+        model: "text-embedding-004",
+        contents: [{ parts: [{ text: query }] }]
+      });
 
-    if (!response.embeddings || response.embeddings.length === 0 || !response.embeddings[0].values) {
-        throw new Error("No embedding returned");
+      if (!response.embeddings || response.embeddings.length === 0 || !response.embeddings[0].values) {
+          throw new Error("No embedding returned");
+      }
+      queryEmbedding = response.embeddings[0].values;
     }
-
-    const queryEmbedding = response.embeddings[0].values;
     const queryMagnitude = magnitude(queryEmbedding);
     const data = getBlogData();
 
