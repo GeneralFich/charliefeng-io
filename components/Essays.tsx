@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -450,6 +450,67 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             {markdownContent}
           </HighlightContext.Provider>
         </article>
+
+        {/* Contextual Navigation Footer */}
+        <div className="mt-16 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(() => {
+            // Find current index in the filtered list to maintain context
+            // If the user filtered by "AGI", "Next" should be the next AGI post.
+            const currentIndex = filteredPosts.findIndex(p => p.slug === selectedPost.slug);
+
+            // "Newer" in the list (lower index)
+            const newerPost = currentIndex > 0 ? filteredPosts[currentIndex - 1] : null;
+
+            // "Older" in the list (higher index)
+            const olderPost = currentIndex !== -1 && currentIndex < filteredPosts.length - 1 ? filteredPosts[currentIndex + 1] : null;
+
+            return (
+              <>
+                <div>
+                  {newerPost && (
+                    <button
+                      onClick={() => {
+                        setSelectedPost(newerPost);
+                        setArticleSearchQuery('');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="group flex flex-col items-start text-left w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
+                    >
+                      <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">
+                        <ArrowLeft size={14} />
+                        <span>Previous</span>
+                      </div>
+                      <span className="text-slate-200 font-medium group-hover:text-white transition-colors line-clamp-2">
+                        {newerPost.attributes.title}
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  {olderPost && (
+                    <button
+                      onClick={() => {
+                        setSelectedPost(olderPost);
+                        setArticleSearchQuery('');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="group flex flex-col items-end text-right w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
+                    >
+                      <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">
+                        <span>Next</span>
+                        <ArrowRight size={14} />
+                      </div>
+                      <span className="text-slate-200 font-medium group-hover:text-white transition-colors line-clamp-2">
+                        {olderPost.attributes.title}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+        </div>
       </div>
     );
   }
