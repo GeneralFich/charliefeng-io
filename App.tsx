@@ -83,7 +83,7 @@ const App: React.FC = () => {
       </a>
 
       {/* Scroll Progress Bar */}
-      {currentView !== View.HOME && <ScrollProgress />}
+      {currentView !== View.HOME && currentView !== View.CONTACT && <ScrollProgress />}
 
       {/* Back to Top Button */}
       <BackToTop />
