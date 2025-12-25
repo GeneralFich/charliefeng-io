@@ -91,7 +91,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
       {/* Input Area */}
       <div className="p-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
         {!isInitialState && suggestedPrompts.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar" role="region" aria-label="Suggested follow-up questions">
             {suggestedPrompts.map((prompt, idx) => (
               <button
                 key={`${prompt}-${idx}`}
@@ -123,14 +123,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-              placeholder="Ask anything..."
+              placeholder={isLoading ? "Thinking..." : "Ask anything..."}
               maxLength={2000}
               className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
               disabled={isLoading}
             />
 
             {input.length > 0 && (
-              <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-mono tabular-nums pointer-events-none">
+              <span
+                className={`absolute right-12 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums pointer-events-none transition-colors ${
+                  input.length >= 2000 ? 'text-red-500 font-bold' :
+                  input.length > 1800 ? 'text-amber-500' :
+                  'text-slate-400'
+                }`}
+                aria-hidden="true"
+              >
                 {input.length}/2000
               </span>
             )}
