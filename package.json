@@ -27,7 +27,7 @@
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@types/hast": "^3.0.4",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.19.3",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
