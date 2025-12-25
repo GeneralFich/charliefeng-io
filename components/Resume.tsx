@@ -120,18 +120,6 @@ export const Resume: React.FC = () => {
         </div>
       </section>
 
-       {/* Contact */}
-       <section className="print:hidden">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6">Contact</h2>
-        <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-6 md:p-8">
-            <h3 className="text-xl font-semibold text-white mb-2">Get in Touch</h3>
-            <p className="text-slate-400 mb-8 max-w-2xl">
-              I'm always open to discussing new opportunities, infrastructure challenges, or the future of compute.
-              Fill out the form below and I'll get back to you.
-            </p>
-            <ContactForm />
-        </div>
-      </section>
     </div>
   );
 };

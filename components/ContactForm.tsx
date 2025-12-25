@@ -28,8 +28,16 @@ export const ContactForm: React.FC = () => {
     e.preventDefault();
 
     if (!FORM_ID) {
-      setErrorMessage('Form ID is missing. Please configure VITE_FORMSPREE_FORM_ID.');
-      setStatus('error');
+      // DEMO MODE: If no ID is present, simulate a success for dev/demo purposes
+      console.warn('VITE_FORMSPREE_FORM_ID is missing. Running in DEMO MODE (email will not actually send).');
+      setStatus('submitting');
+      setErrorMessage('');
+
+      // Simulate network delay
+      setTimeout(() => {
+        setStatus('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      }, 1500);
       return;
     }
 

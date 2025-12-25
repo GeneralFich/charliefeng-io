@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View } from './types';
 import { ChatInterface } from './components/ChatInterface';
-import { Dashboard } from './components/Dashboard';
 import { Resume } from './components/Resume';
 import { Essays } from './components/Essays';
 import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
+import { ContactView } from './components/ContactView';
 import { Logo } from './components/Logo';
-import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen } from 'lucide-react';
+import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen, Mail } from 'lucide-react';
 
 interface NavItemProps {
   view: View;
@@ -64,9 +64,9 @@ const App: React.FC = () => {
           <ChatInterface onNavigate={handleNavigate} />
         </div>
 
-        {currentView === View.DASHBOARD && <Dashboard />}
         {currentView === View.ABOUT && <Resume />}
         {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+        {currentView === View.CONTACT && <ContactView />}
       </>
     );
   };
@@ -115,9 +115,9 @@ const App: React.FC = () => {
             <div className="hidden md:flex items-center gap-2">
               <NavItem view={View.HOME} label="Chat" icon={MessageSquare} currentView={currentView} onNavigate={handleNavigate} />
               <NavItem view={View.ABOUT} label="About" icon={FileText} currentView={currentView} onNavigate={handleNavigate} />
-              <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} currentView={currentView} onNavigate={handleNavigate} />
-              <div className="h-6 w-px bg-slate-800 mx-2" />
               <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={handleNavigate} />
+              <div className="h-6 w-px bg-slate-800 mx-2" />
+              <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={handleNavigate} />
             </div>
 
             {/* Mobile Menu Button */}
@@ -140,8 +140,8 @@ const App: React.FC = () => {
           <div id="mobile-menu" className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} currentView={currentView} onNavigate={handleNavigate} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} currentView={currentView} onNavigate={handleNavigate} />
-            <NavItem view={View.DASHBOARD} label="Whitepaper" icon={LineChart} currentView={currentView} onNavigate={handleNavigate} />
             <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={handleNavigate} />
+            <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={handleNavigate} />
           </div>
         )}
       </nav>
