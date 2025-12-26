@@ -9,3 +9,8 @@
 **Vulnerability:** The link handling logic in `ChatMessage.tsx` checked `href.startsWith('/')` to identify internal links, incorrectly capturing protocol-relative URLs (e.g., `//malicious.com`) as internal. This caused them to open in the same tab/window instead of a new tab with `noopener`, creating a potential open redirect or tabnabbing risk.
 **Learning:** Checking for internal paths via `startsWith('/')` is insufficient because `//` is a valid start for external URLs. Security logic must explicitly distinguish between root-relative paths and protocol-relative URLs.
 **Prevention:** Use stricter checks for internal links (e.g., `href.startsWith('/') && !href.startsWith('//')`) or leverage URL parsing APIs to determine origin reliability. Always verify "edge case" URL formats like protocol-relative links.
+
+## 2025-02-23 - Client-Side Validation Bypass in React Forms
+**Vulnerability:** The `ContactForm` relied implicitly on HTML5 browser validation (e.g., `type="email"`). While convenient, this meant the custom React `onSubmit` logic (and its associated error handling/logging) was effectively unreachable for simple validation failures, and relied entirely on browser UI implementation which varies.
+**Learning:** Relying solely on `type="email"` creates a "dead code" path in React handlers if `noValidate` isn't used. To truly control the validation UX and ensure custom security checks run, one must disable native validation and implement explicit checks in the handler.
+**Prevention:** When implementing custom validation logic in React forms, explicitly add `noValidate` to the `<form>` element and replicate necessary checks (required, format) in JavaScript to ensure the handler is the single source of truth for validation.
