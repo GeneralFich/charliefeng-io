@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View } from './types';
 import { ChatInterface } from './components/ChatInterface';
 import { Resume } from './components/Resume';
@@ -44,6 +44,7 @@ const App: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [targetEssaySlug, setTargetEssaySlug] = useState<string | null>(null);
 
+  // Handle URL updates and browser history
   const handleNavigate = React.useCallback((view: View, slug?: string) => {
     setCurrentView(view);
     if (view === View.ESSAYS && slug) {
@@ -52,6 +53,43 @@ const App: React.FC = () => {
       setTargetEssaySlug(null);
     }
     setMobileMenuOpen(false);
+
+    // Update URL
+    const params = new URLSearchParams();
+    params.set('view', view);
+    if (slug) {
+      params.set('essay', slug);
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ view, slug }, '', newUrl);
+  }, []);
+
+  // Initialize from URL on mount and handle back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get('view');
+      const essayParam = params.get('essay');
+
+      if (viewParam && Object.values(View).includes(viewParam as View)) {
+        setCurrentView(viewParam as View);
+        if (viewParam === View.ESSAYS && essayParam) {
+          setTargetEssaySlug(essayParam);
+        } else {
+          setTargetEssaySlug(null);
+        }
+      } else {
+        // Default to Home if no valid view param
+        setCurrentView(View.HOME);
+        setTargetEssaySlug(null);
+      }
+    };
+
+    // Initial check
+    handlePopState();
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const renderContent = () => {
