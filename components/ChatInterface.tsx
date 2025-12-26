@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2, RotateCcw } from 'lucide-react';
+import { Send, Sparkles, Loader2, RotateCcw, X } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { useChat } from '../hooks/useChat';
@@ -21,6 +21,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -118,6 +119,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
           <div className="relative flex-1">
             <input
+              ref={inputRef}
               type="text"
               aria-label="Chat message"
               value={input}
@@ -130,16 +132,28 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             />
 
             {input.length > 0 && (
-              <span
-                className={`absolute right-12 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums pointer-events-none transition-colors ${
-                  input.length >= 2000 ? 'text-red-500 font-bold' :
-                  input.length > 1800 ? 'text-amber-500' :
-                  'text-slate-400'
-                }`}
-                aria-hidden="true"
-              >
-                {input.length}/2000
-              </span>
+              <>
+                <button
+                  onClick={() => {
+                    setInput('');
+                    inputRef.current?.focus();
+                  }}
+                  aria-label="Clear input"
+                  className="absolute right-28 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+                <span
+                  className={`absolute right-14 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums pointer-events-none transition-colors ${
+                    input.length >= 2000 ? 'text-red-500 font-bold' :
+                    input.length > 1800 ? 'text-amber-500' :
+                    'text-slate-400'
+                  }`}
+                  aria-hidden="true"
+                >
+                  {input.length}/2000
+                </span>
+              </>
             )}
 
             <button
