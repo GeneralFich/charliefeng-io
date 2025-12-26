@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { View } from './types';
 import { ChatInterface } from './components/ChatInterface';
-import { Resume } from './components/Resume';
-import { Essays } from './components/Essays';
 import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
-import { ContactView } from './components/ContactView';
 import { Logo } from './components/Logo';
-import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen, Mail } from 'lucide-react';
+import { LayoutGrid, MessageSquare, FileText, ExternalLink, Menu, X, LineChart, BookOpen, Mail, Loader2 } from 'lucide-react';
+
+// Lazy load heavy components
+const Resume = React.lazy(() => import('./components/Resume').then(module => ({ default: module.Resume })));
+const Essays = React.lazy(() => import('./components/Essays').then(module => ({ default: module.Essays })));
+const ContactView = React.lazy(() => import('./components/ContactView').then(module => ({ default: module.ContactView })));
 
 interface NavItemProps {
   view: View;
@@ -64,9 +66,15 @@ const App: React.FC = () => {
           <ChatInterface onNavigate={handleNavigate} />
         </div>
 
-        {currentView === View.ABOUT && <Resume />}
-        {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
-        {currentView === View.CONTACT && <ContactView />}
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-full min-h-[50vh]">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          </div>
+        }>
+          {currentView === View.ABOUT && <Resume />}
+          {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+          {currentView === View.CONTACT && <ContactView />}
+        </Suspense>
       </>
     );
   };
