@@ -3,60 +3,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { ArrowLeft, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  BarChart,
-  Bar,
-  Cell,
-} from 'recharts';
-import { TrendingUp, AlertTriangle, Globe, Layers } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { CodeBlock } from './CodeBlock';
-
-// Whitepaper data
-const TIMELINE_DATA = [
-  { year: '2024', level: 20, stage: 'Generative' },
-  { year: '2025', level: 40, stage: 'Teammate Era' },
-  { year: '2026', level: 55, stage: 'Teammate Era' },
-  { year: '2027', level: 75, stage: 'Weak AGI' },
-  { year: '2028', level: 85, stage: 'Weak AGI' },
-  { year: '2029', level: 95, stage: 'Robust AGI' },
-  { year: '2030', level: 100, stage: 'Robust AGI' },
-];
-
-const RISK_DATA = [
-  { name: 'Translation', risk: 90, fill: '#ef4444' },
-  { name: 'Admin', risk: 80, fill: '#f97316' },
-  { name: 'Coding', risk: 50, fill: '#eab308' },
-  { name: 'Trades', risk: 10, fill: '#22c55e' },
-  { name: 'Nursing', risk: 5, fill: '#3b82f6' },
-];
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900 border border-slate-700 p-3 rounded shadow-xl">
-        <p className="text-slate-200 font-bold mb-1">{label}</p>
-        <p className="text-blue-400 text-sm">
-          {payload[0].value}% Impact
-        </p>
-        {payload[0].payload.stage && (
-          <p className="text-slate-400 text-xs mt-1 uppercase tracking-wider">
-            {payload[0].payload.stage}
-          </p>
-        )}
-      </div>
-    );
-  }
-  return null;
-};
+import { WhitepaperCharts } from './WhitepaperCharts';
+import { WhitepaperSummary } from './WhitepaperSummary';
 
 interface EssaysProps {
   initialSlug?: string | null;
@@ -188,147 +139,12 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
 
         // Handle Whitepaper Summary
         if (type === 'whitepaper-summary') {
-          return (
-            <div className="not-prose mb-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <Calendar className="text-blue-400" size={20} />
-                  </div>
-                  <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Arrival Consensus</div>
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">2030</div>
-                <div className="text-sm text-slate-400">Most likely year for Robust AGI</div>
-              </div>
-
-              <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <Globe className="text-green-400" size={20} />
-                  </div>
-                  <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Economic Impact</div>
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">$13 Trillion</div>
-                <div className="text-sm text-slate-400">Global GDP boost by 2030</div>
-              </div>
-
-              <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-amber-500/10 rounded-lg">
-                    <AlertTriangle className="text-amber-400" size={20} />
-                  </div>
-                  <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Near-Term Risk</div>
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">25%</div>
-                <div className="text-sm text-slate-400">Probability of AGI by 2027</div>
-              </div>
-
-              <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-xl hover:border-slate-700 transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-purple-500/10 rounded-lg">
-                    <Layers className="text-purple-400" size={20} />
-                  </div>
-                  <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Labor Shift</div>
-                </div>
-                <div className="text-2xl font-bold text-white mb-1">Unbundling</div>
-                <div className="text-sm text-slate-400">Jobs split into agentic tasks</div>
-              </div>
-            </div>
-          );
+          return <WhitepaperSummary />;
         }
 
         // Handle Whitepaper Charts
         if (type === 'whitepaper-charts') {
-          return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-12">
-              {/* Chart 1: AGI Timeline */}
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2">
-                  <TrendingUp size={18} className="text-blue-500" />
-                  The Consensus Timeline
-                </h3>
-                <p className="text-sm text-slate-500 mb-6">
-                  Aggregated forecast of AGI capability progression (0-100 scale).
-                </p>
-                <div className="h-[300px] w-full min-w-0">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <AreaChart data={TIMELINE_DATA}>
-                      <defs>
-                        <linearGradient id="colorLevel" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                      <XAxis
-                        dataKey="year"
-                        stroke="#475569"
-                        tick={{ fill: '#475569', fontSize: 12 }}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <YAxis hide />
-                      <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#3b82f6', strokeWidth: 1 }} />
-                      <Area
-                        type="monotone"
-                        dataKey="level"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#colorLevel)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Chart 2: Job Risk */}
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2">
-                  <AlertTriangle size={18} className="text-red-500" />
-                  Sector Vulnerability Index
-                </h3>
-                <p className="text-sm text-slate-500 mb-6">
-                   Relative risk of displacement due to agentic automation.
-                </p>
-                <div className="h-[300px] w-full min-w-0">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <BarChart data={RISK_DATA} layout="vertical" margin={{ left: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-                      <XAxis type="number" hide />
-                      <YAxis
-                        dataKey="name"
-                        type="category"
-                        stroke="#94a3b8"
-                        tick={{ fill: '#94a3b8', fontSize: 12 }}
-                        width={80}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <Tooltip
-                        cursor={{ fill: '#1e293b' }}
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                               <div className="bg-slate-900 border border-slate-700 p-2 rounded text-xs text-white">
-                                 Risk Score: {payload[0].value}
-                               </div>
-                            )
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar dataKey="risk" radius={[0, 4, 4, 0]} barSize={32}>
-                        {RISK_DATA.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={0.8} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          );
+          return <WhitepaperCharts />;
         }
 
         // Standard Iframe Infographics
