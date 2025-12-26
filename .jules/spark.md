@@ -1,3 +1,3 @@
-## 2024-05-23 - [Essays Sorting]
-**Insight:** Users needed a way to organize content by date and length, which wasn't possible with just a list.
-**Principle:** Always provide sorting options for lists of content that vary in date or length.
+## 2024-05-24 - [Contextual Navigation]
+**Insight:** Users browsing a filtered list (e.g., search results) expect "Next" to respect that filter, not jump to an unrelated item in the canonical list.
+**Principle:** When implementing navigation between items in a list, always use the *current* view context (filtered/sorted) rather than the raw dataset.
