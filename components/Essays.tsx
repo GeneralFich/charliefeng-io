@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { TrendingUp, AlertTriangle, Globe, Layers } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
+import { escapeRegExp } from '../lib/utils';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { CodeBlock } from './CodeBlock';
 import { WhitepaperCharts } from './WhitepaperCharts';
@@ -46,6 +47,11 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     }
   }, [initialSlug]);
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
+
+  const searchRegex = useMemo(() => {
+    if (!articleSearchQuery || articleSearchQuery.trim() === '') return null;
+    return new RegExp(`(${escapeRegExp(articleSearchQuery)})`, 'gi');
+  }, [articleSearchQuery]);
 
   // Filter and sort posts for the main list
   const filteredPosts = useMemo(() => {
@@ -275,7 +281,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </div>
           </header>
 
-          <HighlightContext.Provider value={articleSearchQuery}>
+          <HighlightContext.Provider value={searchRegex}>
             {markdownContent}
           </HighlightContext.Provider>
         </article>
