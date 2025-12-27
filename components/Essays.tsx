@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown, Share2, Check } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -36,6 +36,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [isShareCopied, setIsShareCopied] = useState(false);
 
   React.useEffect(() => {
     if (initialSlug) {
@@ -46,6 +47,18 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     }
   }, [initialSlug]);
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
+
+  const handleShare = async () => {
+    if (!selectedPost) return;
+    const url = `${window.location.origin}/?view=essays&essay=${selectedPost.slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setIsShareCopied(true);
+      setTimeout(() => setIsShareCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL: ', err);
+    }
+  };
 
   // Filter and sort posts for the main list
   const filteredPosts = useMemo(() => {
@@ -213,16 +226,36 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <button
-            onClick={() => {
-              setSelectedPost(null);
-              setArticleSearchQuery('');
-            }}
-            className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors w-fit"
-          >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-medium">Back to Essays</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => {
+                setSelectedPost(null);
+                setArticleSearchQuery('');
+              }}
+              className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors w-fit"
+            >
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back to Essays</span>
+            </button>
+            <div className="h-4 w-px bg-slate-800" />
+            <button
+              onClick={handleShare}
+              className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors"
+              title="Copy link to essay"
+            >
+              {isShareCopied ? (
+                <>
+                  <Check size={16} className="text-green-400" />
+                  <span className="text-sm font-medium text-green-400">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 size={16} />
+                  <span className="text-sm font-medium">Share</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {/* In-Article Search */}
           <div className="relative group w-full md:w-64">
