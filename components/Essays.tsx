@@ -62,20 +62,21 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
       );
     }
 
-    return [...posts].sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.attributes.date).getTime() - new Date(a.attributes.date).getTime();
-        case 'oldest':
-          return new Date(a.attributes.date).getTime() - new Date(b.attributes.date).getTime();
-        case 'shortest':
-          return a.readTime - b.readTime;
-        case 'longest':
-          return b.readTime - a.readTime;
-        default:
-          return 0;
-      }
-    });
+    // Optimization: BLOG_POSTS is already sorted by newest (descending date).
+    // We can skip expensive Date parsing/sorting for 'newest' and just reverse for 'oldest'.
+    switch (sortBy) {
+      case 'newest':
+        return posts;
+      case 'oldest':
+        // Reverse is faster than sorting, and posts is already sorted by newest
+        return [...posts].reverse();
+      case 'shortest':
+        return [...posts].sort((a, b) => a.readTime - b.readTime);
+      case 'longest':
+        return [...posts].sort((a, b) => b.readTime - a.readTime);
+      default:
+        return posts;
+    }
   }, [searchQuery, sortBy]);
 
   const handleShare = async () => {
