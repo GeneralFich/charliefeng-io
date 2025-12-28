@@ -26,8 +26,26 @@ export const ContactForm: React.FC = () => {
     }));
   };
 
+  const isValidEmail = (email: string) => {
+    // Basic email validation regex
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Security: Input validation
+    if (!formData.name.trim() || !formData.subject.trim() || !formData.message.trim()) {
+      setStatus('error');
+      setErrorMessage('Please fill in all required fields.');
+      return;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      setStatus('error');
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
 
     if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
       // DEMO MODE: If credentials are missing, simulate a success for dev/demo purposes
@@ -87,7 +105,7 @@ export const ContactForm: React.FC = () => {
   }
 
   return (
-    <form ref={form} onSubmit={handleSubmit} className="space-y-4">
+    <form ref={form} onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-slate-300">Name</label>
