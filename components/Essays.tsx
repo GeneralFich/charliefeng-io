@@ -18,6 +18,7 @@ import {
 import { TrendingUp, AlertTriangle, Globe, Layers } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
+import { isSafeLink } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
@@ -101,11 +102,9 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const markdownComponents = useMemo(() => ({
     // Custom Anchor to handle footnotes and external links
     a: ({ node, href, children, ...props }: any) => {
-      // Security: Prevent XSS via malicious links (e.g. javascript:)
+      // Security: Prevent XSS and open redirects
       const safeHref = href || '';
-      const isSafe = safeHref.startsWith('http') || safeHref.startsWith('mailto') || safeHref.startsWith('/') || safeHref.startsWith('#');
-
-      if (!isSafe) {
+      if (!isSafeLink(safeHref)) {
          return <span {...props} className="text-slate-400 cursor-not-allowed" title="Link disabled">{children}</span>;
       }
 

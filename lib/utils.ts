@@ -110,3 +110,22 @@ export function redactSensitiveInfo(text: string, secrets: (string | undefined |
 export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/**
+ * Checks if a link URL is safe to render to prevent XSS and open redirects.
+ * Explicitly disallows protocol-relative URLs (//) to prevent open redirects.
+ *
+ * @param href The URL to check.
+ * @returns True if the link is safe, false otherwise.
+ */
+export function isSafeLink(href: string): boolean {
+  if (!href) return false;
+  // Allow http/https/mailto
+  if (href.startsWith('http') || href.startsWith('mailto')) return true;
+  // Allow anchors
+  if (href.startsWith('#')) return true;
+  // Allow internal paths, but reject protocol-relative (//)
+  if (href.startsWith('/') && !href.startsWith('//')) return true;
+
+  return false;
+}

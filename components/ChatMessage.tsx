@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { Message, View } from '../types';
+import { isSafeLink } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 
 const MARKDOWN_PLUGINS = [remarkGfm];
@@ -80,11 +81,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     a: ({node, ...props}: any) => {
       // Security: Prevent XSS via malicious links (e.g. javascript:)
       const href = props.href || '';
-      const isInternal = href.startsWith('/') && !href.startsWith('//');
-      // Treat protocol-relative URLs (//) as external to prevent open redirects
-      const isSafe = href.startsWith('http') || href.startsWith('mailto') || isInternal;
 
-      if (!isSafe) return <span {...props} title="Link disabled">{props.children}</span>;
+      if (!isSafeLink(href)) return <span {...props} title="Link disabled">{props.children}</span>;
+
+      const isInternal = href.startsWith('/') && !href.startsWith('//');
 
       // Intercept internal links
       const handleClick = (e: React.MouseEvent) => {
