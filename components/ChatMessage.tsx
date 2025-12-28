@@ -124,8 +124,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
           <button
             onClick={handleCopyMessage}
             className="absolute top-2 right-2 p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-700 hover:text-white focus:opacity-100 bg-slate-800/50 backdrop-blur-sm z-10"
-            aria-label="Copy message"
-            title="Copy message"
+            aria-label={isCopied ? "Copied to clipboard" : "Copy message"}
+            title={isCopied ? "Copied to clipboard" : "Copy message"}
           >
             {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
           </button>
