@@ -114,6 +114,7 @@ export const ContactForm: React.FC = () => {
             id="name"
             name="name"
             required
+            maxLength={100}
             value={formData.name}
             onChange={handleChange}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
@@ -127,6 +128,7 @@ export const ContactForm: React.FC = () => {
             id="email"
             name="email"
             required
+            maxLength={100}
             value={formData.email}
             onChange={handleChange}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
@@ -142,6 +144,7 @@ export const ContactForm: React.FC = () => {
           id="subject"
           name="subject"
           required
+          maxLength={200}
           value={formData.subject}
           onChange={handleChange}
           className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
@@ -155,6 +158,7 @@ export const ContactForm: React.FC = () => {
           id="message"
           name="message"
           required
+          maxLength={5000}
           rows={5}
           value={formData.message}
           onChange={handleChange}
