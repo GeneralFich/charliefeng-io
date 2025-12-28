@@ -1,36 +1,46 @@
 /**
  * Helper to safely parse JSON from a string, with a fallback strategy for embedded JSON.
  *
- * @param text The text containing JSON.
+ * Why: Large Language Models (LLMs) often surround JSON output with conversational text
+ * (e.g., "Here is the JSON: [...]") or include trailing noise. Standard `JSON.parse` fails
+ * on these inputs.
+ *
+ * Strategy ("Sliding Window"):
+ * 1. Attempt standard `JSON.parse` first.
+ * 2. If that fails, locate the first opening bracket `[`.
+ * 3. Iteratively search for closing brackets `]`, extracting the substring and attempting to parse.
+ * 4. This ensures we find the *valid* JSON array embedded within the text, ignoring trailing garbage.
+ *
+ * Note: Currently optimized for JSON Arrays (starting with `[`) as that matches our use case.
+ *
+ * @param text The text containing potential JSON.
  * @returns The parsed object or null if parsing fails.
  */
 function safeJsonParse<T>(text: string): T | null {
   try {
     return JSON.parse(text);
   } catch {
-    // Fallback: try to find the outermost array/object brackets
+    // Fallback: Locate the start of the JSON array
     const firstOpen = text.indexOf('[');
     if (firstOpen === -1) return null;
 
-    // Try to parse increasingly larger substrings starting from firstOpen
-    // This is safer than lastIndexOf(']') which might catch irrelevant trailing brackets
-    // Optimization: find all closing brackets
+    // "Sliding Window" Search:
+    // We can't just use `lastIndexOf(']')` because the text might contain
+    // multiple brackets or conversational text after the JSON.
+    // Instead, we find *every* closing bracket after the start and try to parse
+    // the substring. The first successful parse is our valid JSON object.
     let currentPos = text.indexOf(']', firstOpen);
     while (currentPos !== -1) {
       try {
         const jsonSubstring = text.substring(firstOpen, currentPos + 1);
         const result = JSON.parse(jsonSubstring);
-        // If it parses successfully, it might be the valid JSON we want.
-        // However, `JSON.parse` is lenient (e.g. `[1]` parses even if text is `[1] junk`).
-        // Wait, JSON.parse throws if there is trailing junk?
-        // JSON.parse(" [1] junk ") throws? Yes.
-        // JSON.parse("[1]") works.
-
-        // So if this succeeds, it means `jsonSubstring` is a valid JSON.
-        // And since we extracted it from the larger string, we found our match.
+        // If we reach here, JSON.parse succeeded.
+        // JSON.parse throws on trailing junk (e.g., "[1] junk"), so a success here
+        // means `jsonSubstring` is exactly the valid JSON structure we isolated.
         return result;
       } catch {
-        // Continue searching for the next closing bracket
+        // If parse failed, the substring wasn't complete valid JSON.
+        // Continue searching for the next closing bracket.
         currentPos = text.indexOf(']', currentPos + 1);
       }
     }
