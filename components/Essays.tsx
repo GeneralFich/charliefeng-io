@@ -39,6 +39,38 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [isCopied, setIsCopied] = useState(false);
 
+  // Refs for keyboard shortcuts
+  const mainSearchInputRef = React.useRef<HTMLInputElement>(null);
+  const articleSearchInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut handler
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Command/Ctrl + K to focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (selectedPost) {
+          articleSearchInputRef.current?.focus();
+        } else {
+          mainSearchInputRef.current?.focus();
+        }
+      }
+
+      // Escape to blur input
+      if (e.key === 'Escape') {
+        if (document.activeElement === mainSearchInputRef.current) {
+          mainSearchInputRef.current?.blur();
+        }
+        if (document.activeElement === articleSearchInputRef.current) {
+          articleSearchInputRef.current?.blur();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPost]);
+
   React.useEffect(() => {
     if (initialSlug) {
       const post = BLOG_POSTS.find(p => p.slug === initialSlug);
@@ -267,8 +299,9 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                 <Search size={14} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
               </div>
               <input
+                ref={articleSearchInputRef}
                 type="text"
-                placeholder="Find in essay..."
+                placeholder="Find in essay... (⌘K)"
                 value={articleSearchQuery}
                 onChange={(e) => setArticleSearchQuery(e.target.value)}
                 className="block w-full pl-9 pr-8 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
@@ -429,8 +462,9 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
               <Search size={16} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
             </div>
             <input
+              ref={mainSearchInputRef}
               type="text"
-              placeholder="Search essays..."
+              placeholder="Search essays... (⌘K)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="block w-full pl-10 pr-10 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"

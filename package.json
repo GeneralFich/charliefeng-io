@@ -15,7 +15,6 @@
     "dotenv": "^17.2.3",
     "front-matter": "^4.0.2",
     "lucide-react": "^0.561.0",
-    "playwright": "^1.57.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "^10.1.0",
@@ -26,7 +25,6 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "@types/hast": "^3.0.4",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
