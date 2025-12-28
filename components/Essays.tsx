@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown, Share2, Check } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -21,6 +21,7 @@ import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHig
 import { CodeBlock } from './CodeBlock';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
+import { View } from '../types';
 
 interface EssaysProps {
   initialSlug?: string | null;
@@ -36,6 +37,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [isCopied, setIsCopied] = useState(false);
 
   React.useEffect(() => {
     if (initialSlug) {
@@ -75,6 +77,23 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
       }
     });
   }, [searchQuery, sortBy]);
+
+  const handleShare = async () => {
+    if (!selectedPost) return;
+
+    // Use current location origin and pathname to support sub-paths
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', View.ESSAYS);
+    url.searchParams.set('essay', selectedPost.slug);
+
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+    }
+  };
 
   // Memoize markdown components to prevent unnecessary re-renders
   // Now completely stable as it doesn't depend on articleSearchQuery
@@ -213,38 +232,56 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <button
-            onClick={() => {
-              setSelectedPost(null);
-              setArticleSearchQuery('');
-            }}
-            className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors w-fit"
-          >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-medium">Back to Essays</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => {
+                setSelectedPost(null);
+                setArticleSearchQuery('');
+                // Clear URL param when going back
+                const url = new URL(window.location.href);
+                url.searchParams.delete('essay');
+                window.history.pushState({}, '', url.toString());
+              }}
+              className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors w-fit"
+            >
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back to Essays</span>
+            </button>
+          </div>
 
-          {/* In-Article Search */}
-          <div className="relative group w-full md:w-64">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search size={14} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
+              title="Copy link to clipboard"
+            >
+              {isCopied ? <Check size={14} className="text-green-400" /> : <Share2 size={14} />}
+              <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? 'Copied!' : 'Share'}</span>
+            </button>
+
+            {/* In-Article Search */}
+            <div className="relative group flex-1 md:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={14} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+              </div>
+              <input
+                type="text"
+                placeholder="Find in essay..."
+                value={articleSearchQuery}
+                onChange={(e) => setArticleSearchQuery(e.target.value)}
+                className="block w-full pl-9 pr-8 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              />
+              {articleSearchQuery && (
+                <button
+                  onClick={() => setArticleSearchQuery('')}
+                  aria-label="Clear search"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
-            <input
-              type="text"
-              placeholder="Find in essay..."
-              value={articleSearchQuery}
-              onChange={(e) => setArticleSearchQuery(e.target.value)}
-              className="block w-full pl-9 pr-8 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
-            {articleSearchQuery && (
-              <button
-                onClick={() => setArticleSearchQuery('')}
-                aria-label="Clear search"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
-              >
-                <X size={14} />
-              </button>
-            )}
           </div>
         </div>
 
@@ -302,6 +339,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                         setSelectedPost(newerPost);
                         setArticleSearchQuery('');
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                        // Update URL silently
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('essay', newerPost.slug);
+                        window.history.pushState({}, '', url.toString());
                       }}
                       className="group flex flex-col items-start text-left w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
                     >
@@ -323,6 +364,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                         setSelectedPost(olderPost);
                         setArticleSearchQuery('');
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                         // Update URL silently
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('essay', olderPost.slug);
+                        window.history.pushState({}, '', url.toString());
                       }}
                       className="group flex flex-col items-end text-right w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
                     >
@@ -407,7 +452,13 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
           filteredPosts.map((post) => (
             <button
               key={post.slug}
-              onClick={() => setSelectedPost(post)}
+              onClick={() => {
+                setSelectedPost(post);
+                // Update URL silently when selecting from list
+                const url = new URL(window.location.href);
+                url.searchParams.set('essay', post.slug);
+                window.history.pushState({}, '', url.toString());
+              }}
               className="group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-slate-900/30 border border-slate-800/50 hover:bg-slate-800/50 hover:border-blue-500/30 transition-all duration-300 text-left"
             >
               <div className="flex-1">
