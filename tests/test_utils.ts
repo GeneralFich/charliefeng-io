@@ -1,7 +1,30 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert';
-import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo } from '../lib/utils';
+import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo, escapeRegExp } from '../lib/utils';
+
+test('escapeRegExp', async (t) => {
+  await t.test('escapes special characters', () => {
+    const input = '.*+?^${}()|[]\\';
+    const expected = '\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\';
+    assert.strictEqual(escapeRegExp(input), expected);
+  });
+
+  await t.test('does not change standard text', () => {
+    const input = 'Hello World 123';
+    assert.strictEqual(escapeRegExp(input), input);
+  });
+
+  await t.test('handles empty string', () => {
+    assert.strictEqual(escapeRegExp(''), '');
+  });
+
+  await t.test('handles mixed content', () => {
+    const input = 'Price: $5.00 (approx)';
+    const expected = 'Price: \\$5\\.00 \\(approx\\)';
+    assert.strictEqual(escapeRegExp(input), expected);
+  });
+});
 
 test('parseFollowUpPrompts', async (t) => {
   await t.test('extracts prompts correctly', () => {
