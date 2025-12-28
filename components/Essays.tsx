@@ -231,6 +231,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </div>
             <input
               type="text"
+              aria-label="Find in essay"
               placeholder="Find in essay..."
               value={articleSearchQuery}
               onChange={(e) => setArticleSearchQuery(e.target.value)}
@@ -240,7 +241,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
               <button
                 onClick={() => setArticleSearchQuery('')}
                 aria-label="Clear search"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300 focus:outline-none focus:text-blue-400"
               >
                 <X size={14} />
               </button>
@@ -384,6 +385,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </div>
             <input
               type="text"
+              aria-label="Search essays"
               placeholder="Search essays..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -393,7 +395,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
               <button
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300 focus:outline-none focus:text-blue-400"
               >
                 <X size={16} />
               </button>
