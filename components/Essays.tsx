@@ -18,7 +18,7 @@ import {
 import { TrendingUp, AlertTriangle, Globe, Layers } from 'lucide-react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
-import { isSafeLink } from '../lib/utils';
+import { isSafeLink, escapeRegExp } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
@@ -43,6 +43,16 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   // Refs for keyboard shortcuts
   const mainSearchInputRef = React.useRef<HTMLInputElement>(null);
   const articleSearchInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Create regex for main list search (memoized)
+  const mainSearchRegex = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    try {
+        return new RegExp(`(${escapeRegExp(searchQuery)})`, 'gi');
+    } catch {
+        return null;
+    }
+  }, [searchQuery]);
 
   // Keyboard shortcut handler
   React.useEffect(() => {
@@ -81,6 +91,17 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     }
   }, [initialSlug]);
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
+
+  // Create regex for article search (memoized)
+  const articleSearchRegex = useMemo(() => {
+    if (!articleSearchQuery.trim()) return null;
+    try {
+        return new RegExp(`(${escapeRegExp(articleSearchQuery)})`, 'gi');
+    } catch {
+        return null;
+    }
+  }, [articleSearchQuery]);
+
 
   // Filter and sort posts for the main list
   const filteredPosts = useMemo(() => {
@@ -321,7 +342,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         <article className="prose prose-invert prose-lg max-w-none">
           <header className="mb-10 not-prose border-b border-slate-800 pb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
-              {highlightNodes(selectedPost.attributes.title, articleSearchQuery)}
+              {highlightNodes(selectedPost.attributes.title, articleSearchRegex)}
             </h1>
             <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400">
               <div className="flex items-center gap-2">
@@ -345,7 +366,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </div>
           </header>
 
-          <HighlightContext.Provider value={articleSearchQuery}>
+          <HighlightContext.Provider value={articleSearchRegex}>
             {markdownContent}
           </HighlightContext.Provider>
         </article>
@@ -509,11 +530,11 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                 </div>
                 <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors">
                   {/* Highlight match in title if searching */}
-                  {highlightNodes(post.attributes.title, searchQuery)}
+                  {highlightNodes(post.attributes.title, mainSearchRegex)}
                 </h3>
                 <p className="text-slate-400 leading-relaxed line-clamp-2">
                   {/* Highlight match in description if searching */}
-                  {highlightNodes(post.attributes.description, searchQuery)}
+                  {highlightNodes(post.attributes.description, mainSearchRegex)}
                 </p>
               </div>
             </button>
