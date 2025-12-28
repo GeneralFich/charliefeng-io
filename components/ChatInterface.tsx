@@ -47,7 +47,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
             <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-6">
               <span className="text-white font-bold text-2xl">CF</span>
             </div>
-            <h2 className="text-2xl font-bold text-slate-200 mb-3 text-center">Hello! I'm Charlie's AI.</h2>
+            <h2 className="text-2xl font-bold text-slate-200 mb-3 text-center">Charlie's Digital Twin</h2>
             <p className="text-slate-400 text-center max-w-md mb-8 leading-relaxed">
               {messages[0].text}
             </p>

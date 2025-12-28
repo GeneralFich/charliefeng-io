@@ -14,7 +14,7 @@ const INITIAL_SUGGESTED_PROMPTS = [
   "Tell me about 'Climate Intelligence'.",
 ];
 
-const INITIAL_MESSAGE_TEXT = "Hi! I'm Charlie's digital twin. I can answer questions about his work, writing, and research. What would you like to know?";
+const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
