@@ -64,7 +64,12 @@ export const sendMessageToGemini = async (
           relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
       }
     } catch (ragError) {
-      console.warn("RAG retrieval failed, proceeding without it:", ragError);
+      // Security: Redact sensitive info from error logging
+      const safeRagError = redactSensitiveInfo(
+        ragError instanceof Error ? ragError.message : String(ragError),
+        [apiKey]
+      );
+      console.warn("RAG retrieval failed, proceeding without it:", safeRagError);
     }
 
     // Prepare the conversation for the API
