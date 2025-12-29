@@ -6,12 +6,10 @@ import { parseFollowUpPrompts } from '../lib/utils';
 const INITIAL_SUGGESTED_PROMPTS = [
   "Who is Charlie?",
   "What is his work experience?",
-  "When will AGI arrive?",
-  "How will AGI impact jobs?",
-  "Explain 'Agentic Inflection Point'.",
   "Show me his resume.",
   "What are his core skills?",
-  "Tell me about 'Climate Intelligence'.",
+  "What projects has he worked on?",
+  "How can I contact him?",
 ];
 
 const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
