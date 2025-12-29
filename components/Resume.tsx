@@ -1,10 +1,23 @@
-import React from 'react';
-import { Download, MapPin, Briefcase, GraduationCap, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, MapPin, Briefcase, GraduationCap, Users, Share2, Check } from 'lucide-react';
 import { RESUME_CONTENT } from '../lib/knowledge';
-import { ContactForm } from './ContactForm';
+import { View } from '../types';
 
 export const Resume: React.FC = () => {
   const { name, location, summary, experience, education, leadership, skills } = RESUME_CONTENT;
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleShare = async () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', View.ABOUT);
+      await navigator.clipboard.writeText(url.toString());
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-12 animate-fade-in text-slate-300 print:text-black print:p-0 print:max-w-none">
@@ -17,15 +30,28 @@ export const Resume: React.FC = () => {
              <span className="flex items-center gap-1 cursor-default"><MapPin size={14} /> {location}</span>
           </div>
         </div>
-        <button
-          onClick={() => window.print()}
-          title="Print or Save as PDF"
-          aria-label="Print or Save as PDF"
-          className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm print:hidden"
-        >
-          <Download size={16} />
-          <span>Download PDF</span>
-        </button>
+
+        <div className="flex gap-3 print:hidden">
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
+            title="Copy link to resume"
+            aria-label={isCopied ? "Link copied" : "Copy link to resume"}
+          >
+            {isCopied ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
+            <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? 'Copied!' : 'Share'}</span>
+          </button>
+
+          <button
+            onClick={() => window.print()}
+            title="Print or Save as PDF"
+            aria-label="Print or Save as PDF"
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
+          >
+            <Download size={16} />
+            <span>Download PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* Summary */}
