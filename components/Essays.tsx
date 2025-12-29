@@ -102,6 +102,21 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     }
   }, [articleSearchQuery]);
 
+  // Scroll to first match when searching in article
+  React.useEffect(() => {
+    if (!articleSearchQuery) return;
+
+    // Small timeout to allow React to render the <mark> tags
+    const timeoutId = setTimeout(() => {
+      const firstMatch = document.querySelector('mark');
+      if (firstMatch) {
+        firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+
+    return () => clearTimeout(timeoutId);
+  }, [articleSearchQuery]);
+
 
   // Filter and sort posts for the main list
   const filteredPosts = useMemo(() => {
@@ -283,8 +298,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
 
   if (selectedPost) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in duration-500">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="sticky top-16 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => {

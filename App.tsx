@@ -188,7 +188,7 @@ const App: React.FC = () => {
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex-1 relative overflow-hidden print:overflow-visible focus:outline-none"
+        className="flex-1 relative print:overflow-visible focus:outline-none"
       >
         {/* Subtle Background Grid Effect */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03] print:hidden"
