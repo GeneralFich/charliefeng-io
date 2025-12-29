@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown, Share2, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, ArrowUpDown, Share2, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -39,6 +39,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [isCopied, setIsCopied] = useState(false);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [totalMatches, setTotalMatches] = useState(0);
 
   // Refs for keyboard shortcuts
   const mainSearchInputRef = React.useRef<HTMLInputElement>(null);
@@ -102,20 +104,45 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     }
   }, [articleSearchQuery]);
 
-  // Scroll to first match when searching in article
+  // Reset index when article search query changes
+  React.useEffect(() => {
+    if (!articleSearchQuery) {
+      setTotalMatches(0);
+    }
+    setCurrentMatchIndex(0);
+  }, [articleSearchQuery]);
+
+  // Handle article search navigation and highlighting
   React.useEffect(() => {
     if (!articleSearchQuery) return;
 
     // Small timeout to allow React to render the <mark> tags
     const timeoutId = setTimeout(() => {
-      const firstMatch = document.querySelector('mark');
-      if (firstMatch) {
-        firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const marks = document.querySelectorAll('article mark');
+      setTotalMatches(marks.length);
+
+      if (marks.length > 0) {
+        // Ensure index is within bounds
+        const safeIndex = Math.min(Math.max(0, currentMatchIndex), marks.length - 1);
+
+        // Remove active class from all marks
+        marks.forEach(mark => {
+            mark.classList.remove('ring-2', 'ring-blue-400', 'bg-yellow-500', 'text-white', 'z-10', 'relative');
+            mark.classList.add('bg-yellow-500/50'); // Reset to default
+        });
+
+        // Add active class to current match
+        const activeMark = marks[safeIndex];
+        if (activeMark) {
+             activeMark.classList.remove('bg-yellow-500/50');
+             activeMark.classList.add('ring-2', 'ring-blue-400', 'bg-yellow-500', 'text-white', 'z-10', 'relative');
+             activeMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     }, 150);
 
     return () => clearTimeout(timeoutId);
-  }, [articleSearchQuery]);
+  }, [articleSearchQuery, currentMatchIndex]);
 
 
   // Filter and sort posts for the main list
@@ -329,7 +356,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
             </button>
 
             {/* In-Article Search */}
-            <div className="relative group flex-1 md:w-64">
+            <div className="relative group flex-1 md:w-80">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={14} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
               </div>
@@ -339,16 +366,40 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
                 placeholder="Find in essay... (⌘K)"
                 value={articleSearchQuery}
                 onChange={(e) => setArticleSearchQuery(e.target.value)}
-                className="block w-full pl-9 pr-8 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                className="block w-full pl-9 pr-24 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
               />
               {articleSearchQuery && (
-                <button
-                  onClick={() => setArticleSearchQuery('')}
-                  aria-label="Clear search"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
-                >
-                  <X size={14} />
-                </button>
+                <div className="absolute inset-y-0 right-0 pr-2 flex items-center gap-1">
+                   {totalMatches > 0 && (
+                      <span className="text-[10px] font-medium text-slate-500 mr-1">
+                        {currentMatchIndex + 1}/{totalMatches}
+                      </span>
+                   )}
+                   <div className="h-4 w-px bg-slate-700 mx-1" />
+                   <button
+                    onClick={() => setCurrentMatchIndex(prev => (prev - 1 + totalMatches) % totalMatches)}
+                    className="p-1 hover:text-blue-400 text-slate-400 transition-colors"
+                    aria-label="Previous match"
+                    disabled={totalMatches === 0}
+                   >
+                     <ChevronUp size={14} />
+                   </button>
+                   <button
+                    onClick={() => setCurrentMatchIndex(prev => (prev + 1) % totalMatches)}
+                    className="p-1 hover:text-blue-400 text-slate-400 transition-colors"
+                    aria-label="Next match"
+                    disabled={totalMatches === 0}
+                   >
+                     <ChevronDown size={14} />
+                   </button>
+                   <button
+                    onClick={() => setArticleSearchQuery('')}
+                    aria-label="Clear search"
+                    className="p-1 hover:text-red-400 text-slate-400 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               )}
             </div>
           </div>
