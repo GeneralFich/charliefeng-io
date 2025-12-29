@@ -138,7 +138,19 @@ export const ContactForm: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="subject" className="text-sm font-medium text-slate-300">Subject</label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="subject" className="text-sm font-medium text-slate-300">Subject</label>
+          <span
+            className={`text-xs font-mono transition-colors ${
+              formData.subject.length >= 200 ? 'text-red-500 font-bold' :
+              formData.subject.length > 180 ? 'text-amber-500' :
+              'text-slate-500'
+            }`}
+            aria-hidden="true"
+          >
+            {formData.subject.length}/200
+          </span>
+        </div>
         <input
           type="text"
           id="subject"
@@ -153,7 +165,19 @@ export const ContactForm: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="message" className="text-sm font-medium text-slate-300">Message</label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="message" className="text-sm font-medium text-slate-300">Message</label>
+          <span
+            className={`text-xs font-mono transition-colors ${
+              formData.message.length >= 5000 ? 'text-red-500 font-bold' :
+              formData.message.length > 4500 ? 'text-amber-500' :
+              'text-slate-500'
+            }`}
+            aria-hidden="true"
+          >
+            {formData.message.length}/5000
+          </span>
+        </div>
         <textarea
           id="message"
           name="message"
