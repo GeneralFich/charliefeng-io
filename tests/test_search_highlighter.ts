@@ -12,21 +12,30 @@ import { highlightNodes } from '../components/SearchHighlighter';
  */
 
 describe('SearchHighlighter', () => {
-  it('returns original text if query is empty', () => {
+  it('returns original text if regex is null', () => {
     const input = "Hello World";
-    const result = highlightNodes(input, "");
+    const result = highlightNodes(input, null);
     assert.strictEqual(result, input);
   });
 
+  // Helper to create regex like the app does
+  const createRegex = (query: string) => {
+      // Escape special chars logic simplified for test
+      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`(${escaped})`, 'gi');
+  }
+
   it('returns original text if no match', () => {
     const input = "Hello World";
-    const result = highlightNodes(input, "Foo");
+    const regex = createRegex("Foo");
+    const result = highlightNodes(input, regex);
     assert.strictEqual(result, input);
   });
 
   it('highlights matching text (case insensitive)', () => {
     const input = "Hello World";
-    const result = highlightNodes(input, "hello");
+    const regex = createRegex("hello");
+    const result = highlightNodes(input, regex);
 
     // Result should be an array: [<mark>Hello</mark>, " World"]
     // Or ["", <mark>Hello</mark>, " World"] depending on split behavior.
@@ -44,9 +53,9 @@ describe('SearchHighlighter', () => {
 
   it('handles regex special characters in query', () => {
     const input = "Use the .map() function";
-    const query = ".map()"; // Should not be treated as "any char" + "map" + capture group
+    const regex = createRegex(".map()"); // Should match literal ".map()"
 
-    const result = highlightNodes(input, query);
+    const result = highlightNodes(input, regex);
     assert(Array.isArray(result));
 
     const resArray = result as any[];
@@ -57,7 +66,8 @@ describe('SearchHighlighter', () => {
 
   it('recursively highlights within arrays', () => {
     const input = ["Start ", "Hello World", " End"];
-    const result = highlightNodes(input, "World");
+    const regex = createRegex("World");
+    const result = highlightNodes(input, regex);
 
     assert(Array.isArray(result));
     // The second item in the array should now be a Fragment containing the highlighted parts
@@ -80,8 +90,9 @@ describe('SearchHighlighter', () => {
     // Input: <p>Hello <strong>Bold World</strong></p>
     const inner = React.createElement('strong', {}, "Bold World");
     const input = React.createElement('p', {}, ["Hello ", inner]);
+    const regex = createRegex("World");
 
-    const result = highlightNodes(input, "World");
+    const result = highlightNodes(input, regex);
 
     // Result should be a cloned <p>
     assert(React.isValidElement(result));
@@ -89,41 +100,6 @@ describe('SearchHighlighter', () => {
 
     const children = (result as React.ReactElement).props.children;
     assert(Array.isArray(children));
-
-    // The second child should be the CLONED <strong> element.
-    // Wait, why did the previous test fail with "actual: Symbol(react.fragment), expected: 'strong'"?
-
-    // Debugging:
-    // If "Bold World" matches "World", it returns an ARRAY: ["Bold ", <mark>World</mark>]
-    // When `highlightNodes` sees an array as children, does it wrap it?
-
-    // Implementation:
-    // if (Array.isArray(nodes)) { return nodes.map(...) }  <-- Returns Array of Fragments
-
-    // But here we are recursing on `nodes.props.children`.
-    // In the `input` construction: `React.createElement('p', {}, ["Hello ", inner])`
-    // The children of `p` is an array.
-    // So `highlightNodes` is called on that ARRAY.
-    // It returns an ARRAY of Fragments (because of the map).
-
-    // So `React.cloneElement` receives `children` as an ARRAY of Fragments.
-
-    // Let's look at `inner` (the <strong>).
-    // It is an element. `highlightNodes` calls itself on `inner`.
-    // Inside `highlightNodes(inner)`:
-    // It's a valid element. It calls `React.cloneElement(inner, { children: highlightNodes("Bold World") })`.
-    // "Bold World" splits into array. So `children` becomes an array.
-    // It returns a cloned `strong` element.
-
-    // So the result of `highlightNodes(["Hello ", inner])` is:
-    // Map over array:
-    // 0: "Hello " -> No match -> "Hello " -> Wrapped in Fragment? No.
-    // Wait, let's look at implementation:
-    // if (Array.isArray(nodes)) return nodes.map((node, i) => <React.Fragment key={i}>{highlightNodes(node, query)}</React.Fragment>);
-
-    // YES! The implementation WRAPS every item in a Fragment if the input is an array.
-    // So `children[1]` is NOT the `strong` element directly.
-    // It is a `React.Fragment` containing the `strong` element.
 
     const fragmentWrapper = children[1];
     assert.strictEqual(fragmentWrapper.type, React.Fragment);
@@ -141,7 +117,8 @@ describe('SearchHighlighter', () => {
 
   it('preserves component props', () => {
     const input = React.createElement('div', { className: 'test-class', 'data-id': 123 }, "Target content");
-    const result = highlightNodes(input, "Target");
+    const regex = createRegex("Target");
+    const result = highlightNodes(input, regex);
 
     assert(React.isValidElement(result));
     assert.strictEqual(result.props.className, 'test-class');

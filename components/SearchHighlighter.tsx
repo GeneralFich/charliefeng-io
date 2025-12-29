@@ -1,5 +1,4 @@
 import React from 'react';
-import { escapeRegExp } from '../lib/utils';
 
 /**
  * @fileoverview Recursive Text Highlighting for React Trees
@@ -14,32 +13,34 @@ import { escapeRegExp } from '../lib/utils';
  */
 
 /**
- * Recursively traverses a React Node tree and highlights text matching the query.
+ * Recursively traverses a React Node tree and highlights text matching the regex.
  *
  * Strategy:
- * 1. String: Split by query regex and wrap matches in `<mark>`.
+ * 1. String: Split by regex and wrap matches in `<mark>`.
  * 2. Array: Recursively map over each item.
  * 3. Element: Clone the element and recursively highlight its `children` prop.
  * 4. Other (null, boolean, number): Return as is.
  *
  * @param nodes - The React Node(s) to traverse (string, array, or element).
- * @param query - The search string to highlight.
+ * @param regex - The regex to highlight (must have a capturing group for split to work).
  * @returns A new React Node tree with highlights applied.
  */
-export const highlightNodes = (nodes: React.ReactNode, query: string): React.ReactNode => {
-  if (!query || query.trim() === '') return nodes;
+export const highlightNodes = (nodes: React.ReactNode, regex: RegExp | null): React.ReactNode => {
+  if (!regex) return nodes;
 
   // Case 1: Text Node (Leaf)
   if (typeof nodes === 'string') {
-    // Split text by the query (case-insensitive)
-    const parts = nodes.split(new RegExp(`(${escapeRegExp(query)})`, 'gi'));
+    // Split text by the regex
+    // Note: The regex MUST have a capturing group `(...)` for split to include the delimiters (matches).
+    const parts = nodes.split(regex);
 
     // If no match, return original string to save memory
     if (parts.length === 1) return nodes;
 
     // Map parts to elements, wrapping matches
+    // With `split(/(group)/)`, odd indices are matches.
     return parts.map((part, i) =>
-      part.toLowerCase() === query.toLowerCase()
+      (i % 2 === 1)
         ? <mark key={i} className="bg-yellow-500/50 text-white rounded-sm px-0.5">{part}</mark>
         : part
     );
@@ -47,7 +48,7 @@ export const highlightNodes = (nodes: React.ReactNode, query: string): React.Rea
 
   // Case 2: Array of Nodes (Fragment contents)
   if (Array.isArray(nodes)) {
-    return nodes.map((node, i) => <React.Fragment key={i}>{highlightNodes(node, query)}</React.Fragment>);
+    return nodes.map((node, i) => <React.Fragment key={i}>{highlightNodes(node, regex)}</React.Fragment>);
   }
 
   // Case 3: React Element (div, span, p, custom component)
@@ -55,7 +56,7 @@ export const highlightNodes = (nodes: React.ReactNode, query: string): React.Rea
     // Clone the element to preserve its type and props (className, style, etc.)
     // but replace its `children` with the highlighted version.
     return React.cloneElement(nodes as React.ReactElement<any>, {
-      children: highlightNodes((nodes.props as any).children, query)
+      children: highlightNodes((nodes.props as any).children, regex)
     });
   }
 
@@ -67,30 +68,30 @@ export const highlightNodes = (nodes: React.ReactNode, query: string): React.Rea
  * A wrapper component that applies highlighting to its children.
  * Useful for simple blocks of text where you want to pass the query explicitly.
  *
- * @param query - The text to search for.
+ * @param regex - The regex to search for.
  * @param as - The HTML tag or Component to render as the container (default: 'div').
  */
-export const Highlighter = ({ children, query, as: Component = 'div', ...props }: { children: React.ReactNode, query: string, as?: any, [key: string]: any }) => {
-  const highlighted = highlightNodes(children, query);
+export const Highlighter = ({ children, regex, as: Component = 'div', ...props }: { children: React.ReactNode, regex: RegExp | null, as?: any, [key: string]: any }) => {
+  const highlighted = highlightNodes(children, regex);
   return <Component {...props}>{highlighted}</Component>;
 };
 
 /**
- * Context to share the search query deep into the component tree.
+ * Context to share the search regex deep into the component tree.
  *
  * "Why": In `react-markdown`, we customize components like `p`, `li`, `h1`.
  * Passing the search query as a prop to every single one of these would require
  * prop-drilling through the Markdown renderer (which is hard/impossible) or
  * recreating the component definition on every render (performance killer).
  *
- * Solution: The parent `Essays` component provides the query via Context,
+ * Solution: The parent `Essays` component provides the regex via Context,
  * and the leaf components (h1, p) consume it only when they render.
  */
-export const HighlightContext = React.createContext<string>('');
+export const HighlightContext = React.createContext<RegExp | null>(null);
 
 /**
  * A Context-aware highlighter.
- * automatically picks up the `query` from `HighlightContext`.
+ * automatically picks up the `regex` from `HighlightContext`.
  *
  * usage in react-markdown:
  * ```tsx
@@ -100,7 +101,7 @@ export const HighlightContext = React.createContext<string>('');
  * ```
  */
 export const SearchHighlighter = ({ children, as: Component = 'div', ...props }: { children: React.ReactNode, as?: any, [key: string]: any }) => {
-  const query = React.useContext(HighlightContext);
-  const highlighted = highlightNodes(children, query);
+  const regex = React.useContext(HighlightContext);
+  const highlighted = highlightNodes(children, regex);
   return <Component {...props}>{highlighted}</Component>;
 };
