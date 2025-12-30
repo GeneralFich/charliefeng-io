@@ -22,6 +22,10 @@ const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) 
     onNavigate(View.ABOUT);
     return true;
   }
+  if (href === '/contact') {
+    onNavigate(View.CONTACT);
+    return true;
+  }
   if (href.startsWith('/essays/')) {
     const slug = href.replace('/essays/', '');
     onNavigate(View.ESSAYS, slug);
