@@ -14,6 +14,22 @@ const INITIAL_SUGGESTED_PROMPTS = [
 
 const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
 
+/**
+ * Custom hook to manage the chat interface state and interaction with the Gemini AI.
+ *
+ * Why: This separates the state management (messages, input, loading) from the UI components.
+ * It encapsulates the complex logic of sending messages, handling streaming/responses,
+ * parsing follow-up prompts, and managing the AbortController for cancellation.
+ *
+ * @returns An object containing:
+ * - `messages`: Array of chat messages (user and model).
+ * - `input`: Current value of the input field.
+ * - `setInput`: Setter for the input field.
+ * - `isLoading`: Boolean indicating if the model is currently generating a response.
+ * - `suggestedPrompts`: Array of suggested follow-up questions.
+ * - `sendMessage`: Function to send a user message.
+ * - `clearChat`: Function to reset the chat history.
+ */
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', text: INITIAL_MESSAGE_TEXT }
@@ -23,6 +39,12 @@ export const useChat = () => {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  /**
+   * Resets the chat to its initial state.
+   *
+   * Why: We need to ensure that any pending API requests are aborted to prevent
+   * a race condition where a response arrives after the chat has been cleared.
+   */
   const clearChat = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -34,6 +56,19 @@ export const useChat = () => {
     setIsLoading(false);
   };
 
+  /**
+   * Sends a message to the AI model.
+   *
+   * Flow:
+   * 1. Validates input length.
+   * 2. Optimistically adds the user's message to the UI.
+   * 3. Creates an AbortController for the request.
+   * 4. Calls the Gemini service.
+   * 5. Parses the response for follow-up prompts (JSON format).
+   * 6. Updates the UI with the model's response and new suggestions.
+   *
+   * @param text - The message text to send.
+   */
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;
 
