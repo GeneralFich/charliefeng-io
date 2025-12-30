@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Download, MapPin, Briefcase, GraduationCap, Users, Share2, Check } from 'lucide-react';
-import { RESUME_CONTENT } from '../lib/knowledge';
+import { Download, MapPin, Briefcase, GraduationCap, Users, Share2, Check, Linkedin } from 'lucide-react';
+import { RESUME_CONTENT, LINKEDIN_URL } from '../lib/knowledge';
 import { View } from '../types';
 
 export const Resume: React.FC = () => {
@@ -32,6 +32,18 @@ export const Resume: React.FC = () => {
         </div>
 
         <div className="flex gap-3 print:hidden">
+          <a
+            href={LINKEDIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
+            title="View LinkedIn Profile"
+            aria-label="View LinkedIn Profile"
+          >
+            <Linkedin size={16} />
+            <span>LinkedIn</span>
+          </a>
+
           <button
             onClick={handleShare}
             className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
