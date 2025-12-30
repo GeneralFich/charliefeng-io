@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { EssayList, SortOption } from './EssayList';
 import { EssayDetail } from './EssayDetail';
+import { useDebounce } from '../hooks/useDebounce';
 
 interface EssaysProps {
   initialSlug?: string | null;
@@ -11,6 +12,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  // Debounce the search query to avoid filtering and re-rendering the list
+  // on every keystroke. This improves performance for fast typists.
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Handle initial slug prop
   React.useEffect(() => {
@@ -24,11 +29,12 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
 
   // Filter and sort posts for the main list
   // Kept in parent to preserve context for navigation between posts
+  // Depends on debouncedSearchQuery instead of searchQuery
   const filteredPosts = useMemo(() => {
     let posts = BLOG_POSTS;
 
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
+    if (debouncedSearchQuery) {
+      const lowerQuery = debouncedSearchQuery.toLowerCase();
       posts = posts.filter(post => post.searchContent.includes(lowerQuery));
     }
 
@@ -46,7 +52,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
       default:
         return posts;
     }
-  }, [searchQuery, sortBy]);
+  }, [debouncedSearchQuery, sortBy]);
 
   const handleSelectPost = (post: BlogPost) => {
     setSelectedPost(post);
@@ -87,7 +93,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   return (
     <EssayList
       posts={filteredPosts}
-      searchQuery={searchQuery}
+      searchQuery={searchQuery} // Instant for Input
+      highlightQuery={debouncedSearchQuery} // Debounced for Highlighting
       onSearchChange={setSearchQuery}
       sortBy={sortBy}
       onSortChange={setSortBy}

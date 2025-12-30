@@ -9,6 +9,8 @@ export type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
 interface EssayListProps {
   posts: BlogPost[];
   searchQuery: string;
+  // Optional debounced query for highlighting to avoid re-calculating regex on every keystroke
+  highlightQuery?: string;
   onSearchChange: (query: string) => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
@@ -18,6 +20,7 @@ interface EssayListProps {
 export const EssayList: React.FC<EssayListProps> = ({
   posts,
   searchQuery,
+  highlightQuery,
   onSearchChange,
   sortBy,
   onSortChange,
@@ -25,15 +28,20 @@ export const EssayList: React.FC<EssayListProps> = ({
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Use highlightQuery if provided, otherwise fallback to searchQuery
+  // This allows the list to highlight based on the debounced value (matching the filtered list)
+  // while the input remains responsive
+  const queryToHighlight = highlightQuery !== undefined ? highlightQuery : searchQuery;
+
   // Create regex for main list search (memoized)
   const searchRegex = useMemo(() => {
-    if (!searchQuery.trim()) return null;
+    if (!queryToHighlight.trim()) return null;
     try {
-      return new RegExp(`(${escapeRegExp(searchQuery)})`, 'gi');
+      return new RegExp(`(${escapeRegExp(queryToHighlight)})`, 'gi');
     } catch {
       return null;
     }
-  }, [searchQuery]);
+  }, [queryToHighlight]);
 
   // Keyboard shortcuts
   useEffect(() => {
