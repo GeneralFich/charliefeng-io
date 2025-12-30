@@ -139,3 +139,54 @@ export function isSafeLink(href: string): boolean {
 
   return false;
 }
+
+/**
+ * Generates a URL-friendly slug from a string.
+ * Compatible with GitHub's slugifier (used by rehype-slug).
+ *
+ * @param text The text to slugify.
+ * @returns The slugified string.
+ */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')        // Replace spaces with -
+    .replace(/&/g, '-and-')      // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
+    .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+    .replace(/^-+|-+$/g, '');    // Remove leading/trailing -
+}
+
+/**
+ * Extracts plain text from a markdown string, removing common formatting.
+ * Useful for generating TOC labels from raw markdown headers.
+ *
+ * @param markdown The markdown string.
+ * @returns The plain text.
+ */
+export function extractTextFromMarkdown(markdown: string): string {
+  return markdown
+    .replace(/\*\*(.*?)\*\*/g, '$1')  // Bold
+    .replace(/\*(.*?)\*/g, '$1')      // Italic
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Links
+    .replace(/`(.*?)`/g, '$1')        // Inline code
+    .replace(/#+\s+/g, '')            // Headers prefix
+    .trim();
+}
+
+/**
+ * Recursively extracts text content from React nodes.
+ *
+ * @param nodes React nodes.
+ * @returns The concatenated text content.
+ */
+export function extractTextFromReactNode(nodes: any): string {
+  if (!nodes) return '';
+  if (typeof nodes === 'string') return nodes;
+  if (typeof nodes === 'number') return nodes.toString();
+  if (Array.isArray(nodes)) return nodes.map(extractTextFromReactNode).join('');
+  if (nodes.props && nodes.props.children) return extractTextFromReactNode(nodes.props.children);
+  return '';
+}

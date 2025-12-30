@@ -2,13 +2,14 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
-import { isSafeLink, escapeRegExp } from '../lib/utils';
+import { isSafeLink, escapeRegExp, slugify, extractTextFromReactNode } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
+import { TableOfContents } from './TableOfContents';
 import { View } from '../types';
 
 interface EssayDetailProps {
@@ -145,6 +146,46 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
     }
   };
 
+  // Reusable header component to inject IDs and "Copy Link" behavior
+  const Heading = ({ level, children, className, ...props }: any) => {
+    const text = extractTextFromReactNode(children);
+    const id = slugify(text);
+    const [justCopied, setJustCopied] = useState(false);
+
+    const handleCopyLink = async (e: React.MouseEvent) => {
+      e.preventDefault();
+      const url = new URL(window.location.href);
+      url.hash = id;
+      await navigator.clipboard.writeText(url.toString());
+      setJustCopied(true);
+      setTimeout(() => setJustCopied(false), 2000);
+
+      // Also scroll to it
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    return (
+      <SearchHighlighter
+        as={level}
+        id={id}
+        className={`${className} group relative scroll-mt-24`}
+        {...props}
+      >
+        <span className="relative z-10">{children}</span>
+        <a
+          href={`#${id}`}
+          onClick={handleCopyLink}
+          className="ml-2 inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 text-slate-500 hover:text-blue-400"
+          aria-label="Copy link to section"
+          title="Copy link to section"
+        >
+           {justCopied ? <Check size={16} className="text-green-400" /> : <LinkIcon size={16} />}
+        </a>
+      </SearchHighlighter>
+    );
+  };
+
   // Memoize markdown components to prevent unnecessary re-renders
   const markdownComponents = useMemo(() => ({
     // Custom Anchor to handle footnotes and external links
@@ -184,10 +225,10 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </a>
       );
     },
-    // Apply context-aware highlighter to text blocks
-    h1: ({ node, children, ...props }: any) => <SearchHighlighter as="h1" className="text-2xl font-bold text-white mt-12 mb-6" {...props}>{children}</SearchHighlighter>,
-    h2: ({ node, children, ...props }: any) => <SearchHighlighter as="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props}>{children}</SearchHighlighter>,
-    h3: ({ node, children, ...props }: any) => <SearchHighlighter as="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props}>{children}</SearchHighlighter>,
+    // Apply context-aware highlighter to text blocks and auto-generated IDs
+    h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-white mt-12 mb-6" {...props} />,
+    h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props} />,
+    h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props} />,
     p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</SearchHighlighter>,
     li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300" {...props}>{children}</SearchHighlighter>,
     blockquote: ({ node, children, ...props }: any) => (
@@ -393,6 +434,9 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             </div>
           </div>
         </header>
+
+        {/* Table of Contents */}
+        <TableOfContents markdown={post.body} />
 
         <HighlightContext.Provider value={articleSearchRegex}>
           {markdownContent}
