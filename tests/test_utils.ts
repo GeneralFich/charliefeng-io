@@ -63,6 +63,24 @@ test('parseFollowUpPrompts', async (t) => {
     assert.strictEqual(result.cleanText, "Answer.");
     assert.deepStrictEqual(result.prompts, ["Q1"]);
   });
+
+  await t.test('handles brackets inside strings', () => {
+    // The "Sliding Window" must not stop at the first ']' inside the string.
+    const input = "Answer.\n[FOLLOW_UP] [\"Question with [brackets] inside\"]";
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Answer.");
+    assert.deepStrictEqual(result.prompts, ["Question with [brackets] inside"]);
+  });
+
+  await t.test('handles nested arrays', () => {
+    // Valid JSON with nested structures should be parseable
+    const input = "Answer.\n[FOLLOW_UP] [[\"Nested\"], \"Normal\"]";
+    const result = parseFollowUpPrompts(input);
+    assert.strictEqual(result.cleanText, "Answer.");
+    // Typescript might infer string[] but JSON.parse returns any.
+    // parseFollowUpPrompts casts result to string[], but runtime it is mixed.
+    assert.deepStrictEqual(result.prompts, [["Nested"], "Normal"]);
+  });
 });
 
 test('calculateReadTime', async (t) => {
