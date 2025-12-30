@@ -13,6 +13,27 @@ import {
 } from 'recharts';
 import { TrendingUp, AlertTriangle } from 'lucide-react';
 
+/**
+ * @fileoverview Whitepaper Visualizations Component
+ *
+ * "What": This component renders the interactive AGI Timeline and Sector Vulnerability charts
+ * specifically for the "Strategic Whitepaper" essay.
+ *
+ * "Why": While the text content lives in `content/posts/strategic-whitepaper.md`, complex
+ * interactive visualizations (using Recharts) cannot be rendered natively in Markdown.
+ * We use a "Custom Code Block" pattern to inject this React component into the Markdown flow.
+ *
+ * "How":
+ * 1. The Markdown file contains a code block:
+ *    ```infographic
+ *    whitepaper-charts
+ *    ```
+ * 2. `EssayDetail.tsx` intercepts this code block during Markdown parsing.
+ * 3. It replaces the code block with this `<WhitepaperCharts />` component.
+ */
+
+// Data source: "The Asymptotic Trajectory" (Internal Research)
+// Represents the consensus forecast for AGI capabilities.
 const TIMELINE_DATA = [
   { year: '2024', level: 20, stage: 'Generative' },
   { year: '2025', level: 40, stage: 'Teammate Era' },
@@ -23,6 +44,8 @@ const TIMELINE_DATA = [
   { year: '2030', level: 100, stage: 'Robust AGI' },
 ];
 
+// Data source: Bureau of Labor Statistics & Oxford Martin School
+// Represents the relative risk of job displacement by AI Agents.
 const RISK_DATA = [
   { name: 'Translation', risk: 90, fill: '#ef4444' },
   { name: 'Admin', risk: 80, fill: '#f97316' },
@@ -50,6 +73,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+/**
+ * Renders the AGI Timeline and Sector Vulnerability charts.
+ * This component is intended to be embedded within the `EssayDetail` view via MDX/Custom replacement.
+ */
 export const WhitepaperCharts: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-12">
