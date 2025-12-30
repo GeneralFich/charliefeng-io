@@ -2,7 +2,7 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { isSafeLink, escapeRegExp } from '../lib/utils';
@@ -30,6 +30,8 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
 }) => {
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
+  const [totalMatches, setTotalMatches] = useState(0);
   const articleSearchInputRef = useRef<HTMLInputElement>(null);
 
   // Create regex for article search (memoized)
@@ -41,6 +43,61 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
       return null;
     }
   }, [articleSearchQuery]);
+
+  // Handle Search Logic: Count matches and scroll to first
+  useEffect(() => {
+    if (!articleSearchQuery.trim()) {
+      setTotalMatches(0);
+      setCurrentMatchIndex(-1);
+      return;
+    }
+
+    // Small delay to allow react-markdown to render the <mark> tags
+    const timer = setTimeout(() => {
+      const marks = document.querySelectorAll('article mark');
+      setTotalMatches(marks.length);
+
+      if (marks.length > 0) {
+        // If we have matches, default to the first one
+        setCurrentMatchIndex(0);
+        // Styling and scrolling handled by the next useEffect
+      } else {
+        setCurrentMatchIndex(-1);
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [articleSearchQuery, post.slug]);
+
+  // Handle Match Navigation Styling & Scrolling
+  useEffect(() => {
+    const marks = document.querySelectorAll('article mark');
+    if (marks.length === 0) return;
+
+    // Reset all marks to default style
+    marks.forEach(m => {
+      m.className = "bg-yellow-500/50 text-white rounded-sm px-0.5 transition-colors duration-300";
+    });
+
+    // Highlight and scroll to the active match
+    if (currentMatchIndex >= 0 && marks[currentMatchIndex]) {
+      const active = marks[currentMatchIndex];
+      // Apply active style (Orange/Red pop)
+      active.className = "bg-orange-500 text-white rounded-sm px-0.5 ring-2 ring-orange-400 shadow-lg shadow-orange-500/20 z-10 relative transition-all duration-300";
+
+      active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [currentMatchIndex, totalMatches]);
+
+  const handleNextMatch = () => {
+    if (totalMatches === 0) return;
+    setCurrentMatchIndex(prev => (prev + 1) % totalMatches);
+  };
+
+  const handlePrevMatch = () => {
+    if (totalMatches === 0) return;
+    setCurrentMatchIndex(prev => (prev - 1 + totalMatches) % totalMatches);
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -57,11 +114,21 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           articleSearchInputRef.current?.blur();
         }
       }
+
+      // Enter to go to next match if focused
+      if (e.key === 'Enter' && document.activeElement === articleSearchInputRef.current) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handlePrevMatch();
+        } else {
+          handleNextMatch();
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [totalMatches]); // Re-bind when match count changes to capture latest state closure
 
   const handleShare = async () => {
     // Use current location origin and pathname to support sub-paths
@@ -243,23 +310,59 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search size={14} className="text-slate-400 group-focus-within:text-blue-400 transition-colors" />
             </div>
+
             <input
               ref={articleSearchInputRef}
               type="text"
               placeholder="Find in essay... (⌘K)"
               value={articleSearchQuery}
               onChange={(e) => setArticleSearchQuery(e.target.value)}
-              className="block w-full pl-9 pr-8 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              // Add right padding to accommodate the controls
+              className={`block w-full pl-9 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all ${
+                totalMatches > 0 ? 'pr-32' : 'pr-8'
+              }`}
             />
-            {articleSearchQuery && (
-              <button
-                onClick={() => setArticleSearchQuery('')}
-                aria-label="Clear search"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
-              >
-                <X size={14} />
-              </button>
-            )}
+
+            <div className="absolute inset-y-0 right-0 pr-2 flex items-center gap-1">
+              {totalMatches > 0 && (
+                <>
+                  <span className="text-[10px] text-slate-400 mr-1 select-none font-medium tabular-nums">
+                    {currentMatchIndex + 1} / {totalMatches}
+                  </span>
+                  <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-md border border-slate-700/50">
+                    <button
+                      onClick={handlePrevMatch}
+                      className="p-1 hover:bg-slate-700 hover:text-white text-slate-400 transition-colors rounded-l-sm"
+                      aria-label="Previous match"
+                    >
+                      <ChevronUp size={12} />
+                    </button>
+                    <div className="w-px h-3 bg-slate-700/50" />
+                    <button
+                      onClick={handleNextMatch}
+                      className="p-1 hover:bg-slate-700 hover:text-white text-slate-400 transition-colors rounded-r-sm"
+                      aria-label="Next match"
+                    >
+                      <ChevronDown size={12} />
+                    </button>
+                  </div>
+                  <div className="w-px h-4 bg-slate-700/50 mx-1" />
+                </>
+              )}
+
+              {articleSearchQuery && (
+                <button
+                  onClick={() => {
+                    setArticleSearchQuery('');
+                    articleSearchInputRef.current?.focus();
+                  }}
+                  aria-label="Clear search"
+                  className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
