@@ -29,11 +29,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
 
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
-      posts = posts.filter(post =>
-        post.attributes.title.toLowerCase().includes(lowerQuery) ||
-        post.attributes.description.toLowerCase().includes(lowerQuery) ||
-        post.body.toLowerCase().includes(lowerQuery)
-      );
+      posts = posts.filter(post => post.searchContent.includes(lowerQuery));
     }
 
     // Optimization: BLOG_POSTS is already sorted by newest (descending date).
