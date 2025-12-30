@@ -88,7 +88,11 @@ export const ContactForm: React.FC = () => {
 
   if (status === 'success') {
     return (
-      <div className="bg-slate-900/50 p-8 rounded-xl border border-green-500/30 flex flex-col items-center justify-center text-center animate-fade-in">
+      <div
+        className="bg-slate-900/50 p-8 rounded-xl border border-green-500/30 flex flex-col items-center justify-center text-center animate-fade-in"
+        role="status"
+        aria-live="polite"
+      >
         <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-4 text-green-400">
           <CheckCircle size={24} />
         </div>
@@ -192,7 +196,11 @@ export const ContactForm: React.FC = () => {
       </div>
 
       {status === 'error' && (
-        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-400 text-sm">
+        <div
+          className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-400 text-sm animate-in fade-in slide-in-from-top-2"
+          role="alert"
+          aria-live="assertive"
+        >
           <AlertCircle size={16} />
           <span>{errorMessage}</span>
         </div>
