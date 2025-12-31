@@ -64,24 +64,39 @@ export const ContactForm: React.FC = () => {
     setStatus('submitting');
     setErrorMessage('');
 
-    if (form.current) {
-      try {
-        await emailjs.sendForm(
-          SERVICE_ID,
-          TEMPLATE_ID,
-          form.current,
-          PUBLIC_KEY
-        );
-        setStatus('success');
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      } catch (error: any) {
-        setStatus('error');
-        console.error('EmailJS Error:', error);
-        if (error.text) {
-          setErrorMessage(error.text);
-        } else {
-          setErrorMessage('Oops! There was a problem submitting your form');
-        }
+    try {
+      // Use .send() instead of .sendForm() to explicitly map variables
+      // This ensures compatibility with common template variable names (from_name, reply_to, etc.)
+      // regardless of the HTML input name attributes.
+      const templateParams = {
+        // Standard EmailJS template variables
+        from_name: formData.name,
+        from_email: formData.email,
+        reply_to: formData.email,
+        to_name: 'Charlie Feng', // Optional, useful if the template uses it
+        subject: formData.subject,
+        message: formData.message,
+
+        // Fallbacks matching our form field names
+        name: formData.name,
+        email: formData.email
+      };
+
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        templateParams,
+        PUBLIC_KEY
+      );
+      setStatus('success');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error: any) {
+      setStatus('error');
+      console.error('EmailJS Error:', error);
+      if (error.text) {
+        setErrorMessage(error.text);
+      } else {
+        setErrorMessage('Oops! There was a problem submitting your form');
       }
     }
   };
