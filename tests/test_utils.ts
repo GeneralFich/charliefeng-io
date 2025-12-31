@@ -1,7 +1,7 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert';
-import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo, escapeRegExp } from '../lib/utils';
+import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo, escapeRegExp, extractTextFromReactNode } from '../lib/utils';
 
 test('escapeRegExp', async (t) => {
   await t.test('escapes special characters', () => {
@@ -134,5 +134,66 @@ test('redactSensitiveInfo', async (t) => {
     const text = "Message.";
     const result = redactSensitiveInfo(text, [undefined, null]);
     assert.strictEqual(result, "Message.");
+  });
+});
+
+test('extractTextFromReactNode', async (t) => {
+  await t.test('extracts from string', () => {
+    assert.strictEqual(extractTextFromReactNode("Hello"), "Hello");
+  });
+
+  await t.test('extracts from number', () => {
+    assert.strictEqual(extractTextFromReactNode(123), "123");
+  });
+
+  await t.test('extracts from simple array', () => {
+    const input = ["Hello", " ", "World"];
+    assert.strictEqual(extractTextFromReactNode(input), "Hello World");
+  });
+
+  await t.test('extracts from nested elements (mocked)', () => {
+    // Simulating React Element structure: { props: { children: ... } }
+    const element = {
+      props: {
+        children: ["Prefix", { props: { children: " Inner" } }, " Suffix"]
+      }
+    };
+    assert.strictEqual(extractTextFromReactNode(element), "Prefix Inner Suffix");
+  });
+
+  await t.test('handles deeply nested structure', () => {
+    const input = [
+      "Level 1",
+      {
+        props: {
+          children: [
+            " Level 2",
+            {
+              props: {
+                children: " Level 3"
+              }
+            }
+          ]
+        }
+      }
+    ];
+    assert.strictEqual(extractTextFromReactNode(input), "Level 1 Level 2 Level 3");
+  });
+
+  await t.test('handles empty/null/undefined', () => {
+    assert.strictEqual(extractTextFromReactNode(null), "");
+    assert.strictEqual(extractTextFromReactNode(undefined), "");
+    assert.strictEqual(extractTextFromReactNode(""), "");
+    assert.strictEqual(extractTextFromReactNode([]), "");
+  });
+
+  await t.test('ignores non-text props', () => {
+    const element = {
+      props: {
+        className: "foo",
+        children: "Content"
+      }
+    };
+    assert.strictEqual(extractTextFromReactNode(element), "Content");
   });
 });
