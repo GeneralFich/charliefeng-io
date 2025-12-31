@@ -23,7 +23,7 @@ export const BackToTop: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', toggleVisibility);
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
     // Check initial scroll position
     toggleVisibility();
 
@@ -42,15 +42,17 @@ export const BackToTop: React.FC = () => {
     });
   };
 
-  if (!isVisible) {
-    return null;
-  }
-
   return (
     <button
       onClick={scrollToTop}
       aria-label="Back to top"
-      className="fixed bottom-6 right-6 p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300 z-50 print:hidden animate-in fade-in slide-in-from-bottom-8 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+      aria-hidden={!isVisible}
+      tabIndex={isVisible ? 0 : -1}
+      className={`fixed bottom-6 right-6 p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300 z-[100] print:hidden focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+        isVisible
+          ? 'opacity-100 translate-y-0 pointer-events-auto scale-100'
+          : 'opacity-0 translate-y-10 pointer-events-none scale-90'
+      }`}
     >
       <ArrowUp size={20} />
     </button>
