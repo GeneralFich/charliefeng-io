@@ -314,6 +314,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             <input
               ref={articleSearchInputRef}
               type="text"
+              aria-label="Search within article"
               placeholder="Find in essay... (⌘K)"
               value={articleSearchQuery}
               onChange={(e) => setArticleSearchQuery(e.target.value)}

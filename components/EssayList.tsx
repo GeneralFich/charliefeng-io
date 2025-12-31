@@ -97,6 +97,7 @@ export const EssayList: React.FC<EssayListProps> = ({
             <input
               ref={searchInputRef}
               type="text"
+              aria-label="Search essays"
               placeholder="Search essays... (⌘K)"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}

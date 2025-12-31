@@ -34,8 +34,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ node, children, className,
       <button
         onClick={handleCopy}
         className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700/50 text-slate-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-slate-600 hover:text-white"
-        aria-label="Copy code"
-        title="Copy code"
+        aria-label={isCopied ? "Copied to clipboard" : "Copy code"}
+        title={isCopied ? "Copied to clipboard" : "Copy code"}
       >
         {isCopied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
       </button>
