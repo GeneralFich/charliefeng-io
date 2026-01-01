@@ -48,11 +48,11 @@ const App: React.FC = () => {
       <>
         {/* Chat Container */}
         {/* We use a flex container that is always present if Chat is visible */}
-        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto' : 'hidden opacity-0 pointer-events-none'}`}>
+        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto print:h-auto print:overflow-visible print:block' : 'hidden opacity-0 pointer-events-none'}`}>
 
            {/* Left Panel (Chat) */}
            {/* If split, w-1/2. If not split, w-full. */}
-           <div className={`${sideView ? 'w-1/2 border-r border-slate-800' : 'w-full'} flex flex-col transition-all duration-300 ease-in-out`}>
+           <div className={`${sideView ? 'w-1/2 border-r border-slate-800 print:hidden' : 'w-full'} flex flex-col transition-all duration-300 ease-in-out`}>
               {/* Pass handleChatNavigate so internal links trigger split view */}
               <ChatInterface
                   onNavigate={handleChatNavigate}
@@ -63,10 +63,10 @@ const App: React.FC = () => {
            {/* Right Panel (Side Content) */}
            {/* Only rendered if sideView is active. */}
            {sideView && (
-             <div className="w-1/2 relative overflow-y-auto bg-slate-950 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent animate-in slide-in-from-right duration-300">
+             <div className="w-1/2 relative overflow-y-auto bg-slate-950 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent animate-in slide-in-from-right duration-300 print:w-full print:bg-white print:overflow-visible">
                 <button
                     onClick={() => setSideView(null)}
-                    className="fixed top-20 right-8 z-50 p-2 bg-slate-900/80 text-slate-400 hover:text-white rounded-full backdrop-blur-md border border-slate-700 shadow-xl transition-all hover:scale-110"
+                    className="fixed top-20 right-8 z-50 p-2 bg-slate-900/80 text-slate-400 hover:text-white rounded-full backdrop-blur-md border border-slate-700 shadow-xl transition-all hover:scale-110 print:hidden"
                     title="Close split view"
                     aria-label="Close split view"
                 >
