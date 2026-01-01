@@ -48,7 +48,7 @@ const App: React.FC = () => {
       <>
         {/* Chat Container */}
         {/* We use a flex container that is always present if Chat is visible */}
-        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto' : 'hidden opacity-0 pointer-events-none'} print:h-auto print:overflow-visible print:block`}>
+        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto print:h-auto print:overflow-visible print:block' : 'hidden opacity-0 pointer-events-none'}`}>
 
            {/* Left Panel (Chat) */}
            {/* If split, w-1/2. If not split, w-full. */}
