@@ -14,21 +14,79 @@ import { MessageSquare, FileText, Menu, X, BookOpen, Mail } from 'lucide-react';
 const App: React.FC = () => {
   const { currentView, targetEssaySlug, navigateTo } = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sideView, setSideView] = useState<View | null>(null);
+  const [sideSlug, setSideSlug] = useState<string | undefined>(undefined);
 
   const handleNavigate = (view: View, slug?: string) => {
+    // Standard navigation resets side view
+    setSideView(null);
+    setSideSlug(undefined);
     navigateTo(view, slug);
     setMobileMenuOpen(false);
   };
 
+  const handleChatNavigate = (view: View, slug?: string) => {
+    if (window.innerWidth >= 768) { // Desktop
+      setSideView(view);
+      setSideSlug(slug);
+    } else {
+      // Mobile: standard navigation
+      handleNavigate(view, slug);
+    }
+  };
+
   const renderContent = () => {
-    // We keep ChatInterface mounted to persist history and state
     const isChatVisible = currentView === View.HOME;
+
+    // We construct a stable layout where ChatInterface is always in the DOM if isChatVisible is true.
+    // If sideView is active, we render it side-by-side.
+    // If NOT sideView, we render ChatInterface full width (or centered).
+
+    // To avoid remounting ChatInterface, we must use the SAME component instance in the SAME position.
 
     return (
       <>
-        <div className={isChatVisible ? 'block h-full' : 'hidden'}>
-          <ChatInterface onNavigate={handleNavigate} />
+        {/* Chat Container */}
+        {/* We use a flex container that is always present if Chat is visible */}
+        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto' : 'hidden opacity-0 pointer-events-none'}`}>
+
+           {/* Left Panel (Chat) */}
+           {/* If split, w-1/2. If not split, w-full. */}
+           <div className={`${sideView ? 'w-1/2 border-r border-slate-800' : 'w-full'} flex flex-col transition-all duration-300 ease-in-out`}>
+              {/* Pass handleChatNavigate so internal links trigger split view */}
+              <ChatInterface
+                  onNavigate={handleChatNavigate}
+                  className={sideView ? 'h-full' : undefined}
+              />
+           </div>
+
+           {/* Right Panel (Side Content) */}
+           {/* Only rendered if sideView is active. */}
+           {sideView && (
+             <div className="w-1/2 relative overflow-y-auto bg-slate-950 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent animate-in slide-in-from-right duration-300">
+                <button
+                    onClick={() => setSideView(null)}
+                    className="fixed top-20 right-8 z-50 p-2 bg-slate-900/80 text-slate-400 hover:text-white rounded-full backdrop-blur-md border border-slate-700 shadow-xl transition-all hover:scale-110"
+                    title="Close split view"
+                    aria-label="Close split view"
+                >
+                    <X size={20} />
+                </button>
+
+                <div className="min-h-full">
+                   {sideView === View.ABOUT && <Resume />}
+                   {sideView === View.ESSAYS && <Essays initialSlug={sideSlug} />}
+                   {sideView === View.CONTACT && <ContactView />}
+                </div>
+             </div>
+           )}
         </div>
+
+        {/* Standard Full Views (When NOT in Chat mode) */}
+        {/* Note: If currentView is HOME, we render the above block.
+            If currentView is NOT HOME, we render these below.
+            Wait, if currentView is NOT HOME, `isChatVisible` is false, so the block above is hidden.
+        */}
 
         {currentView === View.ABOUT && <Resume />}
         {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}

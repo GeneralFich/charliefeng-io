@@ -7,9 +7,10 @@ import { useChat } from '../hooks/useChat';
 
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string) => void;
+  className?: string;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className }) => {
   const {
     messages,
     input,
@@ -37,7 +38,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
   }, [messages, isLoading]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto w-full">
+    <div className={`flex flex-col w-full ${className || 'h-[calc(100vh-140px)] max-w-4xl mx-auto'}`}>
       {/* Chat Area */}
       <div
         ref={chatContainerRef}
