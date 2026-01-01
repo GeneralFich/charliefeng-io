@@ -22,6 +22,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClearChat = () => {
+    clearChat();
+    // Focus input after clearing to keep user in the flow
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -87,7 +96,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-3">
           {!isInitialState && (
             <button
-              onClick={clearChat}
+              onClick={handleClearChat}
               aria-label="Clear chat"
               className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
               title="Clear chat history"
@@ -98,6 +107,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
           <div className="relative flex-1">
             <input
+              ref={inputRef}
               type="text"
               aria-label="Chat message"
               value={input}
