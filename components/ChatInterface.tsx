@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Loader2, RotateCcw } from 'lucide-react';
+import { Send, Loader2, RotateCcw, Download } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -36,6 +36,27 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  const handleDownloadChat = () => {
+    if (messages.length <= 1) return;
+
+    const chatContent = messages
+      .map(msg => {
+        const role = msg.role === 'user' ? 'You' : 'Charlie (AI)';
+        return `[${role}]:\n${msg.text}\n`;
+      })
+      .join('\n' + '-'.repeat(40) + '\n\n');
+
+    const blob = new Blob([chatContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `charlie-feng-chat-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className={`flex flex-col w-full ${className || 'h-[calc(100vh-140px)] max-w-4xl mx-auto'}`}>
@@ -87,14 +108,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
         
         <div className="flex items-center gap-3">
           {!isInitialState && (
-            <button
-              onClick={clearChat}
-              aria-label="Clear chat"
-              className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
-              title="Clear chat history"
-            >
-              <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
-            </button>
+            <>
+              <button
+                onClick={handleDownloadChat}
+                aria-label="Download chat"
+                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all shrink-0 group"
+                title="Download chat history"
+              >
+                <Download size={20} className="group-hover:scale-110 transition-transform duration-300" />
+              </button>
+
+              <button
+                onClick={clearChat}
+                aria-label="Clear chat"
+                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
+                title="Clear chat history"
+              >
+                <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+              </button>
+            </>
           )}
 
           <div className="relative flex-1">
