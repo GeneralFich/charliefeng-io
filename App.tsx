@@ -1,3 +1,28 @@
+/**
+ * @fileoverview Root Application Component
+ *
+ * This component acts as the main Layout Shell and Router for the application.
+ * It orchestrates the state-based navigation, split-view layout logic, and
+ * the persistence of the Chat Interface.
+ *
+ * Key Responsibilities:
+ * 1. **Routing**: Consumes `useRouter` to determine the current view (`View.HOME`, `View.ABOUT`, etc.).
+ * 2. **Split View Architecture (Desktop)**:
+ *    - When a user clicks an internal link (e.g., "[Resume]") within the Chat,
+ *      the app enters "Split View" mode.
+ *    - The Chat Interface shrinks to 50% width on the left.
+ *    - The requested content (Resume, Essay) renders in the remaining 50% on the right.
+ *    - This allows users to read content while continuing the conversation.
+ * 3. **Chat Persistence**:
+ *    - The `<ChatInterface />` is **never unmounted**.
+ *    - When navigating away from the Chat (e.g., to "Contact"), the Chat container
+ *      is hidden using CSS (`display: none` or `opacity: 0`) rather than removed from the DOM.
+ *    - "Why": This preserves the conversation history, scroll position, and input state
+ *      without needing complex external state management (Redux/Context) for the chat history.
+ * 4. **Mobile Responsiveness**:
+ *    - On mobile, "Split View" is disabled; navigation is full-page.
+ *    - Includes a collapsible navigation drawer.
+ */
 import React, { useState } from 'react';
 import { View } from './types';
 import { useRouter } from './hooks/useRouter';
