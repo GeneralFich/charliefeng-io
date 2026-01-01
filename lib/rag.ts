@@ -72,7 +72,7 @@ export function cosineSimilarity(vecA: number[], vecB: number[], magA?: number, 
   return dot / (mA * mB);
 }
 
-interface BlogChunk {
+export interface BlogChunk {
   id: string;
   text: string;
   url: string;
@@ -131,7 +131,8 @@ const getBlogData = (): BlogChunk[] => {
 export async function getRelevantContext(
   query: string,
   apiKey: string,
-  customEmbedder?: (text: string) => Promise<number[]>
+  customEmbedder?: (text: string) => Promise<number[]>,
+  customData?: BlogChunk[]
 ): Promise<RelevantChunk[]> {
   try {
     let queryEmbedding: number[];
@@ -152,7 +153,7 @@ export async function getRelevantContext(
       queryEmbedding = response.embeddings[0].values;
     }
     const queryMagnitude = magnitude(queryEmbedding);
-    const data = getBlogData();
+    const data = customData || getBlogData();
 
     // Optimization: Use a single loop to calculate score and filter,
     // avoiding intermediate array allocations (map + filter).
