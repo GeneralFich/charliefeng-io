@@ -18,6 +18,26 @@ This application serves as an interactive portfolio and conversational agent, al
 - **AI Integration**: [Google Gemini API](https://ai.google.dev/) (`@google/genai`)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
+## System Architecture
+
+The application is designed as a "Glass Box" AI system, prioritizing transparency and local-first performance.
+
+### 1. Data Flow (The "Cognitive Loop")
+- **`App.tsx`**: The application shell that handles routing and layout.
+- **`useChat` Hook**: Manages the ephemeral state (messages, loading status) and handles race conditions for the chat.
+- **`geminiService`**: The "Cognitive Layer" that orchestrates the AI interaction. It combines the user's query with the System Persona (`lib/knowledge.ts`) and Retrieved Context (`lib/rag.ts`) before sending it to Google Gemini.
+
+### 2. Single Source of Truth
+- **`lib/knowledge.ts`**: This module acts as the central data registry. It imports raw Markdown files (Resume, Blog Posts) at build time and parses them into structured data.
+- **Unified Context**: The same Markdown content that renders the "Essays" and "About" pages is fed directly into the AI's system prompt, ensuring the chatbot never hallucinates about Charlie's background.
+
+### 3. RAG Pipeline (Retrieval-Augmented Generation)
+- **Ingestion (`scripts/ingest_blog.ts`)**: A build-time script that chunks blog posts and generates vector embeddings using `text-embedding-004`. Results are saved to `lib/blog_data.json`.
+- **Retrieval (`lib/rag.ts`)**: A lightweight, in-memory vector search engine. It performs cosine similarity checks against the pre-loaded JSON index to find relevant blog chunks in O(1) time, without needing an external vector database.
+
+### 4. Custom Routing
+- **`useRouter` Hook**: A lightweight, custom router implementation using the History API (`pushState`/`popstate`). This avoids the overhead of heavy routing libraries while preserving deep-linking capabilities (e.g., `?view=ESSAYS&essay=my-post`).
+
 ## Getting Started
 
 Follow these instructions to get a copy of the project up and running on your local machine.
