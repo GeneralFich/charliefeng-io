@@ -1,16 +1,17 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
-import { isSafeLink, escapeRegExp, slugify, extractTextFromReactNode } from '../lib/utils';
+import { isSafeLink, slugify, extractTextFromReactNode } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 import { TableOfContents } from './TableOfContents';
 import { View } from '../types';
+import { useArticleSearch } from '../hooks/useArticleSearch';
 
 interface EssayDetailProps {
   post: BlogPost;
@@ -29,107 +30,18 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   onBack,
   onNavigate
 }) => {
-  const [articleSearchQuery, setArticleSearchQuery] = useState('');
   const [isCopied, setIsCopied] = useState(false);
-  const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
-  const [totalMatches, setTotalMatches] = useState(0);
-  const articleSearchInputRef = useRef<HTMLInputElement>(null);
 
-  // Create regex for article search (memoized)
-  const articleSearchRegex = useMemo(() => {
-    if (!articleSearchQuery.trim()) return null;
-    try {
-      return new RegExp(`(${escapeRegExp(articleSearchQuery)})`, 'gi');
-    } catch {
-      return null;
-    }
-  }, [articleSearchQuery]);
-
-  // Handle Search Logic: Count matches and scroll to first
-  useEffect(() => {
-    if (!articleSearchQuery.trim()) {
-      setTotalMatches(0);
-      setCurrentMatchIndex(-1);
-      return;
-    }
-
-    // Small delay to allow react-markdown to render the <mark> tags
-    const timer = setTimeout(() => {
-      const marks = document.querySelectorAll('article mark');
-      setTotalMatches(marks.length);
-
-      if (marks.length > 0) {
-        // If we have matches, default to the first one
-        setCurrentMatchIndex(0);
-        // Styling and scrolling handled by the next useEffect
-      } else {
-        setCurrentMatchIndex(-1);
-      }
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [articleSearchQuery, post.slug]);
-
-  // Handle Match Navigation Styling & Scrolling
-  useEffect(() => {
-    const marks = document.querySelectorAll('article mark');
-    if (marks.length === 0) return;
-
-    // Reset all marks to default style
-    marks.forEach(m => {
-      m.className = "bg-yellow-500/50 text-white rounded-sm px-0.5 transition-colors duration-300";
-    });
-
-    // Highlight and scroll to the active match
-    if (currentMatchIndex >= 0 && marks[currentMatchIndex]) {
-      const active = marks[currentMatchIndex];
-      // Apply active style (Orange/Red pop)
-      active.className = "bg-orange-500 text-white rounded-sm px-0.5 ring-2 ring-orange-400 shadow-lg shadow-orange-500/20 z-10 relative transition-all duration-300";
-
-      active.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [currentMatchIndex, totalMatches]);
-
-  const handleNextMatch = () => {
-    if (totalMatches === 0) return;
-    setCurrentMatchIndex(prev => (prev + 1) % totalMatches);
-  };
-
-  const handlePrevMatch = () => {
-    if (totalMatches === 0) return;
-    setCurrentMatchIndex(prev => (prev - 1 + totalMatches) % totalMatches);
-  };
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Command/Ctrl + K to focus search
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        articleSearchInputRef.current?.focus();
-      }
-
-      // Escape to blur input
-      if (e.key === 'Escape') {
-        if (document.activeElement === articleSearchInputRef.current) {
-          articleSearchInputRef.current?.blur();
-        }
-      }
-
-      // Enter to go to next match if focused
-      if (e.key === 'Enter' && document.activeElement === articleSearchInputRef.current) {
-        e.preventDefault();
-        if (e.shiftKey) {
-          handlePrevMatch();
-        } else {
-          handleNextMatch();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [totalMatches]); // Re-bind when match count changes to capture latest state closure
+  const {
+    articleSearchQuery,
+    setArticleSearchQuery,
+    currentMatchIndex,
+    totalMatches,
+    articleSearchInputRef,
+    articleSearchRegex,
+    handleNextMatch,
+    handlePrevMatch
+  } = useArticleSearch(post.slug);
 
   const handleShare = async () => {
     // Use current location origin and pathname to support sub-paths
