@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { isSafeLink, slugify, extractTextFromReactNode } from '../lib/utils';
@@ -233,7 +233,45 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in duration-500">
-      <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Print Styles */}
+      <style media="print">{`
+        @media print {
+          body {
+            background: white !important;
+            color: black !important;
+          }
+          .prose-invert {
+            --tw-prose-body: #000 !important;
+            --tw-prose-headings: #000 !important;
+            --tw-prose-lead: #000 !important;
+            --tw-prose-links: #000 !important;
+            --tw-prose-bold: #000 !important;
+            --tw-prose-counters: #000 !important;
+            --tw-prose-bullets: #000 !important;
+            --tw-prose-hr: #000 !important;
+            --tw-prose-quotes: #000 !important;
+            --tw-prose-quote-borders: #000 !important;
+            --tw-prose-captions: #000 !important;
+            --tw-prose-code: #000 !important;
+            --tw-prose-pre-code: #000 !important;
+            --tw-prose-pre-bg: #eee !important;
+            --tw-prose-th-borders: #000 !important;
+            --tw-prose-td-borders: #000 !important;
+          }
+          article {
+              color: black !important;
+          }
+          /* Attempt to force Recharts text to black */
+          .recharts-text {
+              fill: #000 !important;
+          }
+          .recharts-cartesian-grid-horizontal line, .recharts-cartesian-grid-vertical line {
+              stroke: #ddd !important;
+          }
+        }
+      `}</style>
+
+      <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
@@ -248,6 +286,17 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
+          {/* Print / Download PDF */}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm hidden sm:flex"
+            title="Print or Save as PDF"
+            aria-label="Print or Save as PDF"
+          >
+            <Download size={14} />
+            <span>PDF</span>
+          </button>
+
           {/* Share Button */}
           <button
             onClick={handleShare}
@@ -348,7 +397,9 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </header>
 
         {/* Table of Contents */}
-        <TableOfContents markdown={post.body} />
+        <div className="print:hidden">
+          <TableOfContents markdown={post.body} />
+        </div>
 
         <HighlightContext.Provider value={articleSearchRegex}>
           {markdownContent}
@@ -356,7 +407,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
       </article>
 
       {/* Contextual Navigation Footer */}
-      <div className="mt-16 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-16 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
         <div>
           {newerPost && (
             <button
