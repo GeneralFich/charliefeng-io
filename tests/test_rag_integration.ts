@@ -1,27 +1,72 @@
 
-import { describe, it, mock } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { getRelevantContext, RelevantChunk } from '../lib/rag';
+import { getRelevantContext, BlogChunk } from '../lib/rag';
 
-// Mock blog data to avoid dependency on the actual file during tests if possible,
-// but since the module imports it directly, we might rely on the existing file OR
-// we can try to mock the file import if using a more advanced runner.
-// However, `getRelevantContext` uses `getBlogData()` which reads the imported JSON.
-// For now, we assume `blog_data.json` exists and might have some data.
-// If it's empty or specific, we might get 0 results.
-// But we can check if we can at least invoke the function and test the filtering logic
-// if we happen to have matching vectors.
-//
-// A better approach for Unit Testing would be to export `getBlogData` or allow injecting data,
-// but for this "integration" style test, we will verify the flow.
+describe('RAG Logic (Deterministic)', () => {
+  const mockApiKey = 'fake-api-key';
 
-// Actually, since we can't easily change the blog data without file mocks,
-// we will focus on the control flow:
-// 1. Calling the embedder
-// 2. Handling errors
-// 3. Returning empty array on error
+  // Helper to create a chunk
+  const createChunk = (id: string, embedding: number[]): BlogChunk => ({
+    id,
+    text: `Content for ${id}`,
+    url: `/post/${id}`,
+    title: `Title ${id}`,
+    publishedDate: '2023-01-01',
+    embedding
+  });
 
-describe('RAG Integration', () => {
+  it('should correctly filter and sort results based on similarity', async () => {
+    // 1. Setup Mock Data
+    // We use simple 2D vectors for easy mental math.
+    // Query: [1, 0] (x-axis)
+    // Chunk A: [1, 0] -> Similarity 1.0 (Exact match)
+    // Chunk B: [0, 1] -> Similarity 0.0 (Orthogonal) -> Should be filtered out (< 0.5)
+    // Chunk C: [0.707, 0.707] -> Similarity ~0.707 (45 degrees) -> Should be included
+
+    const mockData: BlogChunk[] = [
+      createChunk('A', [1, 0]),
+      createChunk('B', [0, 1]),
+      createChunk('C', [0.707, 0.707]),
+    ];
+
+    const mockEmbedder = async () => [1, 0];
+
+    // 2. Act
+    const results = await getRelevantContext('query', mockApiKey, mockEmbedder, mockData);
+
+    // 3. Assert
+    assert.strictEqual(results.length, 2, 'Should return exactly 2 results (A and C)');
+
+    // Sort order check: A (1.0) then C (~0.7)
+    assert.strictEqual(results[0].title, 'Title A');
+    assert.strictEqual(results[1].title, 'Title C');
+
+    // Score checks
+    assert.strictEqual(results[0].score, 1);
+    assert(results[1].score > 0.7 && results[1].score < 0.71);
+  });
+
+  it('should handle empty custom data', async () => {
+    const mockEmbedder = async () => [1, 0];
+    const results = await getRelevantContext('query', mockApiKey, mockEmbedder, []);
+    assert.deepStrictEqual(results, []);
+  });
+
+  it('should handle chunks with missing embeddings', async () => {
+    const mockData: BlogChunk[] = [
+      {
+        id: 'D', text: 'No embedding', url: '/d', title: 'D', publishedDate: '2023-01-01'
+        // embedding is undefined
+      }
+    ];
+    const mockEmbedder = async () => [1, 0];
+    const results = await getRelevantContext('query', mockApiKey, mockEmbedder, mockData);
+    assert.deepStrictEqual(results, []);
+  });
+});
+
+describe('RAG Integration (Error Handling)', () => {
   const mockApiKey = 'fake-api-key';
 
   it('should use custom embedder and handle errors gracefully', async () => {
@@ -29,43 +74,7 @@ describe('RAG Integration', () => {
       throw new Error('Embedder failed');
     };
 
-    // Should catch error and return empty array
     const result = await getRelevantContext('test query', mockApiKey, mockEmbedder);
     assert.deepStrictEqual(result, []);
-  });
-
-  it('should use custom embedder and return results (assuming blog data exists)', async () => {
-    // We create a mock embedding.
-    // To match something, we need to know what's in blog_data.json.
-    // If we don't know, we can't guarantee a match > 0.5.
-    // BUT we can check that it didn't crash.
-
-    const mockEmbedder = async (text: string) => {
-      // Return a vector of 768 zeros (standard size) or just some numbers
-      return new Array(768).fill(0.1);
-    };
-
-    const result = await getRelevantContext('test query', mockApiKey, mockEmbedder);
-    assert(Array.isArray(result));
-    // If `result` has items, they must have keys: text, title, url, score
-    if (result.length > 0) {
-      assert('text' in result[0]);
-      assert('score' in result[0]);
-    }
-  });
-
-  it('should return empty array if custom embedder returns empty', async () => {
-      // Use a custom embedder that acts like it failed to produce a valid embedding logic
-      // But wait, our code expects number[].
-      // If we pass a valid number[], it proceeds.
-
-      const mockEmbedder = async (text: string) => {
-         return []; // empty vector
-      };
-
-      const result = await getRelevantContext('test', mockApiKey, mockEmbedder);
-      // magnitude of [] is 0. cosineSimilarity returns 0.
-      // 0 < 0.5, so filtered out.
-      assert.deepStrictEqual(result, []);
   });
 });

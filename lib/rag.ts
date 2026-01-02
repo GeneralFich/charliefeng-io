@@ -72,7 +72,7 @@ export function cosineSimilarity(vecA: number[], vecB: number[], magA?: number, 
   return dot / (mA * mB);
 }
 
-interface BlogChunk {
+export interface BlogChunk {
   id: string;
   text: string;
   url: string;
@@ -126,12 +126,14 @@ const getBlogData = (): BlogChunk[] => {
  * @param query - The user's search query or question.
  * @param apiKey - The Google Gemini API key.
  * @param customEmbedder - Optional custom function to generate embeddings (for testing).
+ * @param customData - Optional custom blog data for testing.
  * @returns A promise resolving to an array of the top 5 relevant text chunks.
  */
 export async function getRelevantContext(
   query: string,
   apiKey: string,
-  customEmbedder?: (text: string) => Promise<number[]>
+  customEmbedder?: (text: string) => Promise<number[]>,
+  customData?: BlogChunk[]
 ): Promise<RelevantChunk[]> {
   try {
     let queryEmbedding: number[];
@@ -152,7 +154,14 @@ export async function getRelevantContext(
       queryEmbedding = response.embeddings[0].values;
     }
     const queryMagnitude = magnitude(queryEmbedding);
-    const data = getBlogData();
+
+    // Use custom data if provided, calculating magnitudes if needed
+    const data = customData
+      ? customData.map(c => ({
+          ...c,
+          _magnitude: c._magnitude ?? (c.embedding ? magnitude(c.embedding) : 0)
+        }))
+      : getBlogData();
 
     // Optimization: Use a single loop to calculate score and filter,
     // avoiding intermediate array allocations (map + filter).
@@ -160,7 +169,10 @@ export async function getRelevantContext(
 
     for (const chunk of data) {
       // data only contains chunks with embeddings and magnitudes, so ! assertion is safe
-      const score = cosineSimilarity(queryEmbedding, chunk.embedding!, queryMagnitude, chunk._magnitude);
+      // Skip if embedding is missing (possible in customData)
+      if (!chunk.embedding) continue;
+
+      const score = cosineSimilarity(queryEmbedding, chunk.embedding, queryMagnitude, chunk._magnitude);
 
       // Filter by threshold (0.5) directly to avoid allocating objects for irrelevant chunks
       if (score > 0.5) {
