@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Loader2, RotateCcw, Download } from 'lucide-react';
+import { Send, Loader2, RotateCcw, Download, X } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -23,6 +23,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
 
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -131,6 +132,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
 
           <div className="relative flex-1">
             <input
+              ref={inputRef}
               type="text"
               aria-label="Chat message"
               value={input}
@@ -138,21 +140,33 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
               onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
               placeholder={isLoading ? "Thinking..." : "Ask anything..."}
               maxLength={2000}
-              className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+              className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-40 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
               disabled={isLoading}
             />
 
             {input.length > 0 && (
-              <span
-                className={`absolute right-12 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums pointer-events-none transition-colors ${
-                  input.length >= 2000 ? 'text-red-500 font-bold' :
-                  input.length > 1800 ? 'text-amber-500' :
-                  'text-slate-400'
-                }`}
-                aria-hidden="true"
-              >
-                {input.length}/2000
-              </span>
+              <>
+                <button
+                  onClick={() => {
+                    setInput('');
+                    inputRef.current?.focus();
+                  }}
+                  aria-label="Clear input"
+                  className="absolute right-[6.5rem] top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-300 rounded-full hover:bg-slate-800 transition-all"
+                >
+                  <X size={14} />
+                </button>
+                <span
+                  className={`absolute right-14 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums pointer-events-none transition-colors ${
+                    input.length >= 2000 ? 'text-red-500 font-bold' :
+                    input.length > 1800 ? 'text-amber-500' :
+                    'text-slate-400'
+                  }`}
+                  aria-hidden="true"
+                >
+                  {input.length}/2000
+                </span>
+              </>
             )}
 
             <button
