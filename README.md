@@ -16,6 +16,7 @@ This application serves as an interactive portfolio and conversational agent, al
 - **Frontend**: [React](https://react.dev/), [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **AI Integration**: [Google Gemini API](https://ai.google.dev/) (`@google/genai`)
+- **Package Manager**: [pnpm](https://pnpm.io/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
 ## System Architecture
@@ -45,8 +46,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 ### Prerequisites
 
 - Node.js (v18 or higher recommended)
-- npm (or yarn/pnpm)
-- A Google Gemini API Key
+- [pnpm](https://pnpm.io/installation)
 
 ### Installation
 
@@ -58,36 +58,55 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 2.  **Install dependencies:**
     ```bash
-    npm install
+    pnpm install
     ```
 
 3.  **Configure Environment Variables:**
-    Create a `.env.local` file in the root directory and add your Google Gemini API key:
+    Create a `.env.local` file in the root directory and add the following keys:
+
+    **Required for AI Chat:**
     ```env
     GEMINI_API_KEY=your_api_key_here
     ```
-    *Note: The `vite.config.ts` is configured to map this variable to the application.*
+
+    **Required for Contact Form (EmailJS):**
+    ```env
+    VITE_EMAILJS_SERVICE_ID=your_service_id
+    VITE_EMAILJS_TEMPLATE_ID=your_template_id
+    VITE_EMAILJS_PUBLIC_KEY=your_public_key
+    ```
+    *Note: If EmailJS keys are missing, the contact form will run in "Demo Mode" and simulate successful submissions.*
 
 ### Running the App
 
 Start the development server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Open your browser and navigate to `http://localhost:5173` (or the port shown in your terminal).
+Open your browser and navigate to `http://localhost:3000` (or the port shown in your terminal).
+
+## Scripts
+
+- **`pnpm dev`**: Starts the development server.
+- **`pnpm build`**: Builds the production-ready bundle.
+- **`npx tsx scripts/ingest_blog.ts`**: Runs the RAG ingestion pipeline to update the blog index (`lib/blog_data.json`). Run this after adding new essays.
+- **`npx playwright test`**: Runs the frontend verification suite.
 
 ## Project Structure
 
-- `src/`: Source code
-  - `components/`: React components (ChatInterface, Dashboard, Resume, etc.)
-  - `lib/`: Utility libraries and static data (knowledge base, resume data)
-  - `services/`: API services (Gemini integration)
-  - `App.tsx`: Main application component
-  - `types.ts`: TypeScript definitions
-- `public/`: Static assets
+The project uses a flat structure to minimize nesting:
+
+- `components/`: React components (ChatInterface, ContactForm, Resume, etc.)
+- `lib/`: Utility libraries and static data (knowledge base, resume data, RAG logic)
+- `services/`: API services (Gemini integration)
+- `hooks/`: Custom React hooks (`useChat`, `useRouter`, etc.)
+- `content/`: Markdown source files (Blog posts, Resume)
+- `verification/`: Playwright verification scripts
+- `App.tsx`: Main application component
+- `types.ts`: TypeScript definitions
 
 ## License
 
-[MIT](LICENSE)
+MIT
