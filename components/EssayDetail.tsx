@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Check, ChevronUp, ChevronDown, Link as LinkIcon, Printer } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { isSafeLink, slugify, extractTextFromReactNode } from '../lib/utils';
@@ -233,7 +233,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in duration-500">
-      <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
@@ -248,6 +248,17 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
+          {/* Print Button */}
+          <button
+            onClick={() => window.print()}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group print:hidden"
+            title="Print or Save as PDF"
+            aria-label="Print or Save as PDF"
+          >
+            <Printer size={14} />
+            <span>Print</span>
+          </button>
+
           {/* Share Button */}
           <button
             onClick={handleShare}
@@ -320,14 +331,25 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </div>
       </div>
 
-      <article className="prose prose-invert prose-lg max-w-none">
-        <header className="mb-10 not-prose border-b border-slate-800 pb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
+      <article className="prose prose-invert prose-lg max-w-none print:prose-neutral print:text-black">
+        {/* Print Styles Injection */}
+        <style>
+          {`
+            @media print {
+              body { background: white !important; color: black !important; }
+              article { color: black !important; }
+              .prose-invert { --tw-prose-body: black !important; --tw-prose-headings: black !important; --tw-prose-bold: black !important; }
+              h1, h2, h3, h4, p, li, strong, span { color: black !important; }
+            }
+          `}
+        </style>
+        <header className="mb-10 not-prose border-b border-slate-800 pb-10 print:border-slate-200">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight print:text-black">
             {highlightNodes(post.attributes.title, articleSearchRegex)}
           </h1>
-          <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400 print:text-slate-600">
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-blue-400" />
+              <Calendar size={16} className="text-blue-400 print:text-slate-800" />
               <time dateTime={post.attributes.date}>
                 {new Date(post.attributes.date).toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -337,11 +359,11 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
               </time>
             </div>
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-blue-400" />
+              <Clock size={16} className="text-blue-400 print:text-slate-800" />
               <span>{post.readTime} min read</span>
             </div>
             <div className="flex items-center gap-2">
-              <User size={16} className="text-blue-400" />
+              <User size={16} className="text-blue-400 print:text-slate-800" />
               <span>{post.attributes.author}</span>
             </div>
           </div>
