@@ -17,6 +17,45 @@ interface EssayListProps {
   onSelectPost: (post: BlogPost) => void;
 }
 
+interface EssayItemProps {
+  post: BlogPost;
+  searchRegex: RegExp | null;
+  onSelectPost: (post: BlogPost) => void;
+}
+
+const EssayItem = React.memo(({ post, searchRegex, onSelectPost }: EssayItemProps) => {
+  return (
+    <button
+      onClick={() => onSelectPost(post)}
+      className="group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-slate-900/30 border border-slate-800/50 hover:bg-slate-800/50 hover:border-blue-500/30 transition-all duration-300 text-left"
+    >
+      <div className="flex-1">
+        <div className="flex items-center gap-3 text-xs text-blue-400 mb-3 font-medium uppercase tracking-wider">
+          <time dateTime={post.attributes.date}>
+            {new Date(post.attributes.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })}
+          </time>
+          <span>•</span>
+          <span>{post.readTime} min read</span>
+        </div>
+        <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors">
+          {/* Highlight match in title if searching */}
+          {highlightNodes(post.attributes.title, searchRegex)}
+        </h3>
+        <p className="text-slate-400 leading-relaxed line-clamp-2">
+          {/* Highlight match in description if searching */}
+          {highlightNodes(post.attributes.description, searchRegex)}
+        </p>
+      </div>
+    </button>
+  );
+});
+
+EssayItem.displayName = 'EssayItem';
+
 export const EssayList: React.FC<EssayListProps> = ({
   posts,
   searchQuery,
@@ -124,33 +163,12 @@ export const EssayList: React.FC<EssayListProps> = ({
       <div className="grid gap-6">
         {posts.length > 0 ? (
           posts.map((post) => (
-            <button
+            <EssayItem
               key={post.slug}
-              onClick={() => onSelectPost(post)}
-              className="group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-slate-900/30 border border-slate-800/50 hover:bg-slate-800/50 hover:border-blue-500/30 transition-all duration-300 text-left"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 text-xs text-blue-400 mb-3 font-medium uppercase tracking-wider">
-                  <time dateTime={post.attributes.date}>
-                    {new Date(post.attributes.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </time>
-                  <span>•</span>
-                  <span>{post.readTime} min read</span>
-                </div>
-                <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors">
-                  {/* Highlight match in title if searching */}
-                  {highlightNodes(post.attributes.title, searchRegex)}
-                </h3>
-                <p className="text-slate-400 leading-relaxed line-clamp-2">
-                  {/* Highlight match in description if searching */}
-                  {highlightNodes(post.attributes.description, searchRegex)}
-                </p>
-              </div>
-            </button>
+              post={post}
+              searchRegex={searchRegex}
+              onSelectPost={onSelectPost}
+            />
           ))
         ) : (
           <div className="text-center py-12 text-slate-400">
