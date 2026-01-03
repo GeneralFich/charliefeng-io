@@ -1,25 +1,7 @@
 
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { getRelevantContext, RelevantChunk } from '../lib/rag';
-
-// Mock blog data to avoid dependency on the actual file during tests if possible,
-// but since the module imports it directly, we might rely on the existing file OR
-// we can try to mock the file import if using a more advanced runner.
-// However, `getRelevantContext` uses `getBlogData()` which reads the imported JSON.
-// For now, we assume `blog_data.json` exists and might have some data.
-// If it's empty or specific, we might get 0 results.
-// But we can check if we can at least invoke the function and test the filtering logic
-// if we happen to have matching vectors.
-//
-// A better approach for Unit Testing would be to export `getBlogData` or allow injecting data,
-// but for this "integration" style test, we will verify the flow.
-
-// Actually, since we can't easily change the blog data without file mocks,
-// we will focus on the control flow:
-// 1. Calling the embedder
-// 2. Handling errors
-// 3. Returning empty array on error
+import { getRelevantContext, RelevantChunk, BlogChunk } from '../lib/rag';
 
 describe('RAG Integration', () => {
   const mockApiKey = 'fake-api-key';
@@ -67,5 +49,62 @@ describe('RAG Integration', () => {
       // magnitude of [] is 0. cosineSimilarity returns 0.
       // 0 < 0.5, so filtered out.
       assert.deepStrictEqual(result, []);
+  });
+
+  it('should correctly filter and sort results using injected data', async () => {
+    // 1. Setup deterministic data
+    // Query Vector: [1, 0, 0] (Unit vector along X)
+    // Chunk A: [1, 0, 0] -> Sim 1.0 (Perfect match)
+    // Chunk B: [0, 1, 0] -> Sim 0.0 (Orthogonal) -> Should be filtered out (< 0.5)
+    // Chunk C: [0.8, 0.6, 0] -> Sim 0.8 (High match) -> Should be included, second place
+
+    const mockEmbedder = async (text: string) => {
+      return [1, 0, 0];
+    };
+
+    const mockData: BlogChunk[] = [
+      {
+        id: 'chunk-b',
+        text: 'Chunk B Content',
+        title: 'Chunk B',
+        url: '/chunk-b',
+        publishedDate: '2023-01-01',
+        embedding: [0, 1, 0] // Sim 0.0
+      },
+      {
+        id: 'chunk-a',
+        text: 'Chunk A Content',
+        title: 'Chunk A',
+        url: '/chunk-a',
+        publishedDate: '2023-01-01',
+        embedding: [1, 0, 0] // Sim 1.0
+      },
+      {
+        id: 'chunk-c',
+        text: 'Chunk C Content',
+        title: 'Chunk C',
+        url: '/chunk-c',
+        publishedDate: '2023-01-01',
+        embedding: [0.8, 0.6, 0] // Sim 0.8
+      }
+    ];
+
+    // 2. Execute
+    const result = await getRelevantContext('test', mockApiKey, mockEmbedder, mockData);
+
+    // 3. Assert
+    assert.strictEqual(result.length, 2, 'Should return exactly 2 relevant chunks');
+
+    // Check sorting (A should be first because 1.0 > 0.8)
+    assert.strictEqual(result[0].title, 'Chunk A');
+    assert.ok(Math.abs(result[0].score - 1.0) < 0.0001, 'Chunk A score should be ~1.0');
+
+    // Check sorting (C should be second)
+    assert.strictEqual(result[1].title, 'Chunk C');
+    assert.ok(Math.abs(result[1].score - 0.8) < 0.0001, 'Chunk C score should be ~0.8');
+
+    // Check filtering (B should not be present)
+    const hasB = result.some(r => r.title === 'Chunk B');
+    assert.strictEqual(hasB, false, 'Chunk B should be filtered out due to low score');
   });
 });

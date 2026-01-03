@@ -72,7 +72,7 @@ export function cosineSimilarity(vecA: number[], vecB: number[], magA?: number, 
   return dot / (mA * mB);
 }
 
-interface BlogChunk {
+export interface BlogChunk {
   id: string;
   text: string;
   url: string;
@@ -131,7 +131,8 @@ const getBlogData = (): BlogChunk[] => {
 export async function getRelevantContext(
   query: string,
   apiKey: string,
-  customEmbedder?: (text: string) => Promise<number[]>
+  customEmbedder?: (text: string) => Promise<number[]>,
+  customData?: BlogChunk[]
 ): Promise<RelevantChunk[]> {
   try {
     let queryEmbedding: number[];
@@ -152,7 +153,23 @@ export async function getRelevantContext(
       queryEmbedding = response.embeddings[0].values;
     }
     const queryMagnitude = magnitude(queryEmbedding);
-    const data = getBlogData();
+
+    // Determine data source: use injected customData (for testing) or the singleton blog index
+    let data: BlogChunk[];
+    if (customData) {
+      // If custom data is provided, ensure we preprocess it (calculate magnitudes) just like the production path
+      data = customData.reduce<BlogChunk[]>((acc, chunk) => {
+        if (chunk.embedding && chunk.embedding.length > 0) {
+          acc.push({
+            ...chunk,
+            _magnitude: magnitude(chunk.embedding)
+          });
+        }
+        return acc;
+      }, []);
+    } else {
+      data = getBlogData();
+    }
 
     // Optimization: Use a single loop to calculate score and filter,
     // avoiding intermediate array allocations (map + filter).
