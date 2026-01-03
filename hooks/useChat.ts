@@ -39,6 +39,9 @@ export const useChat = () => {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Security: Rate Limit Tracker (timestamps of recent messages)
+  const rateLimitTracker = useRef<number[]>([]);
+
   /**
    * Resets the chat to its initial state.
    *
@@ -78,6 +81,25 @@ export const useChat = () => {
       setMessages(prev => [...prev, errorMsg]);
       return;
     }
+
+    // Security: Rate Limiting
+    const now = Date.now();
+    // Filter timestamps older than 60 seconds (Sliding Window)
+    const recentMessages = rateLimitTracker.current.filter(t => now - t < 60000);
+    rateLimitTracker.current = recentMessages;
+
+    // Limit to 10 messages per minute
+    if (recentMessages.length >= 10) {
+      const rateLimitMsg: Message = {
+        role: 'model',
+        text: "You are sending messages too quickly. Please wait a moment."
+      };
+      setMessages(prev => [...prev, rateLimitMsg]);
+      return;
+    }
+
+    // Add current timestamp to tracker
+    rateLimitTracker.current.push(now);
 
     const userMsg: Message = { role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
