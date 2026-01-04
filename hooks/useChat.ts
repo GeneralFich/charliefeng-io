@@ -39,7 +39,6 @@ export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', text: INITIAL_MESSAGE_TEXT }
   ]);
-  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
   const [requestTimestamps, setRequestTimestamps] = useState<number[]>([]);
@@ -58,7 +57,6 @@ export const useChat = () => {
     }
     setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
     setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
-    setInput('');
     setIsLoading(false);
   };
 
@@ -97,7 +95,6 @@ export const useChat = () => {
 
     const userMsg: Message = { role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
-    setInput('');
     setIsLoading(true);
     setSuggestedPrompts([]); // Clear suggestions while loading
 
@@ -133,8 +130,6 @@ export const useChat = () => {
 
   return {
     messages,
-    input,
-    setInput,
     isLoading,
     suggestedPrompts,
     sendMessage: handleSend,
