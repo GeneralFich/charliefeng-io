@@ -1,7 +1,7 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert';
-import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo, escapeRegExp, extractTextFromReactNode } from '../lib/utils';
+import { parseFollowUpPrompts, calculateReadTime, redactSensitiveInfo, escapeRegExp, extractTextFromReactNode, extractTextFromMarkdown } from '../lib/utils';
 
 test('escapeRegExp', async (t) => {
   await t.test('escapes special characters', () => {
@@ -195,5 +195,56 @@ test('extractTextFromReactNode', async (t) => {
       }
     };
     assert.strictEqual(extractTextFromReactNode(element), "Content");
+  });
+});
+
+test('extractTextFromMarkdown', async (t) => {
+  await t.test('removes bold formatting', () => {
+    assert.strictEqual(extractTextFromMarkdown('This is **bold** text'), 'This is bold text');
+  });
+
+  await t.test('removes italic formatting', () => {
+    assert.strictEqual(extractTextFromMarkdown('This is *italic* text'), 'This is italic text');
+  });
+
+  await t.test('removes inline code formatting', () => {
+    assert.strictEqual(extractTextFromMarkdown('Use `code` here'), 'Use code here');
+  });
+
+  await t.test('removes link formatting (keeps text)', () => {
+    assert.strictEqual(extractTextFromMarkdown('Click [here](https://example.com)'), 'Click here');
+  });
+
+  await t.test('removes header prefixes', () => {
+    assert.strictEqual(extractTextFromMarkdown('# Header 1'), 'Header 1');
+    assert.strictEqual(extractTextFromMarkdown('## Header 2'), 'Header 2');
+    assert.strictEqual(extractTextFromMarkdown('### Header 3'), 'Header 3');
+  });
+
+  await t.test('handles nested formatting (bold inside italic)', () => {
+    // Logic: `**` matches inner bold first? Or `*` matches outer?
+    // Regex: `\*\*(.*?)\*\*` comes first in function.
+    // If input is `*italic with **bold** inside*`
+    // 1. `**` matches `**bold**` -> `*italic with bold inside*`
+    // 2. `*` matches `*...*` -> `italic with bold inside`
+    assert.strictEqual(extractTextFromMarkdown('*italic with **bold** inside*'), 'italic with bold inside');
+  });
+
+  await t.test('handles combined formatting', () => {
+    const input = '# [Link](url) with **bold** and `code`';
+    // 1. Bold -> # [Link](url) with bold and `code`
+    // 2. Italic -> (no change)
+    // 3. Link -> # Link with bold and `code`
+    // 4. Code -> # Link with bold and code
+    // 5. Header -> Link with bold and code
+    assert.strictEqual(extractTextFromMarkdown(input), 'Link with bold and code');
+  });
+
+  await t.test('handles empty string', () => {
+    assert.strictEqual(extractTextFromMarkdown(''), '');
+  });
+
+  await t.test('handles text with no markdown', () => {
+    assert.strictEqual(extractTextFromMarkdown('Just plain text'), 'Just plain text');
   });
 });
