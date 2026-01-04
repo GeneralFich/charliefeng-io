@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
+import { checkRateLimit } from '../lib/security';
 
 const INITIAL_SUGGESTED_PROMPTS = [
   "Who is Charlie?",
@@ -13,6 +14,10 @@ const INITIAL_SUGGESTED_PROMPTS = [
 ];
 
 const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
+
+// Rate Limit: 10 requests per minute
+const RATE_LIMIT_WINDOW = 60000;
+const MAX_REQUESTS = 10;
 
 /**
  * Custom hook to manage the chat interface state and interaction with the Gemini AI.
@@ -37,6 +42,7 @@ export const useChat = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+  const [requestTimestamps, setRequestTimestamps] = useState<number[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
@@ -75,6 +81,16 @@ export const useChat = () => {
     // Security: Input length validation
     if (text.length > 2000) {
       const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
+      setMessages(prev => [...prev, errorMsg]);
+      return;
+    }
+
+    // Security: Rate limiting
+    const { allowed, newTimestamps } = checkRateLimit(requestTimestamps, RATE_LIMIT_WINDOW, MAX_REQUESTS);
+    setRequestTimestamps(newTimestamps);
+
+    if (!allowed) {
+      const errorMsg: Message = { role: 'model', text: "System: Rate limit exceeded. Please wait a moment before sending more messages." };
       setMessages(prev => [...prev, errorMsg]);
       return;
     }
