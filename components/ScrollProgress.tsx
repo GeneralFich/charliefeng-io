@@ -2,21 +2,42 @@ import React, { useEffect, useRef } from 'react';
 
 export const ScrollProgress: React.FC = () => {
   const progressRef = useRef<HTMLDivElement>(null);
+  // Cache the scrollable height to avoid layout thrashing (reading scrollHeight) during scroll events
+  const maxScrollRef = useRef<number>(0);
 
   useEffect(() => {
     let ticking = false;
     let rafId: number;
 
+    // Update dimensions only when necessary (resize/layout change)
+    const updateDimensions = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      // Ensure we don't get negative values
+      maxScrollRef.current = Math.max(0, documentHeight - windowHeight);
+    };
+
+    // Use ResizeObserver to detect content height changes efficiently
+    const resizeObserver = new ResizeObserver(() => {
+      updateDimensions();
+    });
+
+    // Observe both document element (for window resize/zoom) and body (for content changes)
+    resizeObserver.observe(document.documentElement);
+    resizeObserver.observe(document.body);
+
+    // Initial calculation
+    updateDimensions();
+
     const handleScroll = () => {
       if (!ticking) {
         rafId = window.requestAnimationFrame(() => {
-          const windowHeight = window.innerHeight;
-          const documentHeight = document.documentElement.scrollHeight;
           const scrollTop = window.scrollY;
-
-          const scrollableHeight = documentHeight - windowHeight;
+          // Use cached value
+          const scrollableHeight = maxScrollRef.current;
 
           if (progressRef.current) {
+            // Optimization: If there is no scrollable area, hide the bar
             if (scrollableHeight <= 0 || scrollTop <= 0) {
               progressRef.current.style.width = '0%';
               progressRef.current.style.opacity = '0';
@@ -36,10 +57,14 @@ export const ScrollProgress: React.FC = () => {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+
+    // Also listen to window resize as a fallback/redundancy
+    window.addEventListener('resize', updateDimensions, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', updateDimensions);
+      resizeObserver.disconnect();
       if (rafId) {
         window.cancelAnimationFrame(rafId);
       }
