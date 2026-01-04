@@ -2,6 +2,29 @@ import React, { useState, useRef } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
+/**
+ * @fileoverview Contact Form Component
+ *
+ * This component handles user inquiries via EmailJS.
+ *
+ * Key Features:
+ * 1. **"Demo Mode" Fallback**:
+ *    - If environment variables (`VITE_EMAILJS_*`) are missing (common in local dev or open source clones),
+ *      the form automatically switches to a simulated success mode.
+ *    - "Why": This prevents the app from breaking for developers who haven't set up their own EmailJS account
+ *      and allows UI testing of the success state without sending real emails.
+ *
+ * 2. **Explicit Variable Mapping**:
+ *    - Uses `emailjs.send()` instead of `sendForm()` to manually map form fields to template variables.
+ *    - "Why": This decouples the frontend input names from the EmailJS template variable names,
+ *      preventing silent failures if one side changes.
+ *
+ * 3. **Accessibility**:
+ *    - Uses `role="alert"` and `aria-live` regions to announce success/error states to screen readers
+ *      without moving focus, providing immediate feedback.
+ *    - Character counters use color-coded warnings (slate -> amber -> red) but rely on `maxLength` for enforcement.
+ */
+
 export const ContactForm: React.FC = () => {
   const form = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
@@ -31,6 +54,15 @@ export const ContactForm: React.FC = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  /**
+   * Handles form submission.
+   *
+   * Flow:
+   * 1. Validates inputs (presence and email format).
+   * 2. Checks for presence of EmailJS credentials.
+   * 3. If missing credentials -> Activates "Demo Mode" (simulates network delay and success).
+   * 4. If present -> Sends real email via EmailJS with explicit parameter mapping.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
