@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Loader2, RotateCcw, Download } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Loader2, RotateCcw, Download, Copy, Check } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -20,6 +20,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
     clearChat
   } = useChat();
 
+  const [isCopied, setIsCopied] = useState(false);
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<ChatInputHandle>(null);
@@ -56,6 +57,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleCopyChat = async () => {
+    if (messages.length <= 1) return;
+
+    const chatContent = messages
+      .map(msg => {
+        const role = msg.role === 'user' ? 'You' : 'Charlie (AI)';
+        return `**${role}**:\n${msg.text}\n`;
+      })
+      .join('\n---\n\n');
+
+    try {
+      await navigator.clipboard.writeText(chatContent);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy chat:', err);
+    }
   };
 
   const handleClearChat = () => {
@@ -119,6 +139,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
         <div className="flex items-center gap-3">
           {!isInitialState && (
             <>
+              <button
+                onClick={handleCopyChat}
+                aria-label={isCopied ? "Copied chat to clipboard" : "Copy chat to clipboard"}
+                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all shrink-0 group relative"
+                title="Copy chat to clipboard"
+              >
+                {isCopied ? (
+                  <Check size={20} className="text-green-400 transition-all duration-300" />
+                ) : (
+                  <Copy size={20} className="group-hover:scale-110 transition-transform duration-300" />
+                )}
+              </button>
+
               <button
                 onClick={handleDownloadChat}
                 aria-label="Download chat"
