@@ -5,6 +5,8 @@ import { getRelevantContext, BlogChunk } from '../lib/rag';
 
 // Mock embedder that returns a simple vector [1, 0, 0] for the query
 const mockEmbedder = async (text: string) => {
+  if (text === 'empty') return []; // simulate empty embedding
+  if (text === 'orthogonal') return [0, 1, 0]; // simulate orthogonal query
   return [1, 0, 0];
 };
 
@@ -28,11 +30,21 @@ test('getRelevantContext Logic', async (t) => {
         publishedDate: '2023-01-01',
         embedding: [0, 1, 0], // Similarity 0.0
         _magnitude: 1
+      },
+      {
+        id: '3',
+        text: 'Barely Irrelevant',
+        title: 'Title 3',
+        url: '/url3',
+        publishedDate: '2023-01-01',
+        embedding: [0.5, 0.866, 0], // Sim = 0.5 (cos 60) -> Should filter if > 0.5 logic holds
+        _magnitude: 1
       }
     ];
 
     const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
 
+    // If threshold is strictly > 0.5, then 0.5 is excluded.
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].text, 'Relevant');
     assert.strictEqual(results[0].score, 1);
@@ -71,9 +83,6 @@ test('getRelevantContext Logic', async (t) => {
     // Generate 10 chunks with varying scores (all relevant)
     const mockData: BlogChunk[] = [];
     for (let i = 0; i < 10; i++) {
-        // [1, 0, 0] is query.
-        // We vary the first component to change similarity slightly.
-        // 0.9, 0.8, etc.
         const val = 0.9 + (i * 0.01);
         mockData.push({
             id: `${i}`,
@@ -93,11 +102,6 @@ test('getRelevantContext Logic', async (t) => {
   });
 
   await t.test('handles chunks without pre-calculated magnitude', async () => {
-     // The loop logic uses `chunk._magnitude`.
-     // We need to ensure that if we pass custom data without _magnitude, it still works.
-     // Wait, the loop in `rag.ts` calls `cosineSimilarity(..., chunk._magnitude)`.
-     // If `chunk._magnitude` is undefined, `cosineSimilarity` calculates it.
-
      const mockData: BlogChunk[] = [
       {
         id: '1',
@@ -113,5 +117,39 @@ test('getRelevantContext Logic', async (t) => {
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].text, 'No Mag');
     assert.strictEqual(results[0].score, 1);
+  });
+
+  await t.test('returns empty array if nothing matches', async () => {
+    const mockData: BlogChunk[] = [
+      {
+        id: '1',
+        text: 'Opposite',
+        title: 'Title 1',
+        url: '/url1',
+        publishedDate: '2023-01-01',
+        embedding: [-1, 0, 0], // Sim -1
+        _magnitude: 1
+      }
+    ];
+
+    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    assert.strictEqual(results.length, 0);
+  });
+
+  await t.test('handles orthogonal vectors correctly', async () => {
+    const mockData: BlogChunk[] = [
+      {
+        id: '1',
+        text: 'Orthogonal',
+        title: 'Title 1',
+        url: '/url1',
+        publishedDate: '2023-01-01',
+        embedding: [0, 1, 0],
+        _magnitude: 1
+      }
+    ];
+    // query [1,0,0] vs [0,1,0] -> 0
+    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    assert.strictEqual(results.length, 0);
   });
 });
