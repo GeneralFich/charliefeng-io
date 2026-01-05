@@ -29,7 +29,8 @@ async function verifyContactForm() {
 
     // Open Contact view
     // The navigation might be a button with text "Contact"
-    await page.getByRole('button', { name: 'Contact' }).click();
+    // Use exact: true to avoid matching "How can I contact him?" in chat suggestions
+    await page.getByRole('button', { name: 'Contact', exact: true }).click();
 
     // Wait for the form to appear
     await page.waitForSelector('form');
