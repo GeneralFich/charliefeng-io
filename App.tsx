@@ -33,6 +33,8 @@ import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
 import { ContactView } from './components/ContactView';
 import { Navbar } from './components/Navbar';
+import { ShortcutsModal } from './components/ShortcutsModal';
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { X } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -40,6 +42,7 @@ const App: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sideView, setSideView] = useState<View | null>(null);
   const [sideSlug, setSideSlug] = useState<string | undefined>(undefined);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   const handleNavigate = (view: View, slug?: string) => {
     // Standard navigation resets side view
@@ -58,6 +61,12 @@ const App: React.FC = () => {
       handleNavigate(view, slug);
     }
   };
+
+  useGlobalShortcuts({
+    onNavigate: (view) => handleNavigate(view),
+    toggleShortcutsModal: () => setIsShortcutsOpen(prev => !prev),
+    isModalOpen: isShortcutsOpen,
+  });
 
   const renderContent = () => {
     const isChatVisible = currentView === View.HOME;
@@ -135,6 +144,11 @@ const App: React.FC = () => {
 
       {/* Back to Top Button */}
       <BackToTop />
+
+      <ShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
 
       <Navbar
         currentView={currentView}
