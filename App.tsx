@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View } from './types';
 import { useRouter } from './hooks/useRouter';
 import { ChatInterface } from './components/ChatInterface';
@@ -9,6 +9,8 @@ import { BackToTop } from './components/BackToTop';
 import { ContactView } from './components/ContactView';
 import { Logo } from './components/Logo';
 import { NavItem } from './components/NavItem';
+import { ShortcutsModal } from './components/ShortcutsModal';
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { MessageSquare, FileText, Menu, X, BookOpen, Mail } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -16,14 +18,25 @@ const App: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sideView, setSideView] = useState<View | null>(null);
   const [sideSlug, setSideSlug] = useState<string | undefined>(undefined);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
-  const handleNavigate = (view: View, slug?: string) => {
+  const handleNavigate = useCallback((view: View, slug?: string) => {
     // Standard navigation resets side view
     setSideView(null);
     setSideSlug(undefined);
     navigateTo(view, slug);
     setMobileMenuOpen(false);
-  };
+  }, [navigateTo]);
+
+  const toggleShortcuts = useCallback(() => {
+    setIsShortcutsOpen(prev => !prev);
+  }, []);
+
+  useGlobalShortcuts({
+    onNavigate: handleNavigate,
+    toggleShortcuts,
+    isShortcutsOpen
+  });
 
   const handleChatNavigate = (view: View, slug?: string) => {
     if (window.innerWidth >= 768) { // Desktop
@@ -111,6 +124,9 @@ const App: React.FC = () => {
 
       {/* Back to Top Button */}
       <BackToTop />
+
+      {/* Shortcuts Modal */}
+      <ShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
 
       {/* Navbar */}
       <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50 print:hidden">

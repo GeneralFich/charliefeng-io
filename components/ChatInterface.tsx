@@ -133,6 +133,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
             <input
               type="text"
               aria-label="Chat message"
+              name="chat-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
