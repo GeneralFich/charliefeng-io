@@ -1,20 +1,38 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, RefObject } from 'react';
 
-export const ScrollProgress: React.FC = () => {
+interface ScrollProgressProps {
+  containerRef?: RefObject<HTMLElement | null>;
+}
+
+export const ScrollProgress: React.FC<ScrollProgressProps> = ({ containerRef }) => {
   const progressRef = useRef<HTMLDivElement>(null);
-  // Cache the scrollable height to avoid layout thrashing (reading scrollHeight) during scroll events
+  // Cache the scrollable height to avoid layout thrashing
   const maxScrollRef = useRef<number>(0);
 
   useEffect(() => {
     let ticking = false;
     let rafId: number;
 
+    const target = containerRef?.current || window;
+    const documentElement = document.documentElement;
+    // If containerRef is provided, use it. Otherwise use document.documentElement (for window scroll)
+    const elementToMeasure = (containerRef?.current as HTMLElement) || documentElement;
+
     // Update dimensions only when necessary (resize/layout change)
     const updateDimensions = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+      let windowHeight: number;
+      let scrollHeight: number;
+
+      if (containerRef?.current) {
+        windowHeight = containerRef.current.clientHeight;
+        scrollHeight = containerRef.current.scrollHeight;
+      } else {
+        windowHeight = window.innerHeight;
+        scrollHeight = documentElement.scrollHeight;
+      }
+
       // Ensure we don't get negative values
-      maxScrollRef.current = Math.max(0, documentHeight - windowHeight);
+      maxScrollRef.current = Math.max(0, scrollHeight - windowHeight);
     };
 
     // Use ResizeObserver to detect content height changes efficiently
@@ -22,17 +40,31 @@ export const ScrollProgress: React.FC = () => {
       updateDimensions();
     });
 
-    // Observe both document element (for window resize/zoom) and body (for content changes)
-    resizeObserver.observe(document.documentElement);
-    resizeObserver.observe(document.body);
+    if (containerRef?.current) {
+        resizeObserver.observe(containerRef.current);
+        // Also observe the child of the container if possible, but observing the container is usually enough for scrollHeight changes?
+        // Actually, if content grows, container scrollHeight grows.
+    } else {
+        resizeObserver.observe(documentElement);
+        resizeObserver.observe(document.body);
+    }
 
     // Initial calculation
     updateDimensions();
 
+    const getScrollTop = () => {
+       if (target instanceof Window) {
+         return target.scrollY;
+       } else if (target instanceof HTMLElement) {
+         return target.scrollTop;
+       }
+       return 0;
+    };
+
     const handleScroll = () => {
       if (!ticking) {
-        rafId = window.requestAnimationFrame(() => {
-          const scrollTop = window.scrollY;
+        rafId = requestAnimationFrame(() => {
+          const scrollTop = getScrollTop();
           // Use cached value
           const scrollableHeight = maxScrollRef.current;
 
@@ -56,20 +88,20 @@ export const ScrollProgress: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    target.addEventListener('scroll', handleScroll, { passive: true });
 
     // Also listen to window resize as a fallback/redundancy
     window.addEventListener('resize', updateDimensions, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      target.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', updateDimensions);
       resizeObserver.disconnect();
       if (rafId) {
-        window.cancelAnimationFrame(rafId);
+        cancelAnimationFrame(rafId);
       }
     };
-  }, []);
+  }, [containerRef]);
 
   return (
     <div

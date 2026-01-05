@@ -1,18 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, RefObject } from 'react';
 import { ArrowUp } from 'lucide-react';
 
-export const BackToTop: React.FC = () => {
+interface BackToTopProps {
+  containerRef?: RefObject<HTMLElement | null>;
+}
+
+export const BackToTop: React.FC<BackToTopProps> = ({ containerRef }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     let ticking = false;
     let rafId: number;
 
+    const target = containerRef?.current || window;
+    // When using window, we check scrollY. When using element, we check scrollTop.
+    const getScrollTop = () => {
+       if (target instanceof Window) {
+         return target.scrollY;
+       } else if (target instanceof HTMLElement) {
+         return target.scrollTop;
+       }
+       return 0;
+    };
+
     const toggleVisibility = () => {
       if (!ticking) {
-        rafId = window.requestAnimationFrame(() => {
-          // Show button when page is scrolled down 300px
-          if (window.scrollY > 300) {
+        rafId = requestAnimationFrame(() => {
+          if (getScrollTop() > 300) {
             setIsVisible(true);
           } else {
             setIsVisible(false);
@@ -23,20 +37,21 @@ export const BackToTop: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', toggleVisibility, { passive: true });
+    target.addEventListener('scroll', toggleVisibility, { passive: true });
     // Check initial scroll position
     toggleVisibility();
 
     return () => {
-      window.removeEventListener('scroll', toggleVisibility);
+      target.removeEventListener('scroll', toggleVisibility);
       if (rafId) {
-        window.cancelAnimationFrame(rafId);
+        cancelAnimationFrame(rafId);
       }
     };
-  }, []);
+  }, [containerRef]); // Re-run if ref changes
 
   const scrollToTop = () => {
-    window.scrollTo({
+    const target = containerRef?.current || window;
+    target.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
