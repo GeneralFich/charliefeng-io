@@ -1,9 +1,8 @@
-import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { Search, X, ArrowUpDown, Share2, Check } from 'lucide-react';
+import React, { useRef, useEffect, useMemo } from 'react';
+import { Search, X, ArrowUpDown } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
-import { highlightNodes } from './SearchHighlighter';
 import { escapeRegExp } from '../lib/utils';
-import { View } from '../types';
+import { EssayItem } from './EssayItem';
 
 export type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
 
@@ -28,7 +27,6 @@ export const EssayList: React.FC<EssayListProps> = ({
   onSelectPost
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [copiedPostSlug, setCopiedPostSlug] = useState<string | null>(null);
 
   // Use highlightQuery if provided, otherwise fallback to searchQuery
   // This allows the list to highlight based on the debounced value (matching the filtered list)
@@ -65,21 +63,6 @@ export const EssayList: React.FC<EssayListProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  const handleShare = async (post: BlogPost) => {
-    try {
-      // Construct URL with view and essay params
-      const url = new URL(window.location.href);
-      url.searchParams.set('view', View.ESSAYS);
-      url.searchParams.set('essay', post.slug);
-
-      await navigator.clipboard.writeText(url.toString());
-      setCopiedPostSlug(post.slug);
-      setTimeout(() => setCopiedPostSlug(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy URL:', err);
-    }
-  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -141,55 +124,12 @@ export const EssayList: React.FC<EssayListProps> = ({
       <div className="grid gap-6">
         {posts.length > 0 ? (
           posts.map((post) => (
-            <div
+            <EssayItem
               key={post.slug}
-              onClick={() => onSelectPost(post)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectPost(post);
-                }
-              }}
-              className="relative group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-slate-900/30 border border-slate-800/50 hover:bg-slate-800/50 hover:border-blue-500/30 transition-all duration-300 text-left cursor-pointer"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 text-xs text-blue-400 mb-3 font-medium uppercase tracking-wider">
-                  <time dateTime={post.attributes.date}>
-                    {new Date(post.attributes.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </time>
-                  <span>•</span>
-                  <span>{post.readTime} min read</span>
-                </div>
-                <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors pr-12">
-                  {/* Highlight match in title if searching */}
-                  {highlightNodes(post.attributes.title, searchRegex)}
-                </h3>
-                <p className="text-slate-400 leading-relaxed line-clamp-2">
-                  {/* Highlight match in description if searching */}
-                  {highlightNodes(post.attributes.description, searchRegex)}
-                </p>
-              </div>
-
-              {/* Share Button - Absolute Positioned */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShare(post);
-                }}
-                onKeyDown={(e) => e.stopPropagation()}
-                className="absolute top-6 right-6 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                title="Copy link"
-                aria-label="Copy link to clipboard"
-              >
-                {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
-              </button>
-            </div>
+              post={post}
+              searchRegex={searchRegex}
+              onSelectPost={onSelectPost}
+            />
           ))
         ) : (
           <div className="text-center py-12 text-slate-400">

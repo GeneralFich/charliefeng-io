@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { EssayList, SortOption } from './EssayList';
 import { EssayDetail } from './EssayDetail';
@@ -54,30 +54,30 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
     }
   }, [debouncedSearchQuery, sortBy]);
 
-  const handleSelectPost = (post: BlogPost) => {
+  const handleSelectPost = useCallback((post: BlogPost) => {
     setSelectedPost(post);
     // Update URL silently
     const url = new URL(window.location.href);
     url.searchParams.set('essay', post.slug);
     window.history.pushState({}, '', url.toString());
-  };
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setSelectedPost(null);
     // Clear URL param when going back
     const url = new URL(window.location.href);
     url.searchParams.delete('essay');
     window.history.pushState({}, '', url.toString());
-  };
+  }, []);
 
-  const handleNavigate = (post: BlogPost) => {
+  const handleNavigate = useCallback((post: BlogPost) => {
     setSelectedPost(post);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // Update URL silently
     const url = new URL(window.location.href);
     url.searchParams.set('essay', post.slug);
     window.history.pushState({}, '', url.toString());
-  };
+  }, []);
 
   if (selectedPost) {
     return (
