@@ -82,13 +82,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
               <ChatMessage key={idx} message={msg} onNavigate={onNavigate} />
             ))}
             {isLoading && (
-              <div className="flex items-center gap-3">
+              <div
+                className="flex items-center gap-3"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
                   <Loader2 size={16} className="text-blue-400 animate-spin" />
                 </div>
                 <div className="text-slate-500 text-xs tracking-widest animate-pulse">
                   THINKING...
                 </div>
+                <span className="sr-only">Charlie is thinking...</span>
               </div>
             )}
           </>
