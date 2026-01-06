@@ -44,15 +44,17 @@ const App: React.FC = () => {
   const [sideSlug, setSideSlug] = useState<string | undefined>(undefined);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
-  const handleNavigate = (view: View, slug?: string) => {
+  // Optimization: Memoize navigation handlers to prevent unnecessary re-renders of
+  // ChatInterface (and all ChatMessages) when other state changes (e.g. menus).
+  const handleNavigate = React.useCallback((view: View, slug?: string) => {
     // Standard navigation resets side view
     setSideView(null);
     setSideSlug(undefined);
     navigateTo(view, slug);
     setMobileMenuOpen(false);
-  };
+  }, [navigateTo]);
 
-  const handleChatNavigate = (view: View, slug?: string) => {
+  const handleChatNavigate = React.useCallback((view: View, slug?: string) => {
     if (window.innerWidth >= 768) { // Desktop
       setSideView(view);
       setSideSlug(slug);
@@ -60,10 +62,11 @@ const App: React.FC = () => {
       // Mobile: standard navigation
       handleNavigate(view, slug);
     }
-  };
+  }, [handleNavigate]);
 
   useGlobalShortcuts({
-    onNavigate: (view) => handleNavigate(view),
+    // Pass the memoized handler directly to avoid creating a new arrow function on every render
+    onNavigate: handleNavigate,
     toggleShortcutsModal: () => setIsShortcutsOpen(prev => !prev),
     isModalOpen: isShortcutsOpen,
   });
@@ -143,7 +146,7 @@ const App: React.FC = () => {
       {currentView !== View.HOME && currentView !== View.CONTACT && <ScrollProgress />}
 
       {/* Back to Top Button */}
-      <BackToTop />
+      {currentView !== View.HOME && <BackToTop />}
 
       <ShortcutsModal
         isOpen={isShortcutsOpen}
