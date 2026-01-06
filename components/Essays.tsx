@@ -3,6 +3,7 @@ import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
 import { EssayList, SortOption } from './EssayList';
 import { EssayDetail } from './EssayDetail';
 import { useDebounce } from '../hooks/useDebounce';
+import { useBookmarks } from '../hooks/useBookmarks';
 
 interface EssaysProps {
   initialSlug?: string | null;
@@ -12,6 +13,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const { bookmarks, toggleBookmark, isBookmarked } = useBookmarks();
 
   // Debounce the search query to avoid filtering and re-rendering the list
   // on every keystroke. This improves performance for fast typists.
@@ -33,6 +36,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   const filteredPosts = useMemo(() => {
     let posts = BLOG_POSTS;
 
+    if (showSavedOnly) {
+      posts = posts.filter(post => bookmarks.includes(post.slug));
+    }
+
     if (debouncedSearchQuery) {
       const lowerQuery = debouncedSearchQuery.toLowerCase();
       posts = posts.filter(post => post.searchContent.includes(lowerQuery));
@@ -52,7 +59,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
       default:
         return posts;
     }
-  }, [debouncedSearchQuery, sortBy]);
+  }, [debouncedSearchQuery, sortBy, showSavedOnly, bookmarks]);
 
   const handleSelectPost = useCallback((post: BlogPost) => {
     setSelectedPost(post);
@@ -86,6 +93,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         filteredPosts={filteredPosts}
         onBack={handleBack}
         onNavigate={handleNavigate}
+        toggleBookmark={toggleBookmark}
+        isBookmarked={isBookmarked}
       />
     );
   }
@@ -99,6 +108,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
       sortBy={sortBy}
       onSortChange={setSortBy}
       onSelectPost={handleSelectPost}
+      showSavedOnly={showSavedOnly}
+      onToggleSavedOnly={() => setShowSavedOnly(!showSavedOnly)}
+      toggleBookmark={toggleBookmark}
+      isBookmarked={isBookmarked}
     />
   );
 };

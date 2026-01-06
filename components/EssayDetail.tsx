@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon, Star } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { isSafeLink, slugify, extractTextFromReactNode } from '../lib/utils';
@@ -18,6 +18,8 @@ interface EssayDetailProps {
   filteredPosts: BlogPost[];
   onBack: () => void;
   onNavigate: (post: BlogPost) => void;
+  toggleBookmark: (slug: string) => void;
+  isBookmarked: (slug: string) => boolean;
 }
 
 // Define plugins outside component to maintain reference stability
@@ -28,9 +30,12 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   post,
   filteredPosts,
   onBack,
-  onNavigate
+  onNavigate,
+  toggleBookmark,
+  isBookmarked
 }) => {
   const [isCopied, setIsCopied] = useState(false);
+  const isSaved = isBookmarked(post.slug);
 
   const {
     articleSearchQuery,
@@ -286,6 +291,20 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
+          {/* Bookmark Button */}
+          <button
+            onClick={() => toggleBookmark(post.slug)}
+            className={`flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border rounded-lg transition-all text-sm group ${
+              isSaved
+                ? 'border-blue-500/50 text-blue-400'
+                : 'border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400'
+            }`}
+            title={isSaved ? "Remove bookmark" : "Bookmark essay"}
+          >
+            <Star size={14} className={isSaved ? "fill-blue-400" : ""} />
+            <span>{isSaved ? 'Saved' : 'Save'}</span>
+          </button>
+
           {/* Print / Download PDF */}
           <button
             onClick={() => window.print()}
