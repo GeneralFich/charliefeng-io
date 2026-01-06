@@ -6,6 +6,8 @@ export enum View {
   CONTACT = 'CONTACT',
 }
 
+export type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
+
 export interface Message {
   role: 'user' | 'model';
   text: string;

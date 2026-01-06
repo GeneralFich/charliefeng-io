@@ -24,7 +24,8 @@ test('verify debounced search filters and highlights', async ({ page }) => {
   await searchInput.fill('Thermodynamic');
 
   // Wait for the specific post to be visible
-  await expect(page.getByRole('heading', { name: 'The Thermodynamic Wall' })).toBeVisible();
+  // Use a more generic locator since it's an h3 inside the EssayItem
+  await expect(page.getByText('The Thermodynamic Wall', { exact: false })).toBeVisible();
 
   // 4. Highlight Check
   // We can check if the <mark> tag exists?

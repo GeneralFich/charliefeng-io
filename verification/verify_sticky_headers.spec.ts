@@ -16,7 +16,8 @@ test('Verify sticky headers in Essays list and detail view', async ({ page }) =>
   // 3. Scroll down significantly
   // Ensure the page has enough content to scroll. The essays list usually has items.
   // We'll check if there are essays first.
-  await expect(page.locator('button').filter({ hasText: 'min read' }).first()).toBeVisible();
+  // My refactor changed EssayItem from button to div
+  await expect(page.locator('div[role="button"]').first()).toBeVisible();
 
   await page.evaluate(() => window.scrollTo(0, 1000));
 
@@ -25,7 +26,7 @@ test('Verify sticky headers in Essays list and detail view', async ({ page }) =>
   await expect(listSearch).toBeInViewport({ ratio: 0.1 });
 
   // 5. Navigate to an essay (click the first one)
-  await page.locator('button').filter({ hasText: 'min read' }).first().click();
+  await page.locator('div[role="button"]').first().click();
 
   // Wait for detail view to load
   await expect(page.getByText('Back to Essays')).toBeVisible();

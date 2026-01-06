@@ -5,7 +5,8 @@ test('Verify Essay Print Button and Styles', async ({ page }) => {
   await page.goto('http://localhost:3000/?view=ESSAYS&essay=strategic-whitepaper');
 
   // Wait for content to load
-  await expect(page.locator('h1')).toBeVisible();
+  // Use a more specific locator for the article title to avoid strict mode violation
+  await expect(page.locator('article h1')).toBeVisible();
 
   // 1. Verify "PDF" button exists and is visible
   const pdfButton = page.getByRole('button', { name: 'Print or Save as PDF' });

@@ -15,8 +15,15 @@ test('verify chat download button functionality', async ({ page }) => {
 
   // Wait for the response (loading indicator to disappear)
   // We wait for the thinking indicator to appear and then disappear
-  await expect(page.getByText('THINKING...')).toBeVisible();
-  await expect(page.getByText('THINKING...')).not.toBeVisible({ timeout: 15000 });
+  // Using exact: true to distinguish from the sr-only text if needed, or getByText handles it if visible.
+  // The error showed ambiguity, so let's be more specific or use first() if we don't care which one is visible.
+  // Actually, standard getByText looks for visible text. The issue was strict mode violation.
+  // The DOM has both visible "THINKING..." and sr-only "Charlie is thinking..." (wait, the error said "THINKING..." resolved to 2 elements?)
+  // One was <div ...>THINKING...</div> and one was <span ...>Charlie is thinking...</span>.
+  // Wait, "THINKING..." matched "Charlie is thinking..."? No, getByText matches substring.
+  // Let's use exact: true.
+  await expect(page.getByText('THINKING...', { exact: true })).toBeVisible();
+  await expect(page.getByText('THINKING...', { exact: true })).not.toBeVisible({ timeout: 15000 });
 
   // Now the Download button should be visible
   await expect(downloadButton).toBeVisible();
