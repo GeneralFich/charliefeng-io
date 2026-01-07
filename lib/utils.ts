@@ -5,11 +5,11 @@
  * (e.g., "Here is the JSON: [...]") or include trailing noise. Standard `JSON.parse` fails
  * on these inputs.
  *
- * Strategy ("Sliding Window"):
+ * Strategy ("Bracket Balance"):
  * 1. Attempt standard `JSON.parse` first.
  * 2. If that fails, locate the first opening bracket `[`.
- * 3. Iteratively search for closing brackets `]`, extracting the substring and attempting to parse.
- * 4. This ensures we find the *valid* JSON array embedded within the text, ignoring trailing garbage.
+ * 3. Walk forward, counting brackets to find the matching closing bracket.
+ * 4. This avoids O(N^2) behavior of trying to parse at every closing bracket.
  *
  * Note: Currently optimized for JSON Arrays (starting with `[`) as that matches our use case.
  *
@@ -21,27 +21,48 @@ function safeJsonParse<T>(text: string): T | null {
     return JSON.parse(text);
   } catch {
     // Fallback: Locate the start of the JSON array
-    const firstOpen = text.indexOf('[');
-    if (firstOpen === -1) return null;
+    const start = text.indexOf('[');
+    if (start === -1) return null;
 
-    // "Sliding Window" Search:
-    // We can't just use `lastIndexOf(']')` because the text might contain
-    // multiple brackets or conversational text after the JSON.
-    // Instead, we find *every* closing bracket after the start and try to parse
-    // the substring. The first successful parse is our valid JSON object.
-    let currentPos = text.indexOf(']', firstOpen);
-    while (currentPos !== -1) {
-      try {
-        const jsonSubstring = text.substring(firstOpen, currentPos + 1);
-        const result = JSON.parse(jsonSubstring);
-        // If we reach here, JSON.parse succeeded.
-        // JSON.parse throws on trailing junk (e.g., "[1] junk"), so a success here
-        // means `jsonSubstring` is exactly the valid JSON structure we isolated.
-        return result;
-      } catch {
-        // If parse failed, the substring wasn't complete valid JSON.
-        // Continue searching for the next closing bracket.
-        currentPos = text.indexOf(']', currentPos + 1);
+    let balance = 0;
+    let inString = false;
+    let isEscaped = false;
+
+    for (let i = start; i < text.length; i++) {
+      const char = text[i];
+
+      if (isEscaped) {
+        isEscaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        isEscaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      // Only count brackets outside of strings
+      if (!inString) {
+        if (char === '[') {
+          balance++;
+        } else if (char === ']') {
+          balance--;
+          if (balance === 0) {
+            // Found the matching close bracket
+            try {
+              const jsonSubstring = text.substring(start, i + 1);
+              return JSON.parse(jsonSubstring);
+            } catch {
+              // If the structure is balanced but invalid JSON, stop.
+              return null;
+            }
+          }
+        }
       }
     }
     return null;
