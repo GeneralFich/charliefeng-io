@@ -111,7 +111,7 @@ const App: React.FC = () => {
 
                 <div className="min-h-full">
                    {sideView === View.ABOUT && <Resume />}
-                   {sideView === View.ESSAYS && <Essays initialSlug={sideSlug} />}
+                   {sideView === View.ESSAYS && <Essays initialSlug={sideSlug} isInsideSplitView={true} />}
                    {sideView === View.CONTACT && <ContactView />}
                 </div>
              </div>

@@ -18,6 +18,7 @@ interface EssayDetailProps {
   filteredPosts: BlogPost[];
   onBack: () => void;
   onNavigate: (post: BlogPost) => void;
+  isInsideSplitView?: boolean;
 }
 
 // Define plugins outside component to maintain reference stability
@@ -28,7 +29,8 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   post,
   filteredPosts,
   onBack,
-  onNavigate
+  onNavigate,
+  isInsideSplitView
 }) => {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -271,7 +273,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         }
       `}</style>
 
-      <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
+      <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden`}>
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
