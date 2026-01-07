@@ -302,6 +302,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             onClick={handleShare}
             className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
             title="Copy link to clipboard"
+            aria-label="Copy link to clipboard"
           >
             {isCopied ? <Check size={14} className="text-green-400" /> : <Share2 size={14} />}
             <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? 'Copied!' : 'Share'}</span>
@@ -317,6 +318,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
               ref={articleSearchInputRef}
               type="text"
               placeholder="Find in essay... (⌘K)"
+              aria-label="Search within article"
               value={articleSearchQuery}
               onChange={(e) => setArticleSearchQuery(e.target.value)}
               // Add right padding to accommodate the controls
@@ -336,6 +338,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
                       onClick={handlePrevMatch}
                       className="p-1 hover:bg-slate-700 hover:text-white text-slate-400 transition-colors rounded-l-sm"
                       aria-label="Previous match"
+                      title="Previous match"
                     >
                       <ChevronUp size={12} />
                     </button>
@@ -344,6 +347,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
                       onClick={handleNextMatch}
                       className="p-1 hover:bg-slate-700 hover:text-white text-slate-400 transition-colors rounded-r-sm"
                       aria-label="Next match"
+                      title="Next match"
                     >
                       <ChevronDown size={12} />
                     </button>
@@ -359,6 +363,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
                     articleSearchInputRef.current?.focus();
                   }}
                   aria-label="Clear search"
+                  title="Clear search"
                   className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
                 >
                   <X size={14} />
