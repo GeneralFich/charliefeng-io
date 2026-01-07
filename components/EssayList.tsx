@@ -104,6 +104,7 @@ export const EssayList: React.FC<EssayListProps> = ({
           <input
             ref={searchInputRef}
             type="text"
+            aria-label="Search essays"
             placeholder="Search essays... (⌘K)"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -132,7 +133,11 @@ export const EssayList: React.FC<EssayListProps> = ({
             />
           ))
         ) : (
-          <div className="text-center py-12 text-slate-400">
+          <div
+            className="text-center py-12 text-slate-400"
+            role="status"
+            aria-live="polite"
+          >
             <p>No essays found matching "{searchQuery}"</p>
             <button
               onClick={() => onSearchChange('')}
