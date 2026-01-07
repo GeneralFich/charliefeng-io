@@ -35,7 +35,7 @@ const MAX_REQUESTS = 10;
  * - `sendMessage`: Function to send a user message.
  * - `clearChat`: Function to reset the chat history.
  */
-export const useChat = () => {
+export const useChat = (context?: string) => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', text: INITIAL_MESSAGE_TEXT }
   ]);
@@ -43,6 +43,11 @@ export const useChat = () => {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
   const [requestTimestamps, setRequestTimestamps] = useState<number[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // We ref context to ensure the latest value is used in the async handleSend without closure staleness issues
+  // although handleSend is recreated if dependencies change, useRef is safer for "background" context.
+  const contextRef = useRef(context);
+  contextRef.current = context;
 
   /**
    * Resets the chat to its initial state.
@@ -106,7 +111,7 @@ export const useChat = () => {
     abortControllerRef.current = controller;
 
     try {
-      const rawResponse = await sendMessageToGemini(apiHistory, text, controller.signal);
+      const rawResponse = await sendMessageToGemini(apiHistory, text, contextRef.current, controller.signal);
 
       // If aborted during processing (race condition check)
       if (controller.signal.aborted) return;

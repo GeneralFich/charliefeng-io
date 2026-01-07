@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test('Chat welcome screen renders correctly', async ({ page }) => {
-  // 1. Go to the homepage (Chat view)
+  // 1. Go to the homepage (Now About view)
   await page.goto('/');
 
-  // 2. Verify the "CF" logo is visible (it has "CF" text)
-  await expect(page.locator('text=CF').first()).toBeVisible();
+  // 2. Open the Chat
+  const chatToggle = page.getByRole('button', { name: 'Open chat' }).first();
+  await chatToggle.click();
 
-  // 3. Verify the main heading
+  // 3. Verify the main heading inside the chat sidebar
   await expect(page.getByRole('heading', { name: "Charlie's Digital Twin" })).toBeVisible();
 
   // 4. Verify the welcome message is present (starts with "Hello!")

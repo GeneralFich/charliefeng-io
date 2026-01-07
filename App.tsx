@@ -35,30 +35,22 @@ import { ContactView } from './components/ContactView';
 import { Navbar } from './components/Navbar';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
-import { X } from 'lucide-react';
+import { X, MessageSquare } from 'lucide-react';
 
 const App: React.FC = () => {
   const { currentView, targetEssaySlug, navigateTo } = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sideView, setSideView] = useState<View | null>(null);
-  const [sideSlug, setSideSlug] = useState<string | undefined>(undefined);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   const handleNavigate = (view: View, slug?: string) => {
-    // Standard navigation resets side view
-    setSideView(null);
-    setSideSlug(undefined);
     navigateTo(view, slug);
     setMobileMenuOpen(false);
-  };
 
-  const handleChatNavigate = (view: View, slug?: string) => {
-    if (window.innerWidth >= 768) { // Desktop
-      setSideView(view);
-      setSideSlug(slug);
-    } else {
-      // Mobile: standard navigation
-      handleNavigate(view, slug);
+    // On mobile, close chat when navigating so the new content is visible.
+    // We check window width to determine if we are in mobile layout (< 768px).
+    if (window.innerWidth < 768) {
+      setIsChatOpen(false);
     }
   };
 
@@ -69,62 +61,56 @@ const App: React.FC = () => {
   });
 
   const renderContent = () => {
-    const isChatVisible = currentView === View.HOME;
+    // Desktop: Push layout
+    // Chat takes 50% width on the RIGHT when open.
+    // Content takes 50% width on the LEFT when chat is open, 100% when closed.
 
-    // We construct a stable layout where ChatInterface is always in the DOM if isChatVisible is true.
-    // If sideView is active, we render it side-by-side.
-    // If NOT sideView, we render ChatInterface full width (or centered).
-
-    // To avoid remounting ChatInterface, we must use the SAME component instance in the SAME position.
+    // Mobile: Overlay layout
+    // Content always 100%. Chat is fixed overlay.
 
     return (
-      <>
-        {/* Chat Container */}
-        {/* We use a flex container that is always present if Chat is visible */}
-        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto print:h-auto print:overflow-visible print:block' : 'hidden opacity-0 pointer-events-none'}`}>
-
-           {/* Left Panel (Chat) */}
-           {/* If split, w-1/2. If not split, w-full. */}
-           <div className={`${sideView ? 'w-1/2 border-r border-slate-800 print:hidden' : 'w-full'} flex flex-col transition-all duration-300 ease-in-out`}>
-              {/* Pass handleChatNavigate so internal links trigger split view */}
-              <ChatInterface
-                  onNavigate={handleChatNavigate}
-                  className={sideView ? 'h-full' : undefined}
-              />
-           </div>
-
-           {/* Right Panel (Side Content) */}
-           {/* Only rendered if sideView is active. */}
-           {sideView && (
-             <div className="w-1/2 relative overflow-y-auto bg-slate-950 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent animate-in slide-in-from-right duration-300 print:w-full print:bg-white print:overflow-visible">
-                <button
-                    onClick={() => setSideView(null)}
-                    className="fixed top-20 right-8 z-50 p-2 bg-slate-900/80 text-slate-400 hover:text-white rounded-full backdrop-blur-md border border-slate-700 shadow-xl transition-all hover:scale-110 print:hidden"
-                    title="Close split view"
-                    aria-label="Close split view"
-                >
-                    <X size={20} />
-                </button>
-
-                <div className="min-h-full">
-                   {sideView === View.ABOUT && <Resume />}
-                   {sideView === View.ESSAYS && <Essays initialSlug={sideSlug} />}
-                   {sideView === View.CONTACT && <ContactView />}
-                </div>
+      <div className="flex flex-row h-[calc(100vh-64px)] overflow-hidden relative">
+         {/* Main Content Area */}
+         <div className={`
+             flex-col transition-all duration-300 ease-in-out h-full overflow-y-auto bg-slate-950 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent print:w-full print:bg-white print:overflow-visible
+             ${isChatOpen ? 'hidden md:flex md:w-1/2 border-r border-slate-800' : 'flex w-full'}
+         `}>
+             <div className="min-h-full relative">
+                {(currentView === View.HOME || currentView === View.ABOUT) && <Resume />}
+                {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+                {currentView === View.CONTACT && <ContactView />}
              </div>
-           )}
-        </div>
+         </div>
 
-        {/* Standard Full Views (When NOT in Chat mode) */}
-        {/* Note: If currentView is HOME, we render the above block.
-            If currentView is NOT HOME, we render these below.
-            Wait, if currentView is NOT HOME, `isChatVisible` is false, so the block above is hidden.
-        */}
+         {/* Chat Sidebar (Right side on desktop, Full screen on mobile) */}
+         <div className={`
+            transition-all duration-300 ease-in-out bg-slate-950/95 backdrop-blur-sm border-l border-slate-800 overflow-hidden
+            fixed inset-0 top-16 z-40 md:static md:z-auto md:h-full
+            ${isChatOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible pointer-events-none md:w-0 md:border-l-0'}
+            ${isChatOpen ? 'md:w-1/2' : ''}
+         `}>
+            {/* Close Button for Mobile/Desktop */}
+            <button
+                onClick={() => setIsChatOpen(false)}
+                className="absolute top-4 right-4 z-50 p-2 bg-slate-900/80 text-slate-400 hover:text-white rounded-full backdrop-blur-md border border-slate-700 shadow-xl transition-all hover:scale-110 md:hidden"
+                title="Close chat"
+                aria-label="Close chat"
+            >
+                <X size={20} />
+            </button>
 
-        {currentView === View.ABOUT && <Resume />}
-        {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
-        {currentView === View.CONTACT && <ContactView />}
-      </>
+            <div className="h-full w-full flex flex-col">
+              {/* Pass navigateTo directly.
+                  Note: In the new model, navigating from chat just changes the content on the left.
+              */}
+              <ChatInterface
+                  onNavigate={handleNavigate}
+                  className="h-full"
+                  context={`User is currently viewing the ${currentView} page${targetEssaySlug ? ` (Slug: ${targetEssaySlug})` : ''}.`}
+              />
+            </div>
+         </div>
+      </div>
     );
   };
 
@@ -155,7 +141,22 @@ const App: React.FC = () => {
         onNavigate={handleNavigate}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
+        isChatOpen={isChatOpen}
+        setIsChatOpen={setIsChatOpen}
       />
+
+      {/* Mobile Chat Toggle FAB */}
+      <button
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        className={`md:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 ${
+          isChatOpen
+            ? 'bg-slate-800 text-slate-400 border border-slate-700'
+            : 'bg-blue-600 text-white shadow-blue-500/30'
+        }`}
+        aria-label={isChatOpen ? "Close chat" : "Open chat"}
+      >
+        {isChatOpen ? <X size={24} /> : <MessageSquare size={24} fill="currentColor" />}
+      </button>
 
       {/* Main Content */}
       <main

@@ -9,16 +9,17 @@ import { useChat } from '../hooks/useChat';
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string) => void;
   className?: string;
+  context?: string;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className, context }) => {
   const {
     messages,
     isLoading,
     suggestedPrompts,
     sendMessage,
     clearChat
-  } = useChat();
+  } = useChat(context);
 
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);

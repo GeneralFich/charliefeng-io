@@ -43,6 +43,7 @@ const MAX_INPUT_LENGTH = 10000;
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string,
+  context?: string,
   abortSignal?: AbortSignal
 ): Promise<string> => {
   // Security: Input validation to prevent large payloads (DoS/Cost)
@@ -76,10 +77,22 @@ export const sendMessageToGemini = async (
     // We treat the "history" as the context of conversation so far.
     // The "newMessage" is the latest user input.
     // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
+    // "context" (from the UI) provides information about the user's current view (e.g. "User is viewing /about").
 
-    const userMessageWithContext = additionalContext
-      ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
-      : newMessage;
+    let finalUserMessage = newMessage;
+    const contextParts = [];
+
+    if (context) {
+      contextParts.push(`[System Note: ${context}]`);
+    }
+
+    if (additionalContext) {
+      contextParts.push(`Context for this query:\n${additionalContext}`);
+    }
+
+    if (contextParts.length > 0) {
+        finalUserMessage = `${contextParts.join('\n\n')}\n\nUser Query: ${newMessage}`;
+    }
 
     const contents = [
        ...history.map((msg) => ({
@@ -88,7 +101,7 @@ export const sendMessageToGemini = async (
       })),
       {
         role: "user",
-        parts: [{ text: userMessageWithContext }],
+        parts: [{ text: finalUserMessage }],
       },
     ];
 

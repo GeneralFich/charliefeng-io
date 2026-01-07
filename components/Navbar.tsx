@@ -11,7 +11,23 @@ interface NavbarProps {
   setMobileMenuOpen: (open: boolean) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileMenuOpen, setMobileMenuOpen }) => {
+interface NavbarProps {
+  currentView: View;
+  onNavigate: (view: View, slug?: string) => void;
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (open: boolean) => void;
+  isChatOpen: boolean;
+  setIsChatOpen: (open: boolean) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  currentView,
+  onNavigate,
+  mobileMenuOpen,
+  setMobileMenuOpen,
+  isChatOpen,
+  setIsChatOpen
+}) => {
   return (
     <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
 
             {/* Logo Area */}
             <button
-              onClick={() => onNavigate(View.HOME)}
+              onClick={() => onNavigate(View.ABOUT)}
               className="flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none text-left"
               aria-label="Go to Home"
             >
@@ -36,16 +52,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
             </button>
 
             {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-2">
-              <NavItem view={View.HOME} label="Chat" icon={MessageSquare} currentView={currentView} onNavigate={onNavigate} />
-              <NavItem view={View.ABOUT} label="About" icon={FileText} currentView={currentView} onNavigate={onNavigate} />
-              <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={onNavigate} />
-              <div className="h-6 w-px bg-slate-800 mx-2" />
-              <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={onNavigate} />
+            <div className="hidden md:flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <NavItem view={View.ABOUT} label="Home" icon={FileText} currentView={currentView} onNavigate={onNavigate} />
+                <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={onNavigate} />
+                <div className="h-6 w-px bg-slate-800 mx-2" />
+                <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={onNavigate} />
+              </div>
+
+              <button
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${isChatOpen ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'}`}
+                aria-label={isChatOpen ? "Close chat" : "Open chat"}
+              >
+                {isChatOpen ? <X size={18} /> : <MessageSquare size={18} />}
+                <span className="text-sm font-medium hidden lg:inline">Ask Charlie</span>
+              </button>
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center gap-3">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="text-slate-400 hover:text-white p-2"
@@ -62,8 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
         {/* Mobile Nav Drawer */}
         {mobileMenuOpen && (
           <div id="mobile-menu" className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
-            <NavItem view={View.HOME} label="Chat" icon={MessageSquare} currentView={currentView} onNavigate={onNavigate} />
-            <NavItem view={View.ABOUT} label="About" icon={FileText} currentView={currentView} onNavigate={onNavigate} />
+            <NavItem view={View.ABOUT} label="Home" icon={FileText} currentView={currentView} onNavigate={onNavigate} />
             <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={onNavigate} />
             <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={onNavigate} />
           </div>
