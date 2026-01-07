@@ -2,7 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, List } from 'lucide-react';
 import { slugify, extractTextFromMarkdown } from '../lib/utils';
 
+/**
+ * @fileoverview Table of Contents Component
+ *
+ * This component renders a floating/collapsible Table of Contents for blog posts.
+ *
+ * "Why" Manual Regex Parsing?
+ * 1. **Separation of Concerns:** `react-markdown` handles the rendering of the post body, but
+ *    extracting a metadata structure (TOC) from the AST during render is complex and side-effect prone.
+ * 2. **Simplicity:** Since we already have the raw markdown string, parsing headers with a regex (`O(n)`)
+ *    is significantly lighter than writing a custom Remark/Rehype plugin to traverse the AST.
+ * 3. **Flexibility:** It allows us to build the TOC structure completely independent of the render cycle.
+ *
+ * "Why" IntersectionObserver?
+ * - To provide a "Spy" effect where the active section is highlighted as the user scrolls.
+ *
+ * Limitations:
+ * - Only supports H1-H3.
+ * - Assumes standard Markdown header syntax (`# Title`).
+ */
+
 interface TableOfContentsProps {
+  /** The raw markdown string of the blog post. */
   markdown: string;
 }
 
@@ -25,6 +46,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
     const headerRegex = /^\s*(#{1,3})\s+(.+)$/;
 
     // Flag to skip frontmatter and code blocks
+    // "Why": We must ignore # comments in code blocks and key: value pairs in frontmatter
     let inFrontmatter = false;
     let inCodeBlock = false;
     let lineIndex = 0;
@@ -32,7 +54,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
     for (const line of lines) {
       const trimmedLine = line.trim();
 
-      // Handle Frontmatter
+      // Handle Frontmatter (starts and ends with ---)
       if (lineIndex === 0 && trimmedLine === '---') {
         inFrontmatter = true;
         lineIndex++;
@@ -46,7 +68,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
         continue;
       }
 
-      // Handle Code Blocks
+      // Handle Code Blocks (toggles with ```)
       if (trimmedLine.startsWith('```')) {
         inCodeBlock = !inCodeBlock;
         lineIndex++;
@@ -64,8 +86,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
         const cleanText = extractTextFromMarkdown(rawText);
         const id = slugify(cleanText);
 
-        // Skip empty headers or the main title (H1) if it's redundant
-        // (Usually the post title is H1, but in the body we might have subheaders)
+        // Skip empty headers
         if (cleanText) {
              items.push({ id, text: cleanText, level });
         }
@@ -88,6 +109,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
           }
         });
       },
+      // rootMargin centers the intersection area (trigger when header is near top/middle)
       { rootMargin: '-100px 0px -66% 0px' }
     );
 
@@ -99,6 +121,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
     return () => observer.disconnect();
   }, [tocItems]);
 
+  // Don't render if there's only one section (usually the title)
   if (tocItems.length < 2) return null;
 
   return (
