@@ -190,3 +190,65 @@ export function extractTextFromReactNode(nodes: any): string {
   if (nodes.props && nodes.props.children) return extractTextFromReactNode(nodes.props.children);
   return '';
 }
+
+/**
+ * Splits text into manageable chunks while preserving sentence boundaries.
+ *
+ * Why: Splitting by sentences rather than arbitrary character counts ensures that
+ * semantic meaning is preserved, which significantly improves the quality of vector embeddings
+ * and the relevance of RAG retrieval. Truncating a sentence in the middle often results in lost context.
+ *
+ * Strategy:
+ * 1. Split text into sentences using regex `/[^.!?]+[.!?]+/g`.
+ * 2. Accumulate sentences into a chunk until `maxChars` is reached.
+ * 3. Push the chunk and start a new one.
+ *
+ * @param text - The raw text content to be chunked.
+ * @param maxChars - The target maximum length for each chunk (default 1000).
+ *                   1000 chars is roughly 200-250 words, a balanced size for the model's context window.
+ * @returns An array of text strings (chunks).
+ */
+export function chunkText(text: string, maxChars: number = 1000): string[] {
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  // The previous regex `/[^.!?]+[.!?]+/g` only matched if punctuation was present.
+  // This causes data loss for "This is a test" (no dot) or "Sentence 1. Sentence 2" (last one might not have dot if poorly formatted).
+  //
+  // Better strategy:
+  // 1. Split by delimiters but keep them. `split(/([.!?]+)/)`
+  // 2. Re-assemble.
+
+  // Implementation using match with a comprehensive regex to capture "Sentence + Punctuation" OR "Remaining Text"
+  // ([^.!?]+[.!?]+) matches normal sentences.
+  // ([^.!?]+$) matches text at the end without punctuation.
+  const sentenceRegex = /([^.!?]+[.!?]+)|([^.!?]+$)/g;
+  const matches = text.match(sentenceRegex) || [];
+
+  // If no matches (empty string), return empty array
+  if (matches.length === 0 && text.trim().length === 0) return [];
+  if (matches.length === 0) return [text]; // Fallback
+
+  for (const rawSentence of matches) {
+    const sentence = rawSentence.trim(); // Normalize whitespace
+    if (!sentence) continue;
+
+    const potentialLength = currentChunk.length + (currentChunk ? 1 : 0) + sentence.length;
+
+    if (potentialLength > maxChars) {
+       // If current chunk is non-empty, push it
+       if (currentChunk.length > 0) {
+           chunks.push(currentChunk);
+           currentChunk = "";
+       }
+    }
+
+    // Append to current chunk (or start new one if we just cleared it)
+    currentChunk += (currentChunk ? " " : "") + sentence;
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk);
+  }
+  return chunks;
+}
