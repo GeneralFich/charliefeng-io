@@ -126,6 +126,7 @@ const getBlogData = (): BlogChunk[] => {
  * @param query - The user's search query or question.
  * @param apiKey - The Google Gemini API key.
  * @param customEmbedder - Optional custom function to generate embeddings (for testing).
+ * @param customData - Optional array of blog chunks to use instead of the file system (for testing).
  * @returns A promise resolving to an array of the top 5 relevant text chunks.
  */
 export async function getRelevantContext(
