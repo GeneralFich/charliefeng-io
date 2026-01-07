@@ -1,5 +1,27 @@
 import React, { useEffect, useRef } from 'react';
 
+/**
+ * @fileoverview Scroll Progress Bar Component
+ *
+ * This component displays a horizontal progress bar at the top of the screen (below the navbar)
+ * indicating how far the user has scrolled down the page.
+ *
+ * "Why" / Performance Optimizations:
+ * Scroll events fire very frequently (up to hundreds of times per second), and naive implementations
+ * that update React state (`useState`) on every event cause massive "Layout Thrashing" and re-renders,
+ * leading to janky scrolling on lower-end devices.
+ *
+ * To achieve 60fps performance, this component employs several optimizations:
+ * 1. **Direct DOM Manipulation**: We use a `ref` to update the `style.width` property directly,
+ *    bypassing React's Virtual DOM and render cycle entirely for the progress updates.
+ * 2. **`requestAnimationFrame`**: We throttle updates to the screen refresh rate, preventing
+ *    calculations from blocking the main thread.
+ * 3. **`ResizeObserver`**: We monitor the document height efficiently to handle dynamic content loading
+ *    without constantly re-querying `document.scrollHeight` (which causes reflows).
+ * 4. **Passive Event Listeners**: We use `{ passive: true }` for the scroll listener, telling the
+ *    browser that we won't call `preventDefault()`, which allows the compositor thread to scroll
+ *    the page immediately without waiting for our JS to run.
+ */
 export const ScrollProgress: React.FC = () => {
   const progressRef = useRef<HTMLDivElement>(null);
   // Cache the scrollable height to avoid layout thrashing (reading scrollHeight) during scroll events
