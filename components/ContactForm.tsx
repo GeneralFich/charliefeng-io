@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+import { escapeHtml } from '../lib/utils';
 
 /**
  * @fileoverview Contact Form Component
@@ -102,16 +103,16 @@ export const ContactForm: React.FC = () => {
       // regardless of the HTML input name attributes.
       const templateParams = {
         // Standard EmailJS template variables
-        from_name: formData.name,
-        from_email: formData.email,
-        reply_to: formData.email,
+        from_name: escapeHtml(formData.name),
+        from_email: escapeHtml(formData.email),
+        reply_to: escapeHtml(formData.email),
         to_name: 'Charlie Feng', // Optional, useful if the template uses it
-        subject: formData.subject,
-        message: formData.message,
+        subject: escapeHtml(formData.subject),
+        message: escapeHtml(formData.message),
 
         // Fallbacks matching our form field names
-        name: formData.name,
-        email: formData.email
+        name: escapeHtml(formData.name),
+        email: escapeHtml(formData.email)
       };
 
       await emailjs.send(

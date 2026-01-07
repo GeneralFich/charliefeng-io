@@ -273,3 +273,19 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
   }
   return chunks;
 }
+
+/**
+ * Escapes HTML characters to prevent Stored XSS.
+ *
+ * @param unsafe The unsafe string.
+ * @returns The escaped string.
+ */
+export function escapeHtml(unsafe: string): string {
+  if (!unsafe) return unsafe;
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
