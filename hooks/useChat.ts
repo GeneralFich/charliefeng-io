@@ -4,6 +4,13 @@ import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { checkRateLimit } from '../lib/security';
 
+/**
+ * Curated list of initial prompts to guide the user towards the persona's core competencies.
+ *
+ * Why: Users often don't know what to ask a "Digital Twin". These specific questions
+ * act as signposts to the high-value content (Resume, Projects, Contact info)
+ * and help establish the professional, "Strategic Thought Partner" persona immediately.
+ */
 const INITIAL_SUGGESTED_PROMPTS = [
   "Who is Charlie?",
   "What is his work experience?",
@@ -15,8 +22,11 @@ const INITIAL_SUGGESTED_PROMPTS = [
 
 const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
 
-// Rate Limit: 10 requests per minute
-const RATE_LIMIT_WINDOW = 60000;
+// Rate Limit Configuration
+// Why: 10 requests per minute is a balanced threshold that allows for natural
+// conversation flow (bursts of questions) while effectively mitigating automated
+// abuse or accidental "enter key" spamming that could drain API quotas.
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS = 10;
 
 /**
@@ -98,8 +108,10 @@ export const useChat = () => {
     setIsLoading(true);
     setSuggestedPrompts([]); // Clear suggestions while loading
 
-    // Filter out the initial greeting from the history sent to API to save tokens/clean context
-    // strictly keeping user/model pairs after system prompt is handled in service
+    // Context Optimization: Filter out the initial "Hello!" greeting.
+    // Why: The static greeting adds no semantic value to the LLM's context window.
+    // Removing it saves tokens and prevents the model from being biased by its own
+    // hardcoded initial output.
     const apiHistory = messages.slice(1);
 
     const controller = new AbortController();
