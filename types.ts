@@ -24,3 +24,5 @@ export interface TimelineDataPoint {
   label: string;
   intensity: number; // For visualization height
 }
+
+export type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
