@@ -1,5 +1,5 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import React, { useState, forwardRef, useImperativeHandle, useRef } from 'react';
+import { Send, Loader2, X } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -16,6 +16,7 @@ export interface ChatInputHandle {
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
   ({ onSend, isLoading, placeholder = "Ask anything...", maxLength = 2000 }, ref) => {
     const [value, setValue] = useState('');
+    const internalInputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({
       clear: () => setValue(''),
@@ -26,6 +27,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       if (!value.trim() || isLoading) return;
       onSend(value);
       setValue('');
+      // Keep focus on input after sending for fluid conversation
+      internalInputRef.current?.focus();
+    };
+
+    const handleClear = () => {
+      setValue('');
+      internalInputRef.current?.focus();
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -38,6 +46,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     return (
       <div className="relative flex-1">
         <input
+          ref={internalInputRef}
           type="text"
           aria-label="Chat message"
           value={value}
@@ -45,9 +54,20 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           onKeyDown={handleKeyDown}
           placeholder={isLoading ? "Thinking..." : placeholder}
           maxLength={maxLength}
-          className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+          className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-40 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
           disabled={isLoading}
         />
+
+        {value.length > 0 && !isLoading && (
+          <button
+            onClick={handleClear}
+            className="absolute right-32 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors"
+            aria-label="Clear input"
+            title="Clear input"
+          >
+            <X size={14} />
+          </button>
+        )}
 
         {value.length > 0 && (
           <span
