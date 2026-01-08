@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon, Bookmark } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { isSafeLink, slugify, extractTextFromReactNode } from '../lib/utils';
@@ -18,6 +18,8 @@ interface EssayDetailProps {
   filteredPosts: BlogPost[];
   onBack: () => void;
   onNavigate: (post: BlogPost) => void;
+  isBookmarked: boolean;
+  onToggleBookmark: () => void;
 }
 
 // Define plugins outside component to maintain reference stability
@@ -28,7 +30,9 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   post,
   filteredPosts,
   onBack,
-  onNavigate
+  onNavigate,
+  isBookmarked,
+  onToggleBookmark
 }) => {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -295,6 +299,21 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           >
             <Download size={14} />
             <span>PDF</span>
+          </button>
+
+          {/* Bookmark Button */}
+          <button
+            onClick={onToggleBookmark}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm border ${
+              isBookmarked
+                ? 'bg-blue-500/10 border-blue-500/50 text-blue-400'
+                : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:text-blue-400 hover:border-blue-500/50'
+            }`}
+            title={isBookmarked ? "Remove bookmark" : "Bookmark essay"}
+            aria-label={isBookmarked ? "Remove bookmark" : "Bookmark essay"}
+          >
+            <Bookmark size={14} className={isBookmarked ? "fill-current" : ""} />
+            <span>{isBookmarked ? 'Saved' : 'Save'}</span>
           </button>
 
           {/* Share Button */}

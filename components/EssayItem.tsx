@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Check } from 'lucide-react';
+import { Share2, Check, Bookmark } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes } from './SearchHighlighter';
 import { View } from '../types';
@@ -8,9 +8,11 @@ interface EssayItemProps {
   post: BlogPost;
   searchRegex: RegExp | null;
   onSelectPost: (post: BlogPost) => void;
+  isBookmarked: boolean;
+  onToggleBookmark: () => void;
 }
 
-export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchRegex, onSelectPost }) => {
+export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchRegex, onSelectPost, isBookmarked, onToggleBookmark }) => {
   const [copiedPostSlug, setCopiedPostSlug] = useState<string | null>(null);
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -61,15 +63,33 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
         </p>
       </div>
 
-      <button
-        onClick={handleShare}
-        onKeyDown={(e) => e.stopPropagation()}
-        className="absolute top-6 right-6 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-        title="Copy link"
-        aria-label="Copy link to clipboard"
-      >
-        {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
-      </button>
+      <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleBookmark();
+          }}
+          className={`p-2 rounded-lg transition-all ${
+            isBookmarked
+              ? 'bg-blue-500/10 text-blue-400'
+              : 'bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400'
+          }`}
+          title={isBookmarked ? "Remove bookmark" : "Bookmark essay"}
+          aria-label={isBookmarked ? "Remove bookmark" : "Bookmark essay"}
+        >
+          <Bookmark size={16} className={isBookmarked ? "fill-current" : ""} />
+        </button>
+
+        <button
+          onClick={handleShare}
+          onKeyDown={(e) => e.stopPropagation()}
+          className="p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all"
+          title="Copy link"
+          aria-label="Copy link to clipboard"
+        >
+          {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
+        </button>
+      </div>
     </div>
   );
 });
