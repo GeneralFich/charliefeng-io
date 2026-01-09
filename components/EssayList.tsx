@@ -14,6 +14,7 @@ interface EssayListProps {
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   onSelectPost: (post: BlogPost) => void;
+  isInsideSplitView?: boolean;
 }
 
 export const EssayList: React.FC<EssayListProps> = ({
@@ -23,7 +24,8 @@ export const EssayList: React.FC<EssayListProps> = ({
   onSearchChange,
   sortBy,
   onSortChange,
-  onSelectPost
+  onSelectPost,
+  isInsideSplitView
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,7 +74,7 @@ export const EssayList: React.FC<EssayListProps> = ({
         </p>
       </div>
 
-      <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-md py-4 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-end gap-4">
+      <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-slate-950/80 backdrop-blur-md py-4 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-end gap-4`}>
         {/* Sort Dropdown */}
         <div className="relative group w-full md:w-48">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

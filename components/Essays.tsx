@@ -8,9 +8,10 @@ import { filterAndSortEssays } from '../lib/essay_logic';
 
 interface EssaysProps {
   initialSlug?: string | null;
+  isInsideSplitView?: boolean;
 }
 
-export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
+export const Essays: React.FC<EssaysProps> = ({ initialSlug, isInsideSplitView }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -68,6 +69,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
         filteredPosts={filteredPosts}
         onBack={handleBack}
         onNavigate={handleNavigate}
+        isInsideSplitView={isInsideSplitView}
       />
     );
   }
@@ -81,6 +83,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
       sortBy={sortBy}
       onSortChange={setSortBy}
       onSelectPost={handleSelectPost}
+      isInsideSplitView={isInsideSplitView}
     />
   );
 };
