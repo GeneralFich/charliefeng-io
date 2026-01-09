@@ -32,7 +32,6 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     { keys: ['G', 'H'], description: 'Go to Home / Chat' },
     { keys: ['G', 'A'], description: 'Go to About / Resume' },
     { keys: ['G', 'E'], description: 'Go to Essays' },
-    { keys: ['G', 'C'], description: 'Go to Contact' },
     { keys: ['?'], description: 'Open this help menu' },
     { keys: ['Esc'], description: 'Close this menu' },
   ];
