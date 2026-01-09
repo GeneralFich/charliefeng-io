@@ -3,6 +3,7 @@ import { FULL_CONTEXT } from "../lib/knowledge";
 import { Message } from "../types";
 import { getRelevantContext, RelevantChunk } from "../lib/rag";
 import { redactSensitiveInfo } from "../lib/utils";
+import { validateChatInput } from "../lib/security";
 
 /**
  * @fileoverview Gemini AI Service
@@ -26,8 +27,6 @@ const apiKey = process.env.API_KEY;
 // in a hook or context to handle missing keys more gracefully in the UI.
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
-const MAX_INPUT_LENGTH = 10000;
-
 /**
  * Sends a message to the Gemini API with context-awareness.
  *
@@ -46,8 +45,9 @@ export const sendMessageToGemini = async (
   abortSignal?: AbortSignal
 ): Promise<string> => {
   // Security: Input validation to prevent large payloads (DoS/Cost)
-  if (!newMessage || newMessage.length > MAX_INPUT_LENGTH) {
-    return "Message is too long. Please shorten your query.";
+  const validation = validateChatInput(history, newMessage);
+  if (!validation.valid) {
+    return validation.error || "Invalid input.";
   }
 
   if (!ai || !apiKey) {
