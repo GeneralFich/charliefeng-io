@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from '../types';
 import { Logo } from './Logo';
 import { NavItem } from './NavItem';
-import { MessageSquare, FileText, Menu, X, BookOpen, Mail } from 'lucide-react';
+import { MessageSquare, FileText, Menu, X, BookOpen } from 'lucide-react';
 
 interface NavbarProps {
   currentView: View;
@@ -40,8 +40,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
               <NavItem view={View.HOME} label="Chat" icon={MessageSquare} currentView={currentView} onNavigate={onNavigate} />
               <NavItem view={View.ABOUT} label="About" icon={FileText} currentView={currentView} onNavigate={onNavigate} />
               <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={onNavigate} />
-              <div className="h-6 w-px bg-slate-800 mx-2" />
-              <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={onNavigate} />
             </div>
 
             {/* Mobile Menu Button */}
@@ -65,7 +63,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
             <NavItem view={View.HOME} label="Chat" icon={MessageSquare} currentView={currentView} onNavigate={onNavigate} />
             <NavItem view={View.ABOUT} label="About" icon={FileText} currentView={currentView} onNavigate={onNavigate} />
             <NavItem view={View.ESSAYS} label="Essays" icon={BookOpen} currentView={currentView} onNavigate={onNavigate} />
-            <NavItem view={View.CONTACT} label="Contact" icon={Mail} currentView={currentView} onNavigate={onNavigate} />
           </div>
         )}
       </nav>
