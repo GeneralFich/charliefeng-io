@@ -23,7 +23,8 @@ const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) 
     return true;
   }
   if (href === '/contact') {
-    onNavigate(View.CONTACT);
+    // Redirect legacy contact links to About page (which has LinkedIn)
+    onNavigate(View.ABOUT);
     return true;
   }
   if (href.startsWith('/essays/')) {

@@ -62,10 +62,6 @@ export const useGlobalShortcuts = ({ onNavigate, toggleShortcutsModal, isModalOp
             onNavigate(View.ESSAYS);
             navigated = true;
             break;
-          case 'c':
-            onNavigate(View.CONTACT);
-            navigated = true;
-            break;
         }
 
         if (navigated) {

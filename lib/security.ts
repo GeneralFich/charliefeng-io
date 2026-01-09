@@ -6,14 +6,15 @@
  * @param timestamps Array of timestamps (in ms) of past requests.
  * @param windowMs The time window in milliseconds (e.g., 60000 for 1 minute).
  * @param maxRequests The maximum number of requests allowed in the window.
+ * @param now Optional timestamp to use as "now" (for testing). Defaults to Date.now().
  * @returns Object containing `allowed` (boolean) and `newTimestamps` (array).
  */
 export function checkRateLimit(
   timestamps: number[],
   windowMs: number,
-  maxRequests: number
+  maxRequests: number,
+  now: number = Date.now()
 ): { allowed: boolean; newTimestamps: number[] } {
-  const now = Date.now();
   // Filter out timestamps older than the window
   const validTimestamps = timestamps.filter(t => now - t < windowMs);
 

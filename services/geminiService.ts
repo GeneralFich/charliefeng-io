@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { FULL_CONTEXT } from "../lib/knowledge";
 import { Message } from "../types";
-import { getRelevantContext } from "../lib/rag";
+import { getRelevantContext, RelevantChunk } from "../lib/rag";
 import { redactSensitiveInfo } from "../lib/utils";
 import { validateChatInput } from "../lib/security";
 
@@ -56,41 +56,10 @@ export const sendMessageToGemini = async (
 
   try {
     // RAG: Retrieve relevant context from blog
-    let additionalContext = "";
-    try {
-      const relevantChunks = await getRelevantContext(newMessage, apiKey);
-      if (relevantChunks.length > 0) {
-        additionalContext = "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
-          relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
-      }
-    } catch (ragError) {
-      // Security: Redact sensitive info from error logging
-      const safeRagError = redactSensitiveInfo(
-        ragError instanceof Error ? ragError.message : String(ragError),
-        [apiKey]
-      );
-      console.warn("RAG retrieval failed, proceeding without it:", safeRagError);
-    }
+    const additionalContext = await retrieveAugmentedContext(newMessage, apiKey);
 
     // Prepare the conversation for the API
-    // We treat the "history" as the context of conversation so far.
-    // The "newMessage" is the latest user input.
-    // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
-
-    const userMessageWithContext = additionalContext
-      ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
-      : newMessage;
-
-    const contents = [
-       ...history.map((msg) => ({
-        role: msg.role,
-        parts: [{ text: msg.text }],
-      })),
-      {
-        role: "user",
-        parts: [{ text: userMessageWithContext }],
-      },
-    ];
+    const contents = buildGeminiMessages(history, newMessage, additionalContext);
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -120,3 +89,48 @@ export const sendMessageToGemini = async (
     return "Connection to the neural link failed. Please try again.";
   }
 };
+
+/**
+ * Retrieves and formats relevant context from the blog index.
+ */
+async function retrieveAugmentedContext(query: string, key: string): Promise<string> {
+  try {
+    const relevantChunks = await getRelevantContext(query, key);
+    if (relevantChunks.length > 0) {
+      return "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
+        relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
+    }
+  } catch (ragError) {
+    // Security: Redact sensitive info from error logging
+    const safeRagError = redactSensitiveInfo(
+      ragError instanceof Error ? ragError.message : String(ragError),
+      [key]
+    );
+    console.warn("RAG retrieval failed, proceeding without it:", safeRagError);
+  }
+  return "";
+}
+
+/**
+ * Constructs the message array for the Gemini API.
+ */
+function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string) {
+  // We treat the "history" as the context of conversation so far.
+  // The "newMessage" is the latest user input.
+  // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
+
+  const userMessageWithContext = additionalContext
+    ? `Context for this query:\n${additionalContext}\n\nUser Query: ${newMessage}`
+    : newMessage;
+
+  return [
+    ...history.map((msg) => ({
+      role: msg.role,
+      parts: [{ text: msg.text }],
+    })),
+    {
+      role: "user",
+      parts: [{ text: userMessageWithContext }],
+    },
+  ];
+}
