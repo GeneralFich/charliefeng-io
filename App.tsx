@@ -31,7 +31,6 @@ import { Resume } from './components/Resume';
 import { Essays } from './components/Essays';
 import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
-import { ContactView } from './components/ContactView';
 import { Navbar } from './components/Navbar';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
@@ -112,7 +111,6 @@ const App: React.FC = () => {
                 <div className="min-h-full">
                    {sideView === View.ABOUT && <Resume />}
                    {sideView === View.ESSAYS && <Essays initialSlug={sideSlug} isInsideSplitView={true} />}
-                   {sideView === View.CONTACT && <ContactView />}
                 </div>
              </div>
            )}
@@ -126,7 +124,6 @@ const App: React.FC = () => {
 
         {currentView === View.ABOUT && <Resume />}
         {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
-        {currentView === View.CONTACT && <ContactView />}
       </>
     );
   };
@@ -143,7 +140,7 @@ const App: React.FC = () => {
       </a>
 
       {/* Scroll Progress Bar */}
-      {currentView !== View.HOME && currentView !== View.CONTACT && <ScrollProgress />}
+      {currentView !== View.HOME && <ScrollProgress />}
 
       {/* Back to Top Button */}
       {currentView !== View.HOME && <BackToTop />}
