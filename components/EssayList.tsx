@@ -3,8 +3,7 @@ import { Search, X, ArrowUpDown } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { escapeRegExp } from '../lib/utils';
 import { EssayItem } from './EssayItem';
-
-export type SortOption = 'newest' | 'oldest' | 'shortest' | 'longest';
+import { SortOption } from '../types';
 
 interface EssayListProps {
   posts: BlogPost[];

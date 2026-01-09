@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { BLOG_POSTS, BlogPost } from '../lib/knowledge';
-import { EssayList, SortOption } from './EssayList';
+import { EssayList } from './EssayList';
+import { SortOption } from '../types';
 import { EssayDetail } from './EssayDetail';
 import { useDebounce } from '../hooks/useDebounce';
+import { filterAndSortEssays } from '../lib/essay_logic';
 
 interface EssaysProps {
   initialSlug?: string | null;
@@ -31,27 +33,7 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug }) => {
   // Kept in parent to preserve context for navigation between posts
   // Depends on debouncedSearchQuery instead of searchQuery
   const filteredPosts = useMemo(() => {
-    let posts = BLOG_POSTS;
-
-    if (debouncedSearchQuery) {
-      const lowerQuery = debouncedSearchQuery.toLowerCase();
-      posts = posts.filter(post => post.searchContent.includes(lowerQuery));
-    }
-
-    // Optimization: BLOG_POSTS is already sorted by newest (descending date).
-    switch (sortBy) {
-      case 'newest':
-        return posts;
-      case 'oldest':
-        // Reverse is faster than sorting, and posts is already sorted by newest
-        return [...posts].reverse();
-      case 'shortest':
-        return [...posts].sort((a, b) => a.readTime - b.readTime);
-      case 'longest':
-        return [...posts].sort((a, b) => b.readTime - a.readTime);
-      default:
-        return posts;
-    }
+    return filterAndSortEssays(BLOG_POSTS, debouncedSearchQuery, sortBy);
   }, [debouncedSearchQuery, sortBy]);
 
   const handleSelectPost = useCallback((post: BlogPost) => {
