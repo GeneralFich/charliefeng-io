@@ -31,7 +31,7 @@ export const Resume: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex gap-3 print:hidden">
+        <div className="flex flex-wrap gap-3 print:hidden">
           <a
             href={LINKEDIN_URL}
             target="_blank"
