@@ -5,6 +5,7 @@ import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
 import { ChatInput, ChatInputHandle } from './ChatInput';
 import { useChat } from '../hooks/useChat';
+import { downloadChatHistory } from '../lib/download';
 
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string) => void;
@@ -38,24 +39,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   }, [messages, isLoading]);
 
   const handleDownloadChat = () => {
-    if (messages.length <= 1) return;
-
-    const chatContent = messages
-      .map(msg => {
-        const role = msg.role === 'user' ? 'You' : 'Charlie (AI)';
-        return `[${role}]:\n${msg.text}\n`;
-      })
-      .join('\n' + '-'.repeat(40) + '\n\n');
-
-    const blob = new Blob([chatContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `charlie-feng-chat-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadChatHistory(messages);
   };
 
   const handleClearChat = () => {
