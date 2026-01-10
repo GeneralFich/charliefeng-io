@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Check } from 'lucide-react';
+import { Share2, Check, Bookmark } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes } from './SearchHighlighter';
 import { View } from '../types';
@@ -7,11 +7,24 @@ import { View } from '../types';
 interface EssayItemProps {
   post: BlogPost;
   searchRegex: RegExp | null;
+  isBookmarked: boolean;
+  onToggleBookmark: (slug: string) => void;
   onSelectPost: (post: BlogPost) => void;
 }
 
-export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchRegex, onSelectPost }) => {
+export const EssayItem: React.FC<EssayItemProps> = React.memo(({
+  post,
+  searchRegex,
+  isBookmarked,
+  onToggleBookmark,
+  onSelectPost
+}) => {
   const [copiedPostSlug, setCopiedPostSlug] = useState<string | null>(null);
+
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleBookmark(post.slug);
+  };
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -61,15 +74,31 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
         </p>
       </div>
 
-      <button
-        onClick={handleShare}
-        onKeyDown={(e) => e.stopPropagation()}
-        className="absolute top-6 right-6 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-        title="Copy link"
-        aria-label="Copy link to clipboard"
-      >
-        {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
-      </button>
+      <div className="absolute top-6 right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <button
+          onClick={handleBookmark}
+          onKeyDown={(e) => e.stopPropagation()}
+          className={`p-2 rounded-lg transition-all ${
+            isBookmarked
+              ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
+              : 'bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400'
+          }`}
+          title={isBookmarked ? 'Remove from saved' : 'Save for later'}
+          aria-label={isBookmarked ? 'Remove from saved' : 'Save for later'}
+        >
+          <Bookmark size={16} className={isBookmarked ? 'fill-current' : ''} />
+        </button>
+
+        <button
+          onClick={handleShare}
+          onKeyDown={(e) => e.stopPropagation()}
+          className="p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all"
+          title="Copy link"
+          aria-label="Copy link to clipboard"
+        >
+          {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
+        </button>
+      </div>
     </div>
   );
 });

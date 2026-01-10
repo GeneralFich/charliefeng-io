@@ -4,6 +4,7 @@ import { EssayList } from './EssayList';
 import { SortOption } from '../types';
 import { EssayDetail } from './EssayDetail';
 import { useDebounce } from '../hooks/useDebounce';
+import { useBookmarks } from '../hooks/useBookmarks';
 import { filterAndSortEssays } from '../lib/essay_logic';
 
 interface EssaysProps {
@@ -15,6 +16,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug, isInsideSplitView }
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const { bookmarkedSlugs, toggleBookmark, isBookmarked } = useBookmarks();
 
   // Debounce the search query to avoid filtering and re-rendering the list
   // on every keystroke. This improves performance for fast typists.
@@ -34,8 +37,14 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug, isInsideSplitView }
   // Kept in parent to preserve context for navigation between posts
   // Depends on debouncedSearchQuery instead of searchQuery
   const filteredPosts = useMemo(() => {
-    return filterAndSortEssays(BLOG_POSTS, debouncedSearchQuery, sortBy);
-  }, [debouncedSearchQuery, sortBy]);
+    let posts = filterAndSortEssays(BLOG_POSTS, debouncedSearchQuery, sortBy);
+
+    if (showSavedOnly) {
+      posts = posts.filter(post => bookmarkedSlugs.includes(post.slug));
+    }
+
+    return posts;
+  }, [debouncedSearchQuery, sortBy, showSavedOnly, bookmarkedSlugs]);
 
   const handleSelectPost = useCallback((post: BlogPost) => {
     setSelectedPost(post);
@@ -69,6 +78,8 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug, isInsideSplitView }
         filteredPosts={filteredPosts}
         onBack={handleBack}
         onNavigate={handleNavigate}
+        isBookmarked={isBookmarked(selectedPost.slug)}
+        onToggleBookmark={() => toggleBookmark(selectedPost.slug)}
         isInsideSplitView={isInsideSplitView}
       />
     );
@@ -82,6 +93,10 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug, isInsideSplitView }
       onSearchChange={setSearchQuery}
       sortBy={sortBy}
       onSortChange={setSortBy}
+      showSavedOnly={showSavedOnly}
+      onToggleSaved={() => setShowSavedOnly(prev => !prev)}
+      bookmarkedSlugs={bookmarkedSlugs}
+      onToggleBookmark={toggleBookmark}
       onSelectPost={handleSelectPost}
       isInsideSplitView={isInsideSplitView}
     />

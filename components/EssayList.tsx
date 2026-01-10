@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { Search, X, ArrowUpDown } from 'lucide-react';
+import { Search, X, ArrowUpDown, Bookmark } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { escapeRegExp } from '../lib/utils';
 import { EssayItem } from './EssayItem';
@@ -13,6 +13,10 @@ interface EssayListProps {
   onSearchChange: (query: string) => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
+  showSavedOnly: boolean;
+  onToggleSaved: () => void;
+  bookmarkedSlugs: string[];
+  onToggleBookmark: (slug: string) => void;
   onSelectPost: (post: BlogPost) => void;
   isInsideSplitView?: boolean;
 }
@@ -24,6 +28,10 @@ export const EssayList: React.FC<EssayListProps> = ({
   onSearchChange,
   sortBy,
   onSortChange,
+  showSavedOnly,
+  onToggleSaved,
+  bookmarkedSlugs,
+  onToggleBookmark,
   onSelectPost,
   isInsideSplitView
 }) => {
@@ -75,6 +83,20 @@ export const EssayList: React.FC<EssayListProps> = ({
       </div>
 
       <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-slate-950/80 backdrop-blur-md py-4 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-end gap-4`}>
+        {/* Saved Filter */}
+        <button
+          onClick={onToggleSaved}
+          className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+            showSavedOnly
+              ? 'bg-blue-500/10 border-blue-500/50 text-blue-400'
+              : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+          }`}
+          aria-pressed={showSavedOnly}
+        >
+          <Bookmark size={16} className={showSavedOnly ? 'fill-current' : ''} />
+          <span className="font-medium whitespace-nowrap">Saved</span>
+        </button>
+
         {/* Sort Dropdown */}
         <div className="relative group w-full md:w-48">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -131,6 +153,8 @@ export const EssayList: React.FC<EssayListProps> = ({
               key={post.slug}
               post={post}
               searchRegex={searchRegex}
+              isBookmarked={bookmarkedSlugs.includes(post.slug)}
+              onToggleBookmark={onToggleBookmark}
               onSelectPost={onSelectPost}
             />
           ))
@@ -140,13 +164,27 @@ export const EssayList: React.FC<EssayListProps> = ({
             role="status"
             aria-live="polite"
           >
-            <p>No essays found matching "{searchQuery}"</p>
-            <button
-              onClick={() => onSearchChange('')}
-              className="text-blue-400 hover:text-blue-300 text-sm mt-2"
-            >
-              Clear search
-            </button>
+            {showSavedOnly ? (
+              <>
+                <p>No saved essays found</p>
+                <button
+                  onClick={onToggleSaved}
+                  className="text-blue-400 hover:text-blue-300 text-sm mt-2"
+                >
+                  View all essays
+                </button>
+              </>
+            ) : (
+              <>
+                <p>No essays found matching "{searchQuery}"</p>
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="text-blue-400 hover:text-blue-300 text-sm mt-2"
+                >
+                  Clear search
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

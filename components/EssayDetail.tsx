@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Link as LinkIcon, Bookmark } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { SearchHighlighter, highlightNodes, HighlightContext } from './SearchHighlighter';
 import { isSafeLink } from '../lib/utils';
@@ -19,6 +19,8 @@ interface EssayDetailProps {
   filteredPosts: BlogPost[];
   onBack: () => void;
   onNavigate: (post: BlogPost) => void;
+  isBookmarked: boolean;
+  onToggleBookmark: () => void;
   isInsideSplitView?: boolean;
 }
 
@@ -31,6 +33,8 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   filteredPosts,
   onBack,
   onNavigate,
+  isBookmarked,
+  onToggleBookmark,
   isInsideSplitView
 }) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -258,6 +262,21 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           >
             <Download size={14} />
             <span>PDF</span>
+          </button>
+
+          {/* Bookmark Button */}
+          <button
+            onClick={onToggleBookmark}
+            className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg transition-all text-sm ${
+              isBookmarked
+                ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 hover:bg-blue-500/20'
+                : 'bg-slate-900/50 border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400'
+            }`}
+            title={isBookmarked ? 'Remove from saved' : 'Save for later'}
+            aria-label={isBookmarked ? 'Remove from saved' : 'Save for later'}
+          >
+            <Bookmark size={14} className={isBookmarked ? 'fill-current' : ''} />
+            <span>{isBookmarked ? 'Saved' : 'Save'}</span>
           </button>
 
           {/* Share Button */}
