@@ -161,8 +161,10 @@ export async function getRelevantContext(
     const scoredChunks: RelevantChunk[] = [];
 
     for (const chunk of data) {
-      // data only contains chunks with embeddings and magnitudes, so ! assertion is safe
-      const score = cosineSimilarity(queryEmbedding, chunk.embedding!, queryMagnitude, chunk._magnitude);
+      // Ensure embedding exists before calculation (important for customData or corrupted ingestion)
+      if (!chunk.embedding) continue;
+
+      const score = cosineSimilarity(queryEmbedding, chunk.embedding, queryMagnitude, chunk._magnitude);
 
       // Filter by threshold (0.5) directly to avoid allocating objects for irrelevant chunks
       if (score > 0.5) {
