@@ -20,15 +20,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
             {/* Logo Area */}
             <button
               onClick={() => onNavigate(View.HOME)}
-              className="flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none text-left"
+              className="group flex-shrink-0 flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none text-left"
               aria-label="Go to Home"
             >
               <Logo className="w-8 h-8" />
               <div>
                 <h1 className="text-white font-bold tracking-tight text-lg">Charlie Feng</h1>
-                <div className="group relative cursor-help w-max">
+                <div className="relative cursor-help w-max">
                   <p className="text-[10px] text-blue-400 uppercase tracking-widest font-semibold border-b border-dashed border-blue-400/50">Digital Twin</p>
-                  <div className="absolute top-full left-0 mt-2 hidden group-hover:block w-max bg-slate-900/90 backdrop-blur-md text-xs text-slate-300 px-3 py-1.5 rounded border border-slate-700 shadow-xl z-50">
+                  <div className="absolute top-full left-0 mt-2 hidden group-hover:block group-focus-visible:block w-max bg-slate-900/90 backdrop-blur-md text-xs text-slate-300 px-3 py-1.5 rounded border border-slate-700 shadow-xl z-50">
                     Interactive Knowledge Model
                   </div>
                 </div>
@@ -48,6 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="text-slate-400 hover:text-white p-2"
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                title={mobileMenuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-menu"
               >
