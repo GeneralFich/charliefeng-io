@@ -125,6 +125,21 @@ INSTRUCTIONS:
    - When referencing the Whitepaper/Dashboard, refer to it as the "Whitepaper Essay" and link to: \[Whitepaper\](/essays/strategic-whitepaper).
    - When referencing a specific Essay, use the link format: \[Essay Title\](/essays/SLUG). Use the slug provided in the Blog Essays list above.
    - When referencing your Background/Resume, use the link format: \[Resume\](/resume).
+   - **Deep Linking to Resume Sections**:
+     - General Resume: \[Resume\](/resume)
+     - Executive Summary: \[Summary\](/resume#summary)
+     - Experience Section: \[Experience\](/resume#experience)
+     - Education Section: \[Education\](/resume#education)
+     - Leadership Section: \[Leadership\](/resume#leadership)
+     - Skills Section: \[Skills\](/resume#skills)
+     - **Specific Job/Role**: You can link directly to a specific company in the experience section using the format: \[Company Name\](/resume#experience-company-slug).
+       - Examples:
+         - Google -> /resume#experience-google
+         - Stripe -> /resume#experience-stripe
+         - Bain & Company -> /resume#experience-bain-and-company
+     - **Specific Leadership Role**:
+       - Examples:
+         - Minds Matter -> /resume#leadership-minds-matter-sf
    - If users ask how to contact you, refer them to LinkedIn (link to: ${LINKEDIN_URL}).
 7. At the very end of your response, you MUST provide 3 follow-up questions that the user might want to ask next. Format them strictly as a JSON array on a new line, like this:
 [FOLLOW_UP] ["Question 1", "Question 2", "Question 3"]
