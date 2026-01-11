@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, User, Copy, Check } from 'lucide-react';
+import { Bot, User, Copy, Check, Calendar } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
@@ -104,6 +104,56 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     },
   }), [onNavigate]);
 
+  // Handle scheduling token replacement
+  const hasSchedulingToken = message.text.includes('[SCHEDULE]');
+
+  // If we have a scheduling token, we need to split the message and render the button
+  // We can't easily do this inside ReactMarkdown, so we pre-process or split parts
+  const renderContent = () => {
+    if (!hasSchedulingToken) {
+        return (
+            <ReactMarkdown
+                remarkPlugins={MARKDOWN_PLUGINS}
+                rehypePlugins={REHYPE_PLUGINS}
+                components={markdownComponents as any}
+            >
+                {message.text}
+            </ReactMarkdown>
+        );
+    }
+
+    const parts = message.text.split('[SCHEDULE]');
+
+    return (
+        <>
+            {parts.map((part, index) => (
+                <React.Fragment key={index}>
+                    <ReactMarkdown
+                        remarkPlugins={MARKDOWN_PLUGINS}
+                        rehypePlugins={REHYPE_PLUGINS}
+                        components={markdownComponents as any}
+                    >
+                        {part}
+                    </ReactMarkdown>
+                    {index < parts.length - 1 && (
+                        <div className="my-4">
+                            <a
+                                href="https://calendly.com/fengcharlie/deep-dive"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg hover:shadow-blue-500/20"
+                            >
+                                <Calendar size={16} />
+                                <span>Schedule a Deep Dive</span>
+                            </a>
+                        </div>
+                    )}
+                </React.Fragment>
+            ))}
+        </>
+    );
+  };
+
   return (
     <div
       className={`group flex items-start gap-3 ${
@@ -136,13 +186,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
           </button>
         )}
 
-        <ReactMarkdown
-          remarkPlugins={MARKDOWN_PLUGINS}
-          rehypePlugins={REHYPE_PLUGINS}
-          components={markdownComponents as any}
-        >
-          {message.text}
-        </ReactMarkdown>
+        {renderContent()}
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { Heading } from './Heading';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 import { TableOfContents } from './TableOfContents';
+import { FeedbackForm } from './FeedbackForm';
 import { View } from '../types';
 import { useArticleSearch } from '../hooks/useArticleSearch';
 
@@ -374,8 +375,13 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </HighlightContext.Provider>
       </article>
 
+      {/* Feedback Form */}
+      <div className="print:hidden">
+        <FeedbackForm essayTitle={post.attributes.title} />
+      </div>
+
       {/* Contextual Navigation Footer */}
-      <div className="mt-16 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
+      <div className="mt-8 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
         <div>
           {newerPost && (
             <button

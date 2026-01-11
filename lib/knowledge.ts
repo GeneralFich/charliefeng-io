@@ -126,6 +126,7 @@ INSTRUCTIONS:
    - When referencing a specific Essay, use the link format: \[Essay Title\](/essays/SLUG). Use the slug provided in the Blog Essays list above.
    - When referencing your Background/Resume, use the link format: \[Resume\](/resume).
    - If users ask how to contact you, refer them to LinkedIn (link to: ${LINKEDIN_URL}).
+   - If the user explicitly asks to schedule a meeting, technical deep-dive, or collaboration, output the token [SCHEDULE] in your response. Do not output a URL directly. This token will render a scheduling button in the UI.
 7. At the very end of your response, you MUST provide 3 follow-up questions that the user might want to ask next. Format them strictly as a JSON array on a new line, like this:
 [FOLLOW_UP] ["Question 1", "Question 2", "Question 3"]
 `;
