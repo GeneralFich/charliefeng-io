@@ -49,7 +49,7 @@ test('validateChatInput', async (t) => {
         const newMessage = 'a'.repeat(MAX_NEW_MESSAGE_LENGTH + 1);
         const result = validateChatInput(history, newMessage);
         assert.strictEqual(result.valid, false);
-        assert.strictEqual(result.error, "Message is too long. Please shorten your query.");
+        assert.strictEqual(result.error, `Message is too long (max ${MAX_NEW_MESSAGE_LENGTH} chars). Please shorten your query.`);
     });
 
     await t.test('rejects history exceeding max total length', () => {

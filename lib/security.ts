@@ -51,7 +51,9 @@ export function checkRateLimit(
 
 import { Message } from '../types';
 
-export const MAX_NEW_MESSAGE_LENGTH = 10000;
+// Limit message length to 2000 characters to prevent token exhaustion and abuse.
+// This aligns with the UI-side validation in `useChat` and provides a safe backend default.
+export const MAX_NEW_MESSAGE_LENGTH = 2000;
 export const MAX_TOTAL_HISTORY_LENGTH = 100000;
 
 /**
@@ -65,7 +67,7 @@ export const MAX_TOTAL_HISTORY_LENGTH = 100000;
  */
 export function validateChatInput(history: Message[], newMessage: string): { valid: boolean; error?: string } {
     if (!newMessage || newMessage.length > MAX_NEW_MESSAGE_LENGTH) {
-        return { valid: false, error: "Message is too long. Please shorten your query." };
+        return { valid: false, error: `Message is too long (max ${MAX_NEW_MESSAGE_LENGTH} chars). Please shorten your query.` };
     }
 
     // Basic structural validation
