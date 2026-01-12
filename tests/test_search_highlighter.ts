@@ -70,20 +70,26 @@ describe('SearchHighlighter', () => {
     const result = highlightNodes(input, regex);
 
     assert(Array.isArray(result));
-    // The second item in the array should now be a Fragment containing the highlighted parts
+    // The second item in the array should now be an ARRAY of nodes (from split)
+    // because we removed the Fragment wrapper.
     const middleItem = (result as any[])[1];
 
-    // In the implementation: Case 2: Array -> map to Fragments
-    assert(React.isValidElement(middleItem));
-    assert.strictEqual(middleItem.type, React.Fragment);
+    // In the NEW implementation, split returns an array of nodes.
+    // Input: "Hello World" -> split -> ["Hello ", <mark>World</mark>]
+    assert(Array.isArray(middleItem));
 
-    // Check children of the fragment
-    // Note: accessing props.children on a Fragment object
-    const fragmentChildren = middleItem.props.children;
-    assert(Array.isArray(fragmentChildren));
-    const match = fragmentChildren.find((item: any) => React.isValidElement(item) && item.type === 'mark');
+    // Check children of the array
+    const match = middleItem.find((item: any) => React.isValidElement(item) && item.type === 'mark');
     assert(match);
     assert.strictEqual(match.props.children, "World");
+  });
+
+  it('returns original array reference if no match in array', () => {
+    const input = ["Start ", "Hello World", " End"];
+    const regex = createRegex("Foo"); // No match
+    const result = highlightNodes(input, regex);
+
+    assert.strictEqual(result, input);
   });
 
   it('recursively highlights children of React Elements', () => {
@@ -101,18 +107,25 @@ describe('SearchHighlighter', () => {
     const children = (result as React.ReactElement).props.children;
     assert(Array.isArray(children));
 
-    const fragmentWrapper = children[1];
-    assert.strictEqual(fragmentWrapper.type, React.Fragment);
-
-    const strongEl = fragmentWrapper.props.children;
+    // The second child is the <strong> element
+    const strongEl = children[1];
     assert(React.isValidElement(strongEl));
     assert.strictEqual(strongEl.type, 'strong');
 
+    // Inside strong, we have "Bold World" -> split -> ["Bold ", <mark>World</mark>]
     const strongChildren = strongEl.props.children;
     assert(Array.isArray(strongChildren));
     const match = strongChildren.find((item: any) => React.isValidElement(item) && item.type === 'mark');
     assert(match);
     assert.strictEqual(match.props.children, "World");
+  });
+
+  it('returns original element reference if no match in children', () => {
+    const input = React.createElement('div', { className: 'test' }, "Hello World");
+    const regex = createRegex("Foo");
+    const result = highlightNodes(input, regex);
+
+    assert.strictEqual(result, input);
   });
 
   it('preserves component props', () => {

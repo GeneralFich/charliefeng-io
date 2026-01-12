@@ -48,15 +48,35 @@ export const highlightNodes = (nodes: React.ReactNode, regex: RegExp | null): Re
 
   // Case 2: Array of Nodes (Fragment contents)
   if (Array.isArray(nodes)) {
-    return nodes.map((node, i) => <React.Fragment key={i}>{highlightNodes(node, regex)}</React.Fragment>);
+    const newNodes = nodes.map(node => highlightNodes(node, regex));
+
+    // Optimization: Check for referential equality.
+    // If no children changed, return the original array to avoid re-renders.
+    if (newNodes.every((n, i) => n === nodes[i])) {
+      return nodes;
+    }
+
+    // Return the new array directly.
+    // Previous implementation wrapped each item in a Fragment, which was unnecessary overhead.
+    // React handles arrays of nodes natively.
+    return newNodes;
   }
 
   // Case 3: React Element (div, span, p, custom component)
   if (React.isValidElement(nodes)) {
+    const originalChildren = (nodes.props as any).children;
+    const newChildren = highlightNodes(originalChildren, regex);
+
+    // Optimization: If children didn't change (referential equality),
+    // return the original node to prevent unnecessary cloning and re-rendering.
+    if (newChildren === originalChildren) {
+      return nodes;
+    }
+
     // Clone the element to preserve its type and props (className, style, etc.)
     // but replace its `children` with the highlighted version.
     return React.cloneElement(nodes as React.ReactElement<any>, {
-      children: highlightNodes((nodes.props as any).children, regex)
+      children: newChildren
     });
   }
 
