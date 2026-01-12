@@ -37,30 +37,32 @@ export const Essays: React.FC<EssaysProps> = ({ initialSlug, isInsideSplitView }
     return filterAndSortEssays(BLOG_POSTS, debouncedSearchQuery, sortBy);
   }, [debouncedSearchQuery, sortBy]);
 
-  const handleSelectPost = useCallback((post: BlogPost) => {
-    setSelectedPost(post);
-    // Update URL silently
+  // Helper to update URL silently without triggering a reload
+  const updateUrl = useCallback((slug?: string) => {
     const url = new URL(window.location.href);
-    url.searchParams.set('essay', post.slug);
+    if (slug) {
+      url.searchParams.set('essay', slug);
+    } else {
+      url.searchParams.delete('essay');
+    }
     window.history.pushState({}, '', url.toString());
   }, []);
 
+  const handleSelectPost = useCallback((post: BlogPost) => {
+    setSelectedPost(post);
+    updateUrl(post.slug);
+  }, [updateUrl]);
+
   const handleBack = useCallback(() => {
     setSelectedPost(null);
-    // Clear URL param when going back
-    const url = new URL(window.location.href);
-    url.searchParams.delete('essay');
-    window.history.pushState({}, '', url.toString());
-  }, []);
+    updateUrl(undefined);
+  }, [updateUrl]);
 
   const handleNavigate = useCallback((post: BlogPost) => {
     setSelectedPost(post);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Update URL silently
-    const url = new URL(window.location.href);
-    url.searchParams.set('essay', post.slug);
-    window.history.pushState({}, '', url.toString());
-  }, []);
+    updateUrl(post.slug);
+  }, [updateUrl]);
 
   if (selectedPost) {
     return (
