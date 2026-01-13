@@ -119,4 +119,36 @@ describe('Gemini Service', () => {
     // API should still be called (RAG failure shouldn't block)
     assert.strictEqual(generateContentMock.mock.callCount(), 1);
   });
+
+  it('should pass abortSignal to API', async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    await sendMessageToGemini([], "test", signal);
+
+    const callArgs = generateContentMock.mock.calls[0].arguments;
+    // callArgs[0] is the options object passed to generateContent
+    assert.strictEqual(callArgs[0].config.abortSignal, signal);
+  });
+
+  it('should propagate AbortError when aborted', async () => {
+    const controller = new AbortController();
+    controller.abort(); // Abort immediately
+
+    // Configure mock to throw AbortError
+    generateContentMock.mock.mockImplementationOnce(async () => {
+        throw new DOMException('This operation was aborted', 'AbortError');
+    });
+
+    try {
+        await sendMessageToGemini([], "test", controller.signal);
+        assert.fail("Should have thrown AbortError");
+    } catch (err: any) {
+        // Ensure we caught the expected error and not an assertion error
+        if (err instanceof assert.AssertionError) {
+            throw err;
+        }
+        assert.strictEqual(err.name, 'AbortError');
+    }
+  });
 });
