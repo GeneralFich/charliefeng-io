@@ -7,6 +7,28 @@ import { Heading } from './Heading';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 
+/**
+ * @fileoverview Markdown Component Overrides
+ *
+ * "What": This object defines how `react-markdown` renders specific HTML elements.
+ * It acts as the "Theme Layer" for the blog essays, controlling typography, syntax highlighting,
+ * and interactivity.
+ *
+ * "Why":
+ * 1. **Search Highlighting**: We wrap text elements (p, li, blockquote) in `SearchHighlighter`
+ *    to enable "Ctrl+F" functionality within the React tree.
+ * 2. **Security**: We intercept `<a>` tags to sanitize links (`isSafeLink`) and prevent
+ *    open redirects or XSS.
+ * 3. **Interactive Components ("Magic Code Blocks")**:
+ *    Standard Markdown is static. To embed interactive React components (like Charts or Summaries)
+ *    inside a standard `.md` file, we use a custom pattern:
+ *    - The Markdown author writes a code block with language `infographic`.
+ *    - The `code` component below detects this language.
+ *    - Instead of rendering a code snippet, it mounts the corresponding React component
+ *      (e.g., `WhitepaperCharts`).
+ *
+ * This allows us to keep the "Single Source of Truth" (Markdown files) while having rich UI features.
+ */
 export const ESSAY_MARKDOWN_COMPONENTS: Components = {
   // Custom Anchor to handle footnotes and external links
   a: ({ node, href, children, ...props }: any) => {
@@ -56,6 +78,17 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
       <SearchHighlighter>{children}</SearchHighlighter>
     </blockquote>
   ),
+  /**
+   * Custom Pre Handling
+   *
+   * "Why": In Markdown, a code block is rendered as `<pre><code>...</code></pre>`.
+   * If we want to replace the code block with a Chart, we need to completely replace the `<pre>`
+   * wrapper to avoid having a chart inside a preformatted text box.
+   *
+   * Logic: We check if the inner `<code>` element has the `language-infographic` class.
+   * If so, we unwrap it (render `children` directly) so the `code` component below can
+   * handle the full rendering of the interactive component.
+   */
   pre: ({ node, children, ...props }: any) => {
     // Check for infographic in children
     const codeChild = node.children && node.children.length > 0 ? node.children[0] : null;
@@ -69,6 +102,18 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
 
     return <CodeBlock node={node} {...props}>{children}</CodeBlock>;
   },
+  /**
+   * Custom Code Handling (The "Magic" Switch)
+   *
+   * "How": This component inspects the `className` prop (e.g., `language-js`, `language-infographic`).
+   *
+   * - If it's `language-infographic`: It reads the text content (the "code") as a key.
+   *   - "whitepaper-summary" -> Renders <WhitepaperSummary />
+   *   - "whitepaper-charts" -> Renders <WhitepaperCharts />
+   *   - Others -> Renders an <iframe> for legacy infographics.
+   *
+   * - If it's standard code (e.g., `language-ts`): It renders a styled <code> block.
+   */
   code: ({ node, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const isInfographic = match && match[1] === 'infographic';
