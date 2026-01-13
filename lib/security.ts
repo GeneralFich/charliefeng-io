@@ -51,8 +51,14 @@ export function checkRateLimit(
 
 import { Message } from '../types';
 
-export const MAX_NEW_MESSAGE_LENGTH = 10000;
-export const MAX_TOTAL_HISTORY_LENGTH = 100000;
+// Security: Enforce strict limits to align with UI and prevent "Denial of Wallet".
+// Reduced from 10000 to 2000 to match the UI's validation logic, ensuring
+// the service layer acts as the Single Source of Truth for security policy.
+export const MAX_NEW_MESSAGE_LENGTH = 2000;
+
+// Security: Reduced from 100000 to 20000 (~5k tokens) to prevent excessive
+// token usage in a single session while maintaining sufficient context.
+export const MAX_TOTAL_HISTORY_LENGTH = 20000;
 
 /**
  * Validates the chat input to prevent Denial of Service (DoS) and abuse.
