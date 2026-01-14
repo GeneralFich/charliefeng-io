@@ -7,6 +7,29 @@ import { Heading } from './Heading';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 
+/**
+ * @fileoverview Markdown Component Registry & Custom Renderers
+ *
+ * "Why": This file acts as the bridge between raw Markdown text (from `content/posts/*.md`)
+ * and the React UI. It tells `react-markdown` how to render specific HTML elements.
+ *
+ * Key Feature: "The Component Hijack Pattern"
+ * To render complex, interactive React components (like Charts or Dashboards) inside a static Markdown file,
+ * we use a convention where a standard code block with a specific language tag is intercepted and replaced
+ * with a React component.
+ *
+ * Example in Markdown:
+ * ```infographic
+ * whitepaper-charts
+ * ```
+ *
+ * How it works:
+ * 1. `react-markdown` parses the block as a `<pre>` containing a `<code>` element.
+ * 2. Our custom `pre` renderer checks if the inner `code` has the class `language-infographic`.
+ * 3. If yes, it "unwraps" the content (removes the `<pre>` tag) to avoid invalid HTML nesting.
+ * 4. Our custom `code` renderer sees `language-infographic` and reads the text content ("whitepaper-charts").
+ * 5. It switches on that text ID to render the corresponding React component (`<WhitepaperCharts />`).
+ */
 export const ESSAY_MARKDOWN_COMPONENTS: Components = {
   // Custom Anchor to handle footnotes and external links
   a: ({ node, href, children, ...props }: any) => {
@@ -57,24 +80,38 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     </blockquote>
   ),
   pre: ({ node, children, ...props }: any) => {
-    // Check for infographic in children
+    // "Unwrap Pattern":
+    // Standard Markdown renders code blocks as <pre><code>...</code></pre>.
+    // If we want to replace the code block with a div-based React component (like a Chart),
+    // we must NOT wrap it in a <pre>, as <div> inside <pre> is valid but <pre> adds unwanted styling
+    // (whitespace preservation, fonts) that breaks the custom component's layout.
+
+    // 1. Peek at the children to see if it's a code block with our magic tag.
     const codeChild = node.children && node.children.length > 0 ? node.children[0] : null;
     const className = codeChild && codeChild.properties ? (codeChild.properties.className || []) : [];
     const classList = Array.isArray(className) ? className : [className];
     const isInfographic = classList.some((c: string) => c.includes('language-infographic'));
 
+    // 2. If it's a hijacked component, return the children directly (bypassing <pre>).
+    // The `code` component below will handle the actual rendering.
     if (isInfographic) {
       return <>{children}</>;
     }
 
+    // 3. Otherwise, render a standard CodeBlock.
     return <CodeBlock node={node} {...props}>{children}</CodeBlock>;
   },
   code: ({ node, className, children, ...props }: any) => {
+    // Extract the language tag (e.g., "language-infographic" -> "infographic")
     const match = /language-(\w+)/.exec(className || '');
     const isInfographic = match && match[1] === 'infographic';
 
     if (isInfographic) {
+      // The content of the code block serves as the ID for the component we want to render.
+      // e.g. "whitepaper-charts"
       const type = String(children).replace(/\n$/, '').trim();
+
+      // --- Component Switchboard ---
 
       // Handle Whitepaper Summary
       if (type === 'whitepaper-summary') {
@@ -86,7 +123,7 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
         return <WhitepaperCharts />;
       }
 
-      // Standard Iframe Infographics
+      // Standard Iframe Infographics (Legacy/External)
       const src = `/infographics/thermodynamic-wall/${type}.html`;
 
       // Define heights based on type
@@ -115,6 +152,7 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
       );
     }
 
+    // Default: Render a standard inline code element
     return (
       <code className={className} {...props}>
         {children}
