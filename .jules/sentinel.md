@@ -14,3 +14,8 @@
 **Vulnerability:** The `ContactForm` relied implicitly on HTML5 browser validation (e.g., `type="email"`). While convenient, this meant the custom React `onSubmit` logic (and its associated error handling/logging) was effectively unreachable for simple validation failures, and relied entirely on browser UI implementation which varies.
 **Learning:** Relying solely on `type="email"` creates a "dead code" path in React handlers if `noValidate` isn't used. To truly control the validation UX and ensure custom security checks run, one must disable native validation and implement explicit checks in the handler.
 **Prevention:** When implementing custom validation logic in React forms, explicitly add `noValidate` to the `<form>` element and replicate necessary checks (required, format) in JavaScript to ensure the handler is the single source of truth for validation.
+
+## 2025-02-24 - Client-Side Security Dependencies
+**Vulnerability:** The application relies on the Tailwind Play CDN for styling, which forces the Content Security Policy (CSP) to allow 'unsafe-eval' and 'unsafe-inline' for scripts and styles. This significantly weakens protection against XSS. Additionally, the Gemini API key is exposed in the client-side bundle via `vite.config.ts`, which is an inherent risk of the current serverless architecture.
+**Learning:** "Dev" tools like Play CDN often introduce production security risks. Convenience (skipping a build step) comes at the cost of defense-in-depth.
+**Prevention:** For production, always use a build step (PostCSS/Tailwind CLI) to generate static CSS, allowing for a stricter CSP (no 'unsafe-eval'). For client-side AI apps, restrict API keys by HTTP Referrer in the provider's console as a last line of defense.
