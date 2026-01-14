@@ -40,6 +40,13 @@ export const BackToTop: React.FC = () => {
       top: 0,
       behavior: 'smooth',
     });
+
+    // Move focus to main content to prevent focus loss when button disappears
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      // Use preventScroll: true because we are already handling the scroll visually
+      mainContent.focus({ preventScroll: true });
+    }
   };
 
   return (
