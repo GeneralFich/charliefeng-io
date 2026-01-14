@@ -124,4 +124,18 @@ describe('SearchHighlighter', () => {
     assert.strictEqual(result.props.className, 'test-class');
     assert.strictEqual(result.props['data-id'], 123);
   });
+
+  it('returns original array reference if no match in array', () => {
+    const input = ["Start", "Middle", "End"];
+    const regex = createRegex("XYZ"); // No match
+    const result = highlightNodes(input, regex);
+    assert.strictEqual(result, input);
+  });
+
+  it('returns original element reference if no match in children', () => {
+    const input = React.createElement('div', {}, ["Start", "Middle"]);
+    const regex = createRegex("XYZ"); // No match
+    const result = highlightNodes(input, regex);
+    assert.strictEqual(result, input);
+  });
 });
