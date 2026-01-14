@@ -1,69 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { extractTextFromMarkdown, slugify } from '../lib/utils';
+import { parseTableOfContents } from '../lib/utils';
 
 /**
  * @fileoverview Unit Tests for Table of Contents Parsing Logic
  *
- * NOTE ON TESTING STRATEGY:
- * The parsing logic below (`parseToc`) is a REPLICA of the internal logic found in
- * `components/TableOfContents.tsx`.
- *
- * "Why": The component logic is not exported (it's inside `useMemo`), making it inaccessible
- * to unit tests without refactoring the component to export it. To ensure the regex and
- * filtering logic is correct without making the component API messy, we test this replica.
- *
- * ⚠️ MAINTENANCE WARNING:
- * If you modify the parsing logic in `components/TableOfContents.tsx`, you MUST update
- * the `parseToc` function in this file to match. Otherwise, tests will pass while the
- * component fails (False Positive).
+ * NOTE: The parsing logic is now centralized in `lib/utils.ts` and used by
+ * `components/TableOfContents.tsx`. This test file verifies that shared logic.
  */
-
-function parseToc(markdown: string) {
-    const items: any[] = [];
-    const lines = markdown.split('\n');
-    const headerRegex = /^\s*(#{1,3})\s+(.+)$/;
-    let inFrontmatter = false;
-    let inCodeBlock = false;
-    let lineIndex = 0;
-
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-
-      if (lineIndex === 0 && trimmedLine === '---') {
-        inFrontmatter = true;
-        lineIndex++;
-        continue;
-      }
-      if (inFrontmatter) {
-        if (trimmedLine === '---') {
-            inFrontmatter = false;
-        }
-        lineIndex++;
-        continue;
-      }
-
-      if (trimmedLine.startsWith('```')) {
-        inCodeBlock = !inCodeBlock;
-        lineIndex++;
-        continue;
-      }
-      if (inCodeBlock) {
-        lineIndex++;
-        continue;
-      }
-
-      const match = line.match(headerRegex);
-      if (match) {
-        const rawText = match[2];
-        const cleanText = extractTextFromMarkdown(rawText);
-        // Only valid headers
-        if (cleanText) items.push(cleanText);
-      }
-      lineIndex++;
-    }
-    return items;
-}
 
 test('TOC Parsing', async (t) => {
   await t.test('ignores headers in code blocks', () => {
@@ -80,7 +24,8 @@ def foo():
 
 ## Real Header
 `;
-    const headers = parseToc(markdown);
+    // Map to text to match previous test expectations
+    const headers = parseTableOfContents(markdown).map(item => item.text);
     assert.deepStrictEqual(headers, ['Title', 'Real Header']);
   });
 
@@ -89,7 +34,28 @@ def foo():
 title: # Fake Header
 ---
 # Real Header`;
-    const headers = parseToc(markdown);
+    const headers = parseTableOfContents(markdown).map(item => item.text);
     assert.deepStrictEqual(headers, ['Real Header']);
+  });
+
+  await t.test('extracts correct structure', () => {
+    const markdown = `
+# H1
+## H2
+### H3
+`;
+    const items = parseTableOfContents(markdown);
+    assert.strictEqual(items.length, 3);
+    assert.strictEqual(items[0].text, 'H1');
+    assert.strictEqual(items[0].level, 1);
+    assert.strictEqual(items[0].id, 'h1');
+
+    assert.strictEqual(items[1].text, 'H2');
+    assert.strictEqual(items[1].level, 2);
+    assert.strictEqual(items[1].id, 'h2');
+
+    assert.strictEqual(items[2].text, 'H3');
+    assert.strictEqual(items[2].level, 3);
+    assert.strictEqual(items[2].id, 'h3');
   });
 });
