@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react';
+import { isValidElement } from 'react';
+
 /**
  * Helper to safely parse JSON from a string, with a fallback strategy for embedded JSON.
  *
@@ -200,15 +203,27 @@ export function extractTextFromMarkdown(markdown: string): string {
 /**
  * Recursively extracts text content from React nodes.
  *
- * @param nodes React nodes.
+ * @param node React nodes.
  * @returns The concatenated text content.
  */
-export function extractTextFromReactNode(nodes: any): string {
-  if (!nodes) return '';
-  if (typeof nodes === 'string') return nodes;
-  if (typeof nodes === 'number') return nodes.toString();
-  if (Array.isArray(nodes)) return nodes.map(extractTextFromReactNode).join('');
-  if (nodes.props && nodes.props.children) return extractTextFromReactNode(nodes.props.children);
+export function extractTextFromReactNode(node: ReactNode): string {
+  if (!node) return '';
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return node.toString();
+  if (Array.isArray(node)) {
+    return node.map(extractTextFromReactNode).join('');
+  }
+
+  // Handle React Elements (and mock objects used in tests)
+  // We check for `props` to support both real React Elements and the plain objects used in unit tests.
+  if (typeof node === 'object' && 'props' in node) {
+    // Cast to access children, as we've verified `props` exists
+    const element = node as { props: { children?: ReactNode } };
+    if (element.props && element.props.children) {
+      return extractTextFromReactNode(element.props.children);
+    }
+  }
+
   return '';
 }
 

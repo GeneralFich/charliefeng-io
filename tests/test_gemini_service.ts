@@ -70,7 +70,7 @@ describe('Gemini Service', () => {
   });
 
   it('should send a message and return response', async () => {
-    const history = [{ role: 'user', text: 'Hello' }];
+    const history: any[] = [{ role: 'user', text: 'Hello' }];
     const newMessage = 'How are you?';
 
     const response = await sendMessageToGemini(history, newMessage);
