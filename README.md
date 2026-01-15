@@ -92,7 +92,26 @@ Open your browser and navigate to `http://localhost:3000` (or the port shown in 
 - **`pnpm dev`**: Starts the development server.
 - **`pnpm build`**: Builds the production-ready bundle.
 - **`npx tsx scripts/ingest_blog.ts`**: Runs the RAG ingestion pipeline to update the blog index (`lib/blog_data.json`). Run this after adding new essays.
-- **`npx playwright test`**: Runs the frontend verification suite.
+
+## Testing
+
+The project uses two types of tests:
+
+### 1. Unit Tests (Backend/Logic)
+Unit tests for the backend logic (RAG, Gemini Service, Utilities) are located in the `tests/` directory.
+
+To run them, use `tsx` with the experimental test module mocks flag (required for mocking the Gemini API):
+
+```bash
+npx tsx --test --experimental-test-module-mocks tests/*.ts
+```
+
+### 2. Verification Tests (Frontend)
+End-to-end verification tests using Playwright are located in the `verification/` directory.
+
+```bash
+npx playwright test
+```
 
 ## Project Structure
 
