@@ -28,6 +28,8 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
     }
   };
 
+  const isCopied = copiedPostSlug === post.slug;
+
   return (
     <div
       onClick={() => onSelectPost(post)}
@@ -61,15 +63,29 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
         </p>
       </div>
 
-      <button
-        onClick={handleShare}
-        onKeyDown={(e) => e.stopPropagation()}
-        className="absolute top-6 right-6 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-        title="Copy link"
-        aria-label="Copy link to clipboard"
-      >
-        {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
-      </button>
+      <div className="absolute top-6 right-6 flex items-center gap-2 pointer-events-none">
+        <span
+          className={`text-xs font-bold text-green-400 transition-all duration-300 ${
+            isCopied ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
+          }`}
+          aria-hidden="true"
+        >
+          Copied!
+        </span>
+        <button
+          onClick={handleShare}
+          onKeyDown={(e) => e.stopPropagation()}
+          className={`p-2 rounded-lg transition-all pointer-events-auto ${
+            isCopied
+              ? 'bg-slate-800 text-green-400 opacity-100'
+              : 'bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 opacity-0 group-hover:opacity-100 focus:opacity-100'
+          }`}
+          title={isCopied ? "Copied!" : "Copy link"}
+          aria-label={isCopied ? "Copied to clipboard" : "Copy link to clipboard"}
+        >
+          {isCopied ? <Check size={16} /> : <Share2 size={16} />}
+        </button>
+      </div>
     </div>
   );
 });
