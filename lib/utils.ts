@@ -289,3 +289,74 @@ export function escapeHtml(unsafe: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+export interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
+/**
+ * Parses markdown text to extract a Table of Contents structure (H1-H3).
+ *
+ * @param markdown The raw markdown string.
+ * @returns An array of TOC items.
+ */
+export function parseTableOfContents(markdown: string): TocItem[] {
+  const items: TocItem[] = [];
+  const lines = markdown.split('\n');
+
+  // Only capture H1-H3 for TOC to avoid clutter
+  const headerRegex = /^\s*(#{1,3})\s+(.+)$/;
+
+  // Flag to skip frontmatter and code blocks
+  // "Why": We must ignore # comments in code blocks and key: value pairs in frontmatter
+  let inFrontmatter = false;
+  let inCodeBlock = false;
+  let lineIndex = 0;
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    // Handle Frontmatter (starts and ends with ---)
+    if (lineIndex === 0 && trimmedLine === '---') {
+      inFrontmatter = true;
+      lineIndex++;
+      continue;
+    }
+    if (inFrontmatter) {
+      if (trimmedLine === '---') {
+        inFrontmatter = false;
+      }
+      lineIndex++;
+      continue;
+    }
+
+    // Handle Code Blocks (toggles with ```)
+    if (trimmedLine.startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+      lineIndex++;
+      continue;
+    }
+    if (inCodeBlock) {
+      lineIndex++;
+      continue;
+    }
+
+    const match = line.match(headerRegex);
+    if (match) {
+      const level = match[1].length;
+      const rawText = match[2];
+      const cleanText = extractTextFromMarkdown(rawText);
+      const id = slugify(cleanText);
+
+      // Skip empty headers
+      if (cleanText) {
+        items.push({ id, text: cleanText, level });
+      }
+    }
+    lineIndex++;
+  }
+
+  return items;
+}

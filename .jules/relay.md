@@ -11,3 +11,9 @@
 ## 2024-05-24 - [Clipboard Permissions in Playwright]
 **Learning:** Testing "Copy to Clipboard" functionality requires explicit browser permissions.
 **Action:** Use `context.grantPermissions(['clipboard-read', 'clipboard-write'])` in the test setup.
+## 2025-02-12 - [Refactoring Brittle Replica Tests]
+**Learning:** Testing a "replica" of internal component logic is a dangerous anti-pattern.  was manually copying regex logic from , creating a risk where tests pass but the component fails (or vice versa) if they drift apart.
+**Action:** Always extract complex logic (like regex parsing) from React components into pure, testable utility functions (). This allows the *actual* code to be unit tested without needing a DOM or component rendering environment.
+## 2025-02-12 - [Refactoring Brittle Replica Tests]
+**Learning:** Testing a "replica" of internal component logic is a dangerous anti-pattern. `tests/test_toc_parsing.ts` was manually copying regex logic from `TableOfContents.tsx`, creating a risk where tests pass but the component fails (or vice versa) if they drift apart.
+**Action:** Always extract complex logic (like regex parsing) from React components into pure, testable utility functions (`lib/utils.ts`). This allows the *actual* code to be unit tested without needing a DOM or component rendering environment.
