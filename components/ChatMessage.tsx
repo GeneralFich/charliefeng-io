@@ -138,7 +138,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
                     {index < parts.length - 1 && (
                         <div className="my-4">
                             <a
-                                href="https://calendly.com/charliefengsq/30min"
+                                href="https://calendar.app.google/oskT32QYxT5n47W49"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg hover:shadow-blue-500/20"
