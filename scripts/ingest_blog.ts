@@ -81,6 +81,7 @@ async function getEmbeddings(text: string): Promise<number[]> {
     }
 }
 
+
 /**
  * Main ingestion routine.
  * Scans `content/posts/`, chunks the markdown body, generates embeddings,

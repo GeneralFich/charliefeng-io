@@ -7,22 +7,37 @@
  *
  * Strategy ("Bracket Balance"):
  * 1. Attempt standard `JSON.parse` first.
- * 2. If that fails, locate the first opening bracket `[`.
- * 3. Walk forward, counting brackets to find the matching closing bracket.
+ * 2. If that fails, locate the first opening bracket `[` or brace `{`.
+ * 3. Walk forward, counting brackets/braces to find the matching closing character.
  * 4. This avoids O(N^2) behavior of trying to parse at every closing bracket.
- *
- * Note: Currently optimized for JSON Arrays (starting with `[`) as that matches our use case.
  *
  * @param text The text containing potential JSON.
  * @returns The parsed object or null if parsing fails.
  */
-function safeJsonParse<T>(text: string): T | null {
+export function safeJsonParse<T>(text: string): T | null {
   try {
     return JSON.parse(text);
   } catch {
-    // Fallback: Locate the start of the JSON array
-    const start = text.indexOf('[');
-    if (start === -1) return null;
+    // Fallback: Locate the start of the JSON structure (array or object)
+    const firstBracket = text.indexOf('[');
+    const firstBrace = text.indexOf('{');
+
+    let start = -1;
+    let openChar = '';
+    let closeChar = '';
+
+    // Determine which starts first
+    if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+      start = firstBracket;
+      openChar = '[';
+      closeChar = ']';
+    } else if (firstBrace !== -1) {
+      start = firstBrace;
+      openChar = '{';
+      closeChar = '}';
+    } else {
+      return null;
+    }
 
     let balance = 0;
     let inString = false;
@@ -48,9 +63,9 @@ function safeJsonParse<T>(text: string): T | null {
 
       // Only count brackets outside of strings
       if (!inString) {
-        if (char === '[') {
+        if (char === openChar) {
           balance++;
-        } else if (char === ']') {
+        } else if (char === closeChar) {
           balance--;
           if (balance === 0) {
             // Found the matching close bracket
@@ -91,7 +106,7 @@ export function parseFollowUpPrompts(text: string): { cleanText: string; prompts
 
   return {
     cleanText,
-    prompts: prompts || []
+    prompts: Array.isArray(prompts) ? prompts : []
   };
 }
 
