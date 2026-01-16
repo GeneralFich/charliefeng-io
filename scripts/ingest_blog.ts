@@ -98,6 +98,14 @@ async function getEmbeddings(text: string): Promise<number[]> {
  * @returns An array of text strings (chunks).
  */
 function chunkText(text: string, maxChars: number = 1000): string[] {
+  // NOTE: This is a simplified, standalone implementation specific to this script.
+  // The robust, canonical implementation is `chunkText` in `lib/utils.ts`, which
+  // handles edge cases (like missing punctuation) better.
+  //
+  // We duplicate it here to keep this script self-contained and avoid potential
+  // module resolution issues when running via `tsx` (e.g. importing from a file
+  // that imports React types).
+
   const chunks: string[] = [];
   let currentChunk = "";
 
