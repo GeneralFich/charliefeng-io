@@ -27,6 +27,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import fm from 'front-matter';
+import { chunkText } from '../lib/utils';
 
 // --- Configuration ---
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -78,42 +79,6 @@ async function getEmbeddings(text: string): Promise<number[]> {
         console.error("Error generating embedding:", e);
         return [];
     }
-}
-
-/**
- * Splits text into manageable chunks while preserving sentence boundaries.
- *
- * Why: Splitting by sentences rather than arbitrary character counts ensures that
- * semantic meaning is preserved, which significantly improves the quality of vector embeddings
- * and the relevance of RAG retrieval. Truncating a sentence in the middle often results in lost context.
- *
- * Strategy:
- * 1. Split text into sentences using regex `/[^.!?]+[.!?]+/g`.
- * 2. Accumulate sentences into a chunk until `maxChars` is reached.
- * 3. Push the chunk and start a new one.
- *
- * @param text - The raw text content to be chunked.
- * @param maxChars - The target maximum length for each chunk (default 1000).
- *                   1000 chars is roughly 200-250 words, a balanced size for the model's context window.
- * @returns An array of text strings (chunks).
- */
-function chunkText(text: string, maxChars: number = 1000): string[] {
-  const chunks: string[] = [];
-  let currentChunk = "";
-
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-
-  for (const sentence of sentences) {
-    if ((currentChunk + sentence).length > maxChars) {
-      chunks.push(currentChunk.trim());
-      currentChunk = "";
-    }
-    currentChunk += sentence + " ";
-  }
-  if (currentChunk.trim().length > 0) {
-    chunks.push(currentChunk.trim());
-  }
-  return chunks;
 }
 
 /**
