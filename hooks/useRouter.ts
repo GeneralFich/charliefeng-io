@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View } from '../types';
+import { parseRoute } from '../lib/route_logic';
 
 /**
  * @fileoverview Custom Router Hook
@@ -62,21 +63,10 @@ export const useRouter = () => {
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
-      const viewParam = params.get('view');
-      const essayParam = params.get('essay');
+      const { view, slug } = parseRoute(params);
 
-      if (viewParam && Object.values(View).includes(viewParam as View)) {
-        setCurrentView(viewParam as View);
-        if (viewParam === View.ESSAYS && essayParam) {
-          setTargetEssaySlug(essayParam);
-        } else {
-          setTargetEssaySlug(null);
-        }
-      } else {
-        // Default to Home if no valid view param
-        setCurrentView(View.HOME);
-        setTargetEssaySlug(null);
-      }
+      setCurrentView(view);
+      setTargetEssaySlug(slug);
     };
 
     // Initial check
