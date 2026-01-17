@@ -147,6 +147,8 @@ export const useChat = () => {
         return;
       }
       console.error("Chat error:", error);
+      const errorMsg: Message = { role: 'model', text: "Error: Failed to connect to the model. Please try again." };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
