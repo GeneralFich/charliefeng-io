@@ -18,70 +18,77 @@ export function safeJsonParse<T>(text: string): T | null {
   try {
     return JSON.parse(text);
   } catch {
-    // Fallback: Locate the start of the JSON structure (array or object)
-    const firstBracket = text.indexOf('[');
-    const firstBrace = text.indexOf('{');
+    const startInfo = findJsonStart(text);
+    if (!startInfo) return null;
 
-    let start = -1;
-    let openChar = '';
-    let closeChar = '';
+    const jsonString = extractBalancedJson(text, startInfo.start, startInfo.openChar, startInfo.closeChar);
+    if (!jsonString) return null;
 
-    // Determine which starts first
-    if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
-      start = firstBracket;
-      openChar = '[';
-      closeChar = ']';
-    } else if (firstBrace !== -1) {
-      start = firstBrace;
-      openChar = '{';
-      closeChar = '}';
-    } else {
+    try {
+      return JSON.parse(jsonString);
+    } catch {
       return null;
     }
+  }
+}
 
-    let balance = 0;
-    let inString = false;
-    let isEscaped = false;
+/**
+ * Finds the starting index and delimiter characters for a potential JSON structure.
+ * Prefers whichever structure (array or object) appears first.
+ */
+function findJsonStart(text: string): { start: number; openChar: string; closeChar: string } | null {
+  const firstBracket = text.indexOf('[');
+  const firstBrace = text.indexOf('{');
 
-    for (let i = start; i < text.length; i++) {
-      const char = text[i];
+  if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+    return { start: firstBracket, openChar: '[', closeChar: ']' };
+  } else if (firstBrace !== -1) {
+    return { start: firstBrace, openChar: '{', closeChar: '}' };
+  }
 
-      if (isEscaped) {
-        isEscaped = false;
-        continue;
-      }
+  return null;
+}
 
-      if (char === '\\') {
-        isEscaped = true;
-        continue;
-      }
+/**
+ * Extracts a balanced JSON substring starting from a given index.
+ * Handles nested structures and ignores brackets inside strings.
+ */
+function extractBalancedJson(text: string, start: number, openChar: string, closeChar: string): string | null {
+  let balance = 0;
+  let inString = false;
+  let isEscaped = false;
 
-      if (char === '"') {
-        inString = !inString;
-        continue;
-      }
+  for (let i = start; i < text.length; i++) {
+    const char = text[i];
 
-      // Only count brackets outside of strings
-      if (!inString) {
-        if (char === openChar) {
-          balance++;
-        } else if (char === closeChar) {
-          balance--;
-          if (balance === 0) {
-            // Found the matching close bracket
-            try {
-              const jsonSubstring = text.substring(start, i + 1);
-              return JSON.parse(jsonSubstring);
-            } catch {
-              // If the structure is balanced but invalid JSON, stop.
-              return null;
-            }
-          }
+    if (isEscaped) {
+      isEscaped = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      isEscaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    // Only count brackets outside of strings
+    if (!inString) {
+      if (char === openChar) {
+        balance++;
+      } else if (char === closeChar) {
+        balance--;
+        if (balance === 0) {
+          return text.substring(start, i + 1);
         }
       }
     }
-    return null;
   }
+  return null;
 }
 
 /**
