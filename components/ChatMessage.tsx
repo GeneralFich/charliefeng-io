@@ -104,6 +104,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     },
   }), [onNavigate]);
 
+  const isError = message.role === 'model' && (message.text.startsWith('Error:') || message.text.startsWith('System:'));
+
   return (
     <div
       className={`group flex items-start gap-3 ${
@@ -112,16 +114,25 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     >
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-          message.role === 'user' ? 'bg-blue-600' : 'bg-slate-700 border border-slate-600'
+          message.role === 'user'
+            ? 'bg-blue-600'
+            : isError
+              ? 'bg-red-900/20 border border-red-500/30'
+              : 'bg-slate-700 border border-slate-600'
         }`}
       >
-        {message.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-blue-400" />}
+        {message.role === 'user'
+          ? <User size={16} />
+          : <Bot size={16} className={isError ? "text-red-400" : "text-blue-400"} />
+        }
       </div>
       <div
         className={`relative group p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
           message.role === 'user'
             ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
-            : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
+            : isError
+              ? 'bg-red-900/10 border border-red-500/30 text-red-200 rounded-tl-sm shadow-xl'
+              : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
         }`}
       >
         {/* Copy Button for Model messages */}
