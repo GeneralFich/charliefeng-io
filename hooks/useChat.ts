@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
-import { checkRateLimit } from '../lib/security';
+import { checkRateLimit, MAX_NEW_MESSAGE_LENGTH } from '../lib/security';
 
 /**
  * Curated list of initial prompts to guide the user towards the persona's core competencies.
@@ -100,8 +100,8 @@ export const useChat = () => {
     if (!text.trim() || isLoadingRef.current) return;
 
     // Security: Input length validation
-    if (text.length > 2000) {
-      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
+    if (text.length > MAX_NEW_MESSAGE_LENGTH) {
+      const errorMsg: Message = { role: 'model', text: `Error: Message exceeds ${MAX_NEW_MESSAGE_LENGTH} character limit.` };
       setMessages(prev => [...prev, errorMsg]);
       return;
     }
