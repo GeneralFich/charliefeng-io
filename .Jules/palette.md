@@ -5,3 +5,7 @@
 ## 2024-10-27 - Silent Failure Patterns
 **Learning:** The chat interface silently swallowed API errors, leaving users confused. `catch` blocks often only logged to console.
 **Action:** Audit all async hooks (`useChat`, etc.) to ensure user-facing feedback is provided on failure.
+
+## 2025-05-27 - Scrollable Code Blocks
+**Learning:** Code blocks (`pre` tags) with `overflow: auto` are inaccessible to keyboard users unless they are focusable.
+**Action:** Always add `tabIndex={0}`, `role="region"`, and an `aria-label` to scrollable code containers to ensure keyboard accessibility.
