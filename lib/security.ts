@@ -51,7 +51,7 @@ export function checkRateLimit(
 
 import { Message } from '../types';
 
-export const MAX_NEW_MESSAGE_LENGTH = 10000;
+export const MAX_NEW_MESSAGE_LENGTH = 2000;
 export const MAX_TOTAL_HISTORY_LENGTH = 100000;
 
 /**
