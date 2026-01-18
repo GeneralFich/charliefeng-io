@@ -86,7 +86,7 @@ export const sendMessageToGemini = async (
     const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
     const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
     console.error("Gemini API Error:", errorMessage);
-    return "Connection to the neural link failed. Please try again.";
+    return "Error: Connection to the neural link failed. Please try again.";
   }
 };
 
