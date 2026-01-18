@@ -127,9 +127,27 @@ export function parseFollowUpPrompts(text: string): { cleanText: string; prompts
 export function calculateReadTime(text: string): number {
   if (!text) return 1;
   const wordsPerMinute = 200;
-  // Split by whitespace and filter out empty strings to get accurate word count
-  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
-  return Math.max(1, Math.ceil(words / wordsPerMinute));
+
+  // Optimization: Count words in a single pass without allocating arrays/strings.
+  // Replaces: text.trim().split(/\s+/).filter(w => w.length > 0).length
+  // This reduces memory pressure (garbage collection) during large text processing.
+  let wordCount = 0;
+  let inWord = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    // Check for common whitespace: Space(32), Tab(9), LF(10), CR(13), FF(12), NBSP(160)
+    const isWhitespace = code === 32 || code === 9 || code === 10 || code === 13 || code === 12 || code === 160;
+
+    if (isWhitespace) {
+      inWord = false;
+    } else if (!inWord) {
+      inWord = true;
+      wordCount++;
+    }
+  }
+
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
 /**
