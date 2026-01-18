@@ -7,6 +7,26 @@ import { Heading } from './Heading';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 
+/**
+ * @fileoverview Custom Markdown Components Mapping
+ *
+ * This module defines how Markdown elements are rendered in the Essay view.
+ * It implements two critical patterns to support rich, interactive content
+ * within standard Markdown files:
+ *
+ * 1. **Component Hijack Pattern**:
+ *    We use specific code block languages (e.g., `infographic`, `whitepaper-charts`)
+ *    as "triggers" to render complex React components instead of raw code.
+ *    This allows authors to embed interactive charts and iframes by simply writing
+ *    a code block in the Markdown source.
+ *
+ * 2. **Unwrap Pattern**:
+ *    Standard Markdown parsers wrap code blocks in `<pre><code>...</code></pre>`.
+ *    When we hijack the `code` element to render a `div` (like a chart),
+ *    this results in invalid HTML (`<pre><div>...</div></pre>`).
+ *    We intercept the `pre` element to "unwrap" these hijacked components,
+ *    rendering them directly without the parent `<pre>`.
+ */
 export const ESSAY_MARKDOWN_COMPONENTS: Components = {
   // Custom Anchor to handle footnotes and external links
   a: ({ node, href, children, ...props }: any) => {
@@ -56,6 +76,13 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
       <SearchHighlighter>{children}</SearchHighlighter>
     </blockquote>
   ),
+  /**
+   * Unwrap Pattern:
+   * Intercepts the `<pre>` tag. If the child `<code>` block is flagged as an
+   * infographic (hijacked component), we return the children directly (Fragment).
+   * This removes the `<pre>` wrapper, preventing invalid HTML (`<pre><div>...`)
+   * and allowing the component to render with full block-level styling.
+   */
   pre: ({ node, children, ...props }: any) => {
     // Check for infographic in children
     const codeChild = node.children && node.children.length > 0 ? node.children[0] : null;
@@ -69,6 +96,17 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
 
     return <CodeBlock node={node} {...props}>{children}</CodeBlock>;
   },
+  /**
+   * Component Hijack Pattern:
+   * Intercepts `<code>` blocks with specific language tags (e.g. `language-infographic`).
+   * Instead of rendering code, it renders specific interactive components or iframes.
+   *
+   * @example
+   * ```infographic
+   * whitepaper-charts
+   * ```
+   * Renders the <WhitepaperCharts /> component.
+   */
   code: ({ node, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const isInfographic = match && match[1] === 'infographic';
