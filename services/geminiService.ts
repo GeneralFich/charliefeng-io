@@ -3,7 +3,7 @@ import { FULL_CONTEXT } from "../lib/knowledge";
 import { Message } from "../types";
 import { getRelevantContext, RelevantChunk } from "../lib/rag";
 import { redactSensitiveInfo } from "../lib/utils";
-import { validateChatInput } from "../lib/security";
+import { validateChatInput, sanitizeInput } from "../lib/security";
 
 /**
  * @fileoverview Gemini AI Service
@@ -44,8 +44,11 @@ export const sendMessageToGemini = async (
   newMessage: string,
   abortSignal?: AbortSignal
 ): Promise<string> => {
+  // Security: Sanitize input to remove control characters
+  const sanitizedMessage = sanitizeInput(newMessage);
+
   // Security: Input validation to prevent large payloads (DoS/Cost)
-  const validation = validateChatInput(history, newMessage);
+  const validation = validateChatInput(history, sanitizedMessage);
   if (!validation.valid) {
     return validation.error || "Invalid input.";
   }
@@ -55,11 +58,11 @@ export const sendMessageToGemini = async (
   }
 
   try {
-    // RAG: Retrieve relevant context from blog
-    const additionalContext = await retrieveAugmentedContext(newMessage, apiKey);
+    // RAG: Retrieve relevant context from blog using sanitized query
+    const additionalContext = await retrieveAugmentedContext(sanitizedMessage, apiKey);
 
     // Prepare the conversation for the API
-    const contents = buildGeminiMessages(history, newMessage, additionalContext);
+    const contents = buildGeminiMessages(history, sanitizedMessage, additionalContext);
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

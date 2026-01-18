@@ -55,6 +55,21 @@ export const MAX_NEW_MESSAGE_LENGTH = 10000;
 export const MAX_TOTAL_HISTORY_LENGTH = 100000;
 
 /**
+ * Sanitizes input text to remove potentially harmful control characters.
+ *
+ * Why: To prevent log flooding, invisible character attacks, or confusion in downstream processing.
+ *
+ * @param input The raw input string.
+ * @returns The sanitized string.
+ */
+export function sanitizeInput(input: string): string {
+    if (!input) return "";
+    // Remove control characters (ASCII 0-31) except for newline (10), carriage return (13), and tab (9)
+    // Also remove Delete (127)
+    return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
+/**
  * Validates the chat input to prevent Denial of Service (DoS) and abuse.
  *
  * Why: Prevents processing of excessively large payloads that could crash the client
