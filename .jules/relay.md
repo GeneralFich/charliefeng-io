@@ -15,3 +15,7 @@
 ## 2025-02-13 - [Error State Verification]
 **Learning:** Playwright's `page.route` is effective for testing error UI by aborting network requests. However, verifying text alone is insufficient; UI state often depends on specific data patterns (e.g., "Error:" prefix).
 **Action:** When testing error states, verify both the message text AND the visual style (class name) to catch silent UI regressions where errors look like normal messages.
+
+## 2025-02-14 - [List Filtering Verification]
+**Learning:** When testing search filtering in a grid layout where items act as buttons, generic locators like `getByRole('button')` can be too broad (capturing clear buttons, share buttons, etc.).
+**Action:** Use specific locators like `h3` or `article` titles to count visible items, or combine `getByRole` with accessible names if available.
