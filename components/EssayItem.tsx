@@ -65,8 +65,8 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
         onClick={handleShare}
         onKeyDown={(e) => e.stopPropagation()}
         className="absolute top-6 right-6 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-        title="Copy link"
-        aria-label="Copy link to clipboard"
+        title={copiedPostSlug === post.slug ? "Copied!" : "Copy link"}
+        aria-label={copiedPostSlug === post.slug ? "Link copied to clipboard" : "Copy link to clipboard"}
       >
         {copiedPostSlug === post.slug ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
       </button>
