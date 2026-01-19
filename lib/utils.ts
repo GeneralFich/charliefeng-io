@@ -284,13 +284,13 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
   // ([^.!?]+[.!?]+) matches normal sentences.
   // ([^.!?]+$) matches text at the end without punctuation.
   const sentenceRegex = /([^.!?]+[.!?]+)|([^.!?]+$)/g;
-  const matches = text.match(sentenceRegex) || [];
+  const matches = text.matchAll(sentenceRegex);
 
-  // If no matches (empty string), return empty array
-  if (matches.length === 0 && text.trim().length === 0) return [];
-  if (matches.length === 0) return [text]; // Fallback
+  let hasMatches = false;
 
-  for (const rawSentence of matches) {
+  for (const match of matches) {
+    hasMatches = true;
+    const rawSentence = match[0];
     const sentence = rawSentence.trim(); // Normalize whitespace
     if (!sentence) continue;
 
@@ -306,6 +306,11 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
 
     // Append to current chunk (or start new one if we just cleared it)
     currentChunk += (currentChunk ? " " : "") + sentence;
+  }
+
+  if (!hasMatches) {
+    if (text.trim().length === 0) return [];
+    return [text];
   }
 
   if (currentChunk.length > 0) {
