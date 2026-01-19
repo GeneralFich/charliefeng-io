@@ -26,3 +26,8 @@
 **Prevention:**
 1. For API Keys: Acknowledge the risk and mitigate via backend proxies (Vercel Functions) or strict vendor-side quotas/restrictions (referer checks) if proxies aren't feasible.
 2. For Prompts: Explicitly include a "SECURITY OVERRIDE" section in system instructions forbidding the model from revealing its prompt or breaking character, acting as a behavioral firewall.
+
+## 2025-03-03 - Client-Side Rate Limit Bypass
+**Vulnerability:** The application implemented rate limiting using in-memory state (`useRef`). A malicious or impatient user could bypass this simply by reloading the page, clearing the state and resetting the counter.
+**Learning:** Security mechanisms in purely client-side applications (SPA) are inherently trustless. While we cannot fully prevent determined attacks without a backend, we can significantly raise the bar against casual abuse by persisting state in `localStorage`.
+**Prevention:** Persist rate limit timestamps and other security-related counters in `localStorage` or `sessionStorage` to maintain state across page reloads. This transforms the mechanism from "per session" to "per device/browser profile".

@@ -28,6 +28,7 @@ const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work
 // abuse or accidental "enter key" spamming that could drain API quotas.
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS = 10;
+const STORAGE_KEY = 'chat_rate_limit_timestamps';
 
 /**
  * Custom hook to manage the chat interface state and interaction with the Gemini AI.
@@ -58,6 +59,23 @@ export const useChat = () => {
   const isLoadingRef = useRef(isLoading);
   const requestTimestampsRef = useRef<number[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Initialize rate limit timestamps from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const timestamps = JSON.parse(stored);
+        if (Array.isArray(timestamps)) {
+          // Only keep valid timestamps within the window to prune old data
+          const now = Date.now();
+          requestTimestampsRef.current = timestamps.filter((t: number) => now - t < RATE_LIMIT_WINDOW);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load rate limit timestamps:', e);
+    }
+  }, []);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -109,6 +127,13 @@ export const useChat = () => {
     // Security: Rate limiting
     const { allowed, newTimestamps } = checkRateLimit(requestTimestampsRef.current, RATE_LIMIT_WINDOW, MAX_REQUESTS);
     requestTimestampsRef.current = newTimestamps;
+
+    // Persist to localStorage
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newTimestamps));
+    } catch (e) {
+      console.warn('Failed to save rate limit timestamps:', e);
+    }
 
     if (!allowed) {
       const errorMsg: Message = { role: 'model', text: "System: Rate limit exceeded. Please wait a moment before sending more messages." };
