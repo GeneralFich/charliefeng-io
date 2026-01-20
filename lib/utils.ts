@@ -280,17 +280,17 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
   // 1. Split by delimiters but keep them. `split(/([.!?]+)/)`
   // 2. Re-assemble.
 
-  // Implementation using match with a comprehensive regex to capture "Sentence + Punctuation" OR "Remaining Text"
+  // Implementation using matchAll for lazy iteration.
   // ([^.!?]+[.!?]+) matches normal sentences.
   // ([^.!?]+$) matches text at the end without punctuation.
   const sentenceRegex = /([^.!?]+[.!?]+)|([^.!?]+$)/g;
-  const matches = text.match(sentenceRegex) || [];
+  const matches = text.matchAll(sentenceRegex);
 
-  // If no matches (empty string), return empty array
-  if (matches.length === 0 && text.trim().length === 0) return [];
-  if (matches.length === 0) return [text]; // Fallback
+  let hasMatch = false;
 
-  for (const rawSentence of matches) {
+  for (const match of matches) {
+    hasMatch = true;
+    const rawSentence = match[0];
     const sentence = rawSentence.trim(); // Normalize whitespace
     if (!sentence) continue;
 
@@ -306,6 +306,12 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
 
     // Append to current chunk (or start new one if we just cleared it)
     currentChunk += (currentChunk ? " " : "") + sentence;
+  }
+
+  // Fallback if no matches found
+  if (!hasMatch) {
+    if (text.trim().length === 0) return [];
+    return [text];
   }
 
   if (currentChunk.length > 0) {
