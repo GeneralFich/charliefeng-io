@@ -9,3 +9,7 @@
 ## 2025-05-27 - Scrollable Code Blocks
 **Learning:** Code blocks (`pre` tags) with `overflow: auto` are inaccessible to keyboard users unless they are focusable.
 **Action:** Always add `tabIndex={0}`, `role="region"`, and an `aria-label` to scrollable code containers to ensure keyboard accessibility.
+
+## 2025-06-15 - Nested Interactive Controls
+**Learning:** Wrapping complex cards in `role="button"` creates nested interactive control violations when the card contains other buttons (like 'Share'), confusing screen readers.
+**Action:** Instead of making the container a button, use the "redundant click handler" pattern: keep the `onClick` on the container for mouse users, but rely on a semantic `<button>` inside the title for keyboard/SR users.
