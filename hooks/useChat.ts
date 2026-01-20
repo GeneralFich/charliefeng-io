@@ -107,8 +107,33 @@ export const useChat = () => {
     }
 
     // Security: Rate limiting
-    const { allowed, newTimestamps } = checkRateLimit(requestTimestampsRef.current, RATE_LIMIT_WINDOW, MAX_REQUESTS);
+    // Load latest timestamps from storage to handle multi-tab synchronization
+    let currentTimestamps = requestTimestampsRef.current;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('chat_rate_limit_timestamps');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            currentTimestamps = parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load rate limit timestamps:', e);
+      }
+    }
+
+    const { allowed, newTimestamps } = checkRateLimit(currentTimestamps, RATE_LIMIT_WINDOW, MAX_REQUESTS);
     requestTimestampsRef.current = newTimestamps;
+
+    // Persist to local storage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('chat_rate_limit_timestamps', JSON.stringify(newTimestamps));
+      } catch (e) {
+        console.warn('Failed to save rate limit timestamps:', e);
+      }
+    }
 
     if (!allowed) {
       const errorMsg: Message = { role: 'model', text: "System: Rate limit exceeded. Please wait a moment before sending more messages." };
