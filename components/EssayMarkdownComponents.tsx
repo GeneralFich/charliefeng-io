@@ -8,6 +8,25 @@ import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 
 /**
+ * Configuration for "Infographic" code blocks.
+ * Maps the language identifier (e.g. `whitepaper-summary`) to either a React component
+ * or a specific iframe height configuration.
+ */
+interface InfographicConfig {
+  component?: React.ComponentType;
+  iframeHeight?: string;
+}
+
+const INFOGRAPHIC_CONFIG: Record<string, InfographicConfig> = {
+  'whitepaper-summary': { component: WhitepaperSummary },
+  'whitepaper-charts': { component: WhitepaperCharts },
+  'collision': { iframeHeight: "h-[600px] md:h-[300px]" },
+  'leverage': { iframeHeight: "h-[450px]" },
+  'strategy': { iframeHeight: "h-[400px]" },
+  'mechanics': { iframeHeight: "h-[400px]" },
+};
+
+/**
  * @fileoverview Custom Markdown Components Mapping
  *
  * This module defines how Markdown elements are rendered in the Essay view.
@@ -113,32 +132,16 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
 
     if (isInfographic) {
       const type = String(children).replace(/\n$/, '').trim();
+      const config = INFOGRAPHIC_CONFIG[type];
 
-      // Handle Whitepaper Summary
-      if (type === 'whitepaper-summary') {
-        return <WhitepaperSummary />;
-      }
-
-      // Handle Whitepaper Charts
-      if (type === 'whitepaper-charts') {
-        return <WhitepaperCharts />;
+      if (config?.component) {
+        const Component = config.component;
+        return <Component />;
       }
 
       // Standard Iframe Infographics
       const src = `/infographics/thermodynamic-wall/${type}.html`;
-
-      // Define heights based on type
-      let heightClass = "h-[400px]"; // Default
-
-      if (type === 'collision') {
-        heightClass = "h-[600px] md:h-[300px]";
-      } else if (type === 'leverage') {
-        heightClass = "h-[450px]";
-      } else if (type === 'strategy') {
-        heightClass = "h-[400px]";
-      } else if (type === 'mechanics') {
-        heightClass = "h-[400px]";
-      }
+      const heightClass = config?.iframeHeight || "h-[400px]";
 
       return (
         <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
