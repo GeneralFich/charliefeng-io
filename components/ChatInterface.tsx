@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Loader2, RotateCcw, Download } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Loader2, RotateCcw, Download, Trash2 } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -24,6 +24,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<ChatInputHandle>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -38,13 +39,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
     scrollToBottom();
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    if (confirmClear) {
+      const timer = setTimeout(() => setConfirmClear(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [confirmClear]);
+
   const handleDownloadChat = () => {
     downloadChatHistory(messages);
   };
 
   const handleClearChat = () => {
-    clearChat();
-    inputRef.current?.clear();
+    if (confirmClear) {
+      clearChat();
+      inputRef.current?.clear();
+      setConfirmClear(false);
+    } else {
+      setConfirmClear(true);
+    }
   };
 
   return (
@@ -114,11 +127,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
 
               <button
                 onClick={handleClearChat}
-                aria-label="Clear chat"
-                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
-                title="Clear chat history"
+                aria-label={confirmClear ? "Confirm clear chat" : "Clear chat"}
+                className={`p-3.5 rounded-xl border transition-all shrink-0 group ${
+                  confirmClear
+                    ? 'bg-red-900/20 border-red-500 text-red-400'
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10'
+                }`}
+                title={confirmClear ? "Click again to confirm" : "Clear chat history"}
               >
-                <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                {confirmClear ? (
+                  <Trash2 size={20} className="animate-pulse" />
+                ) : (
+                  <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                )}
               </button>
             </>
           )}

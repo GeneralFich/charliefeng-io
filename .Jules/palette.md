@@ -9,3 +9,7 @@
 ## 2025-05-27 - Scrollable Code Blocks
 **Learning:** Code blocks (`pre` tags) with `overflow: auto` are inaccessible to keyboard users unless they are focusable.
 **Action:** Always add `tabIndex={0}`, `role="region"`, and an `aria-label` to scrollable code containers to ensure keyboard accessibility.
+
+## 2025-06-05 - Destructive Action Confirmation
+**Learning:** Immediate execution of destructive actions (like clearing chat) creates anxiety and potential data loss for users.
+**Action:** Implement "double-tap to confirm" for icon-only destructive actions. Use distinct visual states (color, icon) and updated ARIA labels during the confirmation phase.
