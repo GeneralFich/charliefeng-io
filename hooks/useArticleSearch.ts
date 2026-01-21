@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { escapeRegExp } from '../lib/utils';
+import { useDebounce } from './useDebounce';
 
 interface UseArticleSearchReturn {
   articleSearchQuery: string;
@@ -22,23 +23,24 @@ interface UseArticleSearchReturn {
  */
 export const useArticleSearch = (slug: string): UseArticleSearchReturn => {
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
+  const debouncedQuery = useDebounce(articleSearchQuery, 300);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
   const [totalMatches, setTotalMatches] = useState(0);
   const articleSearchInputRef = useRef<HTMLInputElement>(null);
 
   // Create regex for article search (memoized)
   const articleSearchRegex = useMemo(() => {
-    if (!articleSearchQuery.trim()) return null;
+    if (!debouncedQuery.trim()) return null;
     try {
-      return new RegExp(`(${escapeRegExp(articleSearchQuery)})`, 'gi');
+      return new RegExp(`(${escapeRegExp(debouncedQuery)})`, 'gi');
     } catch {
       return null;
     }
-  }, [articleSearchQuery]);
+  }, [debouncedQuery]);
 
   // Handle Search Logic: Count matches and scroll to first
   useEffect(() => {
-    if (!articleSearchQuery.trim()) {
+    if (!debouncedQuery.trim()) {
       setTotalMatches(0);
       setCurrentMatchIndex(-1);
       return;
@@ -58,7 +60,7 @@ export const useArticleSearch = (slug: string): UseArticleSearchReturn => {
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [articleSearchQuery, slug]);
+  }, [debouncedQuery, slug]);
 
   // Handle Match Navigation Styling & Scrolling
   useEffect(() => {
