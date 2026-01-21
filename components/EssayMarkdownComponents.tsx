@@ -27,6 +27,18 @@ import { WhitepaperSummary } from './WhitepaperSummary';
  *    We intercept the `pre` element to "unwrap" these hijacked components,
  *    rendering them directly without the parent `<pre>`.
  */
+
+type InfographicConfig = React.ComponentType | { height: string };
+
+const INFOGRAPHIC_CONFIG: Record<string, InfographicConfig> = {
+  'whitepaper-summary': WhitepaperSummary,
+  'whitepaper-charts': WhitepaperCharts,
+  'collision': { height: "h-[600px] md:h-[300px]" },
+  'leverage': { height: "h-[450px]" },
+  'strategy': { height: "h-[400px]" },
+  'mechanics': { height: "h-[400px]" },
+};
+
 export const ESSAY_MARKDOWN_COMPONENTS: Components = {
   // Custom Anchor to handle footnotes and external links
   a: ({ node, href, children, ...props }: any) => {
@@ -113,32 +125,25 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
 
     if (isInfographic) {
       const type = String(children).replace(/\n$/, '').trim();
+      // Optimization: O(1) Lookup instead of O(N) if/else chain
+      // Safety: Use hasOwnProperty to prevent prototype pollution attacks or key collisions (e.g. "toString")
+      const config = Object.prototype.hasOwnProperty.call(INFOGRAPHIC_CONFIG, type)
+        ? INFOGRAPHIC_CONFIG[type]
+        : undefined;
 
-      // Handle Whitepaper Summary
-      if (type === 'whitepaper-summary') {
-        return <WhitepaperSummary />;
+      // Handle React Components (e.g. WhitepaperCharts)
+      if (typeof config === 'function') {
+        const Component = config;
+        return <Component />;
       }
 
-      // Handle Whitepaper Charts
-      if (type === 'whitepaper-charts') {
-        return <WhitepaperCharts />;
-      }
+      // Handle Iframe Infographics
+      // Default height is 400px if not specified
+      const heightClass = (config && 'height' in config)
+        ? (config as { height: string }).height
+        : "h-[400px]";
 
-      // Standard Iframe Infographics
       const src = `/infographics/thermodynamic-wall/${type}.html`;
-
-      // Define heights based on type
-      let heightClass = "h-[400px]"; // Default
-
-      if (type === 'collision') {
-        heightClass = "h-[600px] md:h-[300px]";
-      } else if (type === 'leverage') {
-        heightClass = "h-[450px]";
-      } else if (type === 'strategy') {
-        heightClass = "h-[400px]";
-      } else if (type === 'mechanics') {
-        heightClass = "h-[400px]";
-      }
 
       return (
         <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
