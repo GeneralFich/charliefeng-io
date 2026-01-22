@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Loader2, RotateCcw, Download } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Loader2, RotateCcw, Download, Trash2, AlertCircle } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -25,6 +25,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<ChatInputHandle>(null);
 
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const clearConfirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
@@ -38,13 +41,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
     scrollToBottom();
   }, [messages, isLoading]);
 
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleDownloadChat = () => {
     downloadChatHistory(messages);
   };
 
   const handleClearChat = () => {
-    clearChat();
-    inputRef.current?.clear();
+    if (isConfirmingClear) {
+      clearChat();
+      inputRef.current?.clear();
+      setIsConfirmingClear(false);
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+      }
+    } else {
+      setIsConfirmingClear(true);
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+      }
+      clearConfirmTimeoutRef.current = setTimeout(() => {
+        setIsConfirmingClear(false);
+      }, 3000);
+    }
   };
 
   return (
@@ -114,11 +140,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
 
               <button
                 onClick={handleClearChat}
-                aria-label="Clear chat"
-                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
-                title="Clear chat history"
+                aria-label={isConfirmingClear ? "Confirm clear chat" : "Clear chat"}
+                aria-pressed={isConfirmingClear}
+                className={`p-3.5 rounded-xl border transition-all shrink-0 group relative overflow-hidden ${
+                  isConfirmingClear
+                    ? "bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30"
+                    : "bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
+                }`}
+                title={isConfirmingClear ? "Click again to confirm" : "Clear chat history"}
               >
-                <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                 <div className="relative">
+                    <div className={`transition-all duration-300 ${isConfirmingClear ? 'opacity-0 scale-50 rotate-180 absolute inset-0' : 'opacity-100 scale-100 rotate-0'}`}>
+                       <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                    </div>
+                    <div className={`transition-all duration-300 ${isConfirmingClear ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-180 absolute inset-0'}`}>
+                       <Trash2 size={20} className="animate-pulse" />
+                    </div>
+                 </div>
               </button>
             </>
           )}
