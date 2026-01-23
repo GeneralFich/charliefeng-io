@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
-import { checkRateLimit } from '../lib/security';
+import { checkRateLimit, validateChatInput } from '../lib/security';
 
 /**
  * Curated list of initial prompts to guide the user towards the persona's core competencies.
@@ -51,8 +51,21 @@ export const useChat = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
-  const [requestTimestamps, setRequestTimestamps] = useState<number[]>([]);
+
+  // Use refs to keep track of latest state without causing re-renders in callbacks
+  // This allows handleSend to be stable (memoized) while accessing fresh data.
+  const messagesRef = useRef(messages);
+  const isLoadingRef = useRef(isLoading);
+  const requestTimestampsRef = useRef<number[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   /**
    * Resets the chat to its initial state.
@@ -60,7 +73,7 @@ export const useChat = () => {
    * Why: We need to ensure that any pending API requests are aborted to prevent
    * a race condition where a response arrives after the chat has been cleared.
    */
-  const clearChat = () => {
+  const clearChat = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -68,7 +81,7 @@ export const useChat = () => {
     setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
     setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
     setIsLoading(false);
-  };
+  }, []);
 
   /**
    * Sends a message to the AI model.
@@ -83,19 +96,21 @@ export const useChat = () => {
    *
    * @param text - The message text to send.
    */
-  const handleSend = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+  const handleSend = useCallback(async (text: string) => {
+    if (!text.trim() || isLoadingRef.current) return;
 
-    // Security: Input length validation
-    if (text.length > 2000) {
-      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
+    // Security: Input validation (length, content safety, spam)
+    // We validate against the *current* history (messagesRef.current) which is the state before this new message
+    const validation = validateChatInput(messagesRef.current, text);
+    if (!validation.valid) {
+      const errorMsg: Message = { role: 'model', text: `Error: ${validation.error || "Invalid input."}` };
       setMessages(prev => [...prev, errorMsg]);
       return;
     }
 
     // Security: Rate limiting
-    const { allowed, newTimestamps } = checkRateLimit(requestTimestamps, RATE_LIMIT_WINDOW, MAX_REQUESTS);
-    setRequestTimestamps(newTimestamps);
+    const { allowed, newTimestamps } = checkRateLimit(requestTimestampsRef.current, RATE_LIMIT_WINDOW, MAX_REQUESTS);
+    requestTimestampsRef.current = newTimestamps;
 
     if (!allowed) {
       const errorMsg: Message = { role: 'model', text: "System: Rate limit exceeded. Please wait a moment before sending more messages." };
@@ -112,7 +127,7 @@ export const useChat = () => {
     // Why: The static greeting adds no semantic value to the LLM's context window.
     // Removing it saves tokens and prevents the model from being biased by its own
     // hardcoded initial output.
-    const apiHistory = messages.slice(1);
+    const apiHistory = messagesRef.current.slice(1);
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -134,11 +149,13 @@ export const useChat = () => {
         return;
       }
       console.error("Chat error:", error);
+      const errorMsg: Message = { role: 'model', text: "Error: Failed to connect to the model. Please try again." };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  };
+  }, []); // Stable dependency
 
   return {
     messages,

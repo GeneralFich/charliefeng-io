@@ -36,25 +36,31 @@ export const useArticleSearch = (slug: string): UseArticleSearchReturn => {
     }
   }, [articleSearchQuery]);
 
-  // Handle Search Logic: Count matches and scroll to first
+  const matchElementsRef = useRef<NodeListOf<HTMLElement> | []>([]);
+  const prevMatchIndexRef = useRef<number>(-1);
+
+  // Handle Search Logic: Find and store all matches.
   useEffect(() => {
     if (!articleSearchQuery.trim()) {
       setTotalMatches(0);
       setCurrentMatchIndex(-1);
+      matchElementsRef.current = [];
       return;
     }
 
-    // Small delay to allow react-markdown to render the <mark> tags
+    // Defer DOM query to allow for <mark> tags to be rendered by highlighter
     const timer = setTimeout(() => {
-      const marks = document.querySelectorAll('article mark');
+      const marks = document.querySelectorAll('article mark') as NodeListOf<HTMLElement>;
+      matchElementsRef.current = marks;
       setTotalMatches(marks.length);
 
       if (marks.length > 0) {
-        // If we have matches, default to the first one
         setCurrentMatchIndex(0);
       } else {
         setCurrentMatchIndex(-1);
       }
+      // Reset previous index on new search
+      prevMatchIndexRef.current = -1;
     }, 150);
 
     return () => clearTimeout(timer);
@@ -62,23 +68,32 @@ export const useArticleSearch = (slug: string): UseArticleSearchReturn => {
 
   // Handle Match Navigation Styling & Scrolling
   useEffect(() => {
-    const marks = document.querySelectorAll('article mark');
+    const marks = matchElementsRef.current;
     if (marks.length === 0) return;
 
-    // Reset all marks to default style
-    marks.forEach(m => {
-      m.className = "bg-yellow-500/50 text-white rounded-sm px-0.5 transition-colors duration-300";
-    });
+    const prevIndex = prevMatchIndexRef.current;
+    const currentIndex = currentMatchIndex;
+
+    // De-highlight the previous match
+    if (prevIndex >= 0 && prevIndex < marks.length && prevIndex !== currentIndex) {
+      const prevMark = marks[prevIndex];
+      if (prevMark) {
+        prevMark.className = "bg-yellow-500/50 text-white rounded-sm px-0.5 transition-colors duration-300";
+      }
+    }
 
     // Highlight and scroll to the active match
-    if (currentMatchIndex >= 0 && marks[currentMatchIndex]) {
-      const active = marks[currentMatchIndex];
-      // Apply active style (Orange/Red pop)
-      active.className = "bg-orange-500 text-white rounded-sm px-0.5 ring-2 ring-orange-400 shadow-lg shadow-orange-500/20 z-10 relative transition-all duration-300";
-
-      active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (currentIndex >= 0 && currentIndex < marks.length) {
+      const activeMark = marks[currentIndex];
+      if (activeMark) {
+        activeMark.className = "bg-orange-500 text-white rounded-sm px-0.5 ring-2 ring-orange-400 shadow-lg shadow-orange-500/20 z-10 relative transition-all duration-300";
+        activeMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
-  }, [currentMatchIndex, totalMatches]);
+
+    // Update ref for the next render cycle
+    prevMatchIndexRef.current = currentIndex;
+  }, [currentMatchIndex]);
 
   const handleNextMatch = () => {
     if (totalMatches === 0) return;

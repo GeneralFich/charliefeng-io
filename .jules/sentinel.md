@@ -14,3 +14,15 @@
 **Vulnerability:** The `ContactForm` relied implicitly on HTML5 browser validation (e.g., `type="email"`). While convenient, this meant the custom React `onSubmit` logic (and its associated error handling/logging) was effectively unreachable for simple validation failures, and relied entirely on browser UI implementation which varies.
 **Learning:** Relying solely on `type="email"` creates a "dead code" path in React handlers if `noValidate` isn't used. To truly control the validation UX and ensure custom security checks run, one must disable native validation and implement explicit checks in the handler.
 **Prevention:** When implementing custom validation logic in React forms, explicitly add `noValidate` to the `<form>` element and replicate necessary checks (required, format) in JavaScript to ensure the handler is the single source of truth for validation.
+
+## 2025-02-26 - Data Loss in RAG Ingestion due to Naive Regex
+**Vulnerability:** The ingestion script `scripts/ingest_blog.ts` used a naive regex `/[^.!?]+[.!?]+/` to split text into sentences. This regex implicitly assumed that every sentence must end with punctuation. Consequently, headers (e.g., `# Introduction`) and sentences lacking trailing punctuation were silently discarded, compromising the integrity and availability of the RAG knowledge base.
+**Learning:** Regex patterns for natural language processing often fail on edge cases like headers or unpunctuated text. Duplicating logic (DRY violation) between the ingestion script and the main application led to a discrepancy where the app had robust logic but the data pipeline did not.
+**Prevention:** Always test regex boundaries against diverse inputs (headers, empty lines, no punctuation). Centralize utility functions like `chunkText` in a shared library (`lib/utils.ts`) to ensure consistency between data processing and runtime logic.
+
+## 2025-03-01 - System Prompt Injection & API Key Exposure in SPA
+**Vulnerability:** The `GEMINI_API_KEY` was injected via `vite.config.ts` into the client-side bundle to enable the "serverless" SPA architecture. While known, this architecture inherently exposes the key to anyone inspecting the source. Additionally, the system prompt lacked explicit defense against "jailbreak" attempts (e.g., "ignore previous instructions").
+**Learning:** Static Single Page Applications (SPAs) cannot securely hide secrets used for API calls if they communicate directly with 3rd party services. Prompt injection is a primary attack vector for LLM apps, where the "code" (instructions) is mixed with user input.
+**Prevention:**
+1. For API Keys: Acknowledge the risk and mitigate via backend proxies (Vercel Functions) or strict vendor-side quotas/restrictions (referer checks) if proxies aren't feasible.
+2. For Prompts: Explicitly include a "SECURITY OVERRIDE" section in system instructions forbidding the model from revealing its prompt or breaking character, acting as a behavioral firewall.
