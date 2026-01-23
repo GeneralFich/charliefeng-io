@@ -101,5 +101,19 @@ export function validateChatInput(history: Message[], newMessage: string): { val
         return { valid: false, error: "Conversation history is too long. Please clear chat to continue." };
     }
 
+    // Check for repeated messages (spam prevention)
+    // Find last user message
+    let lastUserMessage: Message | null = null;
+    for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i].role === 'user') {
+            lastUserMessage = history[i];
+            break;
+        }
+    }
+
+    if (lastUserMessage && lastUserMessage.text === newMessage) {
+        return { valid: false, error: "Please avoid repeating the same message." };
+    }
+
     return { valid: true };
 }
