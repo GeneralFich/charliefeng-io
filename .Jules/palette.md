@@ -9,3 +9,7 @@
 ## 2025-05-27 - Scrollable Code Blocks
 **Learning:** Code blocks (`pre` tags) with `overflow: auto` are inaccessible to keyboard users unless they are focusable.
 **Action:** Always add `tabIndex={0}`, `role="region"`, and an `aria-label` to scrollable code containers to ensure keyboard accessibility.
+
+## 2025-06-15 - Destructive Action Confirmation
+**Learning:** Destructive actions (like clearing chat) executed immediately on click can cause accidental data loss and user frustration.
+**Action:** Implement a "click-to-arm, click-to-fire" pattern for destructive buttons, changing the UI state (color/icon) to warn the user before execution.
