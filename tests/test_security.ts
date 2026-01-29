@@ -113,4 +113,30 @@ test('validateChatInput', async (t) => {
         assert.strictEqual(result.valid, false);
         assert.strictEqual(result.error, "Invalid history format.");
     });
+
+    await t.test('rejects repeated messages', () => {
+        const history: Message[] = [{ role: 'user', text: 'Hello' }];
+        const newMessage = 'Hello';
+        const result = validateChatInput(history, newMessage);
+        assert.strictEqual(result.valid, false);
+        assert.strictEqual(result.error, "Please avoid repeating the same message.");
+    });
+
+    await t.test('rejects repeated messages even with intervening model message', () => {
+        const history: Message[] = [
+            { role: 'user', text: 'What is AGI?' },
+            { role: 'model', text: 'AGI is...' }
+        ];
+        const newMessage = 'What is AGI?';
+        const result = validateChatInput(history, newMessage);
+        assert.strictEqual(result.valid, false);
+        assert.strictEqual(result.error, "Please avoid repeating the same message.");
+    });
+
+    await t.test('accepts different messages', () => {
+        const history: Message[] = [{ role: 'user', text: 'Hello' }];
+        const newMessage = 'World';
+        const result = validateChatInput(history, newMessage);
+        assert.strictEqual(result.valid, true);
+    });
 });

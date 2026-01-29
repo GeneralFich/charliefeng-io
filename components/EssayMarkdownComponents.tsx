@@ -8,6 +8,27 @@ import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 
 /**
+ * Configuration for Component-based Infographics.
+ * Maps the code block content (e.g., "whitepaper-summary") to a React component.
+ * "Configuration Object Pattern" for O(1) lookup.
+ */
+const INFOGRAPHIC_COMPONENTS: Record<string, React.ComponentType> = {
+  'whitepaper-summary': WhitepaperSummary,
+  'whitepaper-charts': WhitepaperCharts,
+};
+
+/**
+ * Configuration for Iframe-based Infographics heights.
+ * Maps the code block content to a Tailwind height class.
+ */
+const INFOGRAPHIC_HEIGHTS: Record<string, string> = {
+  'collision': "h-[600px] md:h-[300px]",
+  'leverage': "h-[450px]",
+  'strategy': "h-[400px]",
+  'mechanics': "h-[400px]",
+};
+
+/**
  * @fileoverview Custom Markdown Components Mapping
  *
  * This module defines how Markdown elements are rendered in the Essay view.
@@ -114,31 +135,15 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     if (isInfographic) {
       const type = String(children).replace(/\n$/, '').trim();
 
-      // Handle Whitepaper Summary
-      if (type === 'whitepaper-summary') {
-        return <WhitepaperSummary />;
-      }
-
-      // Handle Whitepaper Charts
-      if (type === 'whitepaper-charts') {
-        return <WhitepaperCharts />;
+      // Check for Custom Component
+      const Component = INFOGRAPHIC_COMPONENTS[type];
+      if (Component) {
+        return <Component />;
       }
 
       // Standard Iframe Infographics
       const src = `/infographics/thermodynamic-wall/${type}.html`;
-
-      // Define heights based on type
-      let heightClass = "h-[400px]"; // Default
-
-      if (type === 'collision') {
-        heightClass = "h-[600px] md:h-[300px]";
-      } else if (type === 'leverage') {
-        heightClass = "h-[450px]";
-      } else if (type === 'strategy') {
-        heightClass = "h-[400px]";
-      } else if (type === 'mechanics') {
-        heightClass = "h-[400px]";
-      }
+      const heightClass = INFOGRAPHIC_HEIGHTS[type] || "h-[400px]"; // Default height
 
       return (
         <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">

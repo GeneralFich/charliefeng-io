@@ -284,6 +284,8 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
   // ([^.!?]+[.!?]+) matches normal sentences.
   // ([^.!?]+$) matches text at the end without punctuation.
   const sentenceRegex = /([^.!?]+[.!?]+)|([^.!?]+$)/g;
+
+  // Use matchAll for lazy evaluation and lower memory footprint
   const matches = text.matchAll(sentenceRegex);
 
   let hasMatches = false;
