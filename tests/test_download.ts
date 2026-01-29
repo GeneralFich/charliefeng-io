@@ -1,4 +1,4 @@
-import { describe, it, before, after, mock } from 'node:test';
+import { test, describe, it, before, after, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
 import { formatChatHistory, downloadTextFile, downloadChatHistory } from '../lib/download';
 import { Message } from '../types';
@@ -179,5 +179,165 @@ describe('downloadChatHistory', () => {
         assert.strictEqual(createObjectURLMock.mock.callCount(), 1);
         assert.ok(anchorMock.download.startsWith('charlie-feng-chat-'));
         assert.ok(anchorMock.download.endsWith('.txt'));
+    });
+});
+
+describe('Browser Download Logic', () => {
+    let windowMock: any;
+    let documentMock: any;
+    let blobMock: any;
+    let urlMock: any;
+
+    let createdElement: any;
+    let appendedChild: any;
+    let removedChild: any;
+    let revokedUrl: any;
+
+    // We store the original globals to restore them later
+    const originalWindow = (global as any).window;
+    const originalDocument = (global as any).document;
+    const originalBlob = (global as any).Blob;
+    const originalURL = (global as any).URL;
+
+    before(() => {
+        // Mock Blob
+        blobMock = class {
+            content: any[];
+            options: any;
+            constructor(content: any[], options: any) {
+                this.content = content;
+                this.options = options;
+            }
+        };
+        (global as any).Blob = blobMock;
+
+        // Mock URL
+        urlMock = {
+            createObjectURL: mock.fn((blob: any) => 'mock-url'),
+            revokeObjectURL: mock.fn((url: string) => { revokedUrl = url; })
+        };
+        (global as any).URL = urlMock;
+
+        // Mock document
+        documentMock = {
+            createElement: mock.fn((tag: string) => {
+                createdElement = {
+                    tagName: tag,
+                    click: mock.fn(),
+                    href: '',
+                    download: ''
+                };
+                return createdElement;
+            }),
+            body: {
+                appendChild: mock.fn((child: any) => { appendedChild = child; }),
+                removeChild: mock.fn((child: any) => { removedChild = child; })
+            }
+        };
+        (global as any).document = documentMock;
+
+        // Mock window
+        windowMock = {};
+        (global as any).window = windowMock;
+    });
+
+    after(() => {
+        // Restore original globals
+        if (originalWindow) (global as any).window = originalWindow;
+        else delete (global as any).window;
+
+        if (originalDocument) (global as any).document = originalDocument;
+        else delete (global as any).document;
+
+        if (originalBlob) (global as any).Blob = originalBlob;
+        else delete (global as any).Blob;
+
+        if (originalURL) (global as any).URL = originalURL;
+        else delete (global as any).URL;
+    });
+
+    beforeEach(() => {
+        // Reset spies and state variables
+        createdElement = null;
+        appendedChild = null;
+        removedChild = null;
+        revokedUrl = null;
+        urlMock.createObjectURL.mock.resetCalls();
+        urlMock.revokeObjectURL.mock.resetCalls();
+        documentMock.createElement.mock.resetCalls();
+        documentMock.body.appendChild.mock.resetCalls();
+        documentMock.body.removeChild.mock.resetCalls();
+    });
+
+    test('downloadTextFile should create anchor, click it, and remove it', () => {
+        const content = 'hello world';
+        const filename = 'test.txt';
+
+        downloadTextFile(content, filename);
+
+        // Verify URL creation
+        assert.strictEqual(urlMock.createObjectURL.mock.calls.length, 1);
+
+        // Verify element creation
+        assert.strictEqual(documentMock.createElement.mock.calls.length, 1);
+        assert.strictEqual(createdElement.tagName, 'a');
+        assert.strictEqual(createdElement.href, 'mock-url');
+        assert.strictEqual(createdElement.download, filename);
+
+        // Verify append
+        assert.strictEqual(documentMock.body.appendChild.mock.calls.length, 1);
+        assert.strictEqual(appendedChild, createdElement);
+
+        // Verify click
+        assert.strictEqual(createdElement.click.mock.calls.length, 1);
+
+        // Verify remove
+        assert.strictEqual(documentMock.body.removeChild.mock.calls.length, 1);
+        assert.strictEqual(removedChild, createdElement);
+
+        // Verify revoke
+        assert.strictEqual(urlMock.revokeObjectURL.mock.calls.length, 1);
+        assert.strictEqual(revokedUrl, 'mock-url');
+    });
+
+    test('downloadChatHistory should trigger download with formatted content and date-stamped filename', () => {
+        const messages: Message[] = [
+            { role: 'user', text: 'Hello' },
+            { role: 'model', text: 'Hi' }
+        ];
+
+        downloadChatHistory(messages);
+
+        assert.strictEqual(urlMock.createObjectURL.mock.calls.length, 1);
+        assert.strictEqual(createdElement.download.startsWith('charlie-feng-chat-'), true);
+        assert.strictEqual(createdElement.download.endsWith('.txt'), true);
+    });
+
+    test('downloadChatHistory should do nothing if history is short', () => {
+         const messages: Message[] = [
+            { role: 'user', text: 'Hello' }
+        ];
+
+        downloadChatHistory(messages);
+
+        assert.strictEqual(urlMock.createObjectURL.mock.calls.length, 0);
+        assert.strictEqual(documentMock.createElement.mock.calls.length, 0);
+    });
+
+    test('downloadTextFile should warn and return if window is undefined', () => {
+        // Temporarily hide window
+        const tempWindow = (global as any).window;
+        delete (global as any).window;
+
+        const consoleSpy = mock.method(console, 'warn', () => {});
+
+        downloadTextFile('content', 'file.txt');
+
+        assert.strictEqual(consoleSpy.mock.calls.length, 1);
+        assert.match(consoleSpy.mock.calls[0].arguments[0], /non-browser/);
+
+        // Restore
+        (global as any).window = tempWindow;
+        consoleSpy.mock.restore();
     });
 });
