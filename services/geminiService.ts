@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Content } from "@google/genai";
 import { FULL_CONTEXT } from "../lib/knowledge";
 import { Message } from "../types";
 import { getRelevantContext, RelevantChunk } from "../lib/rag";
@@ -44,54 +44,84 @@ export const sendMessageToGemini = async (
   newMessage: string,
   abortSignal?: AbortSignal
 ): Promise<string> => {
+  // 1. Validation & Guard Clauses
+  const { isValid, error, sanitizedMessage } = validateRequest(history, newMessage);
+  if (!isValid) return error!;
+
+  try {
+    // 2. Retrieval Augmented Generation (RAG)
+    const additionalContext = await retrieveAugmentedContext(sanitizedMessage!, apiKey!);
+
+    // 3. Prompt Construction
+    const contents = buildGeminiMessages(history, sanitizedMessage!, additionalContext);
+
+    // 4. API Execution
+    return await generateContent(contents, abortSignal);
+
+  } catch (error) {
+    return handleServiceError(error, abortSignal);
+  }
+};
+
+/**
+ * Validates the request preconditions.
+ */
+function validateRequest(history: Message[], newMessage: string): { isValid: boolean; error?: string; sanitizedMessage?: string } {
   // Security: Sanitize input to remove control characters
   const sanitizedMessage = sanitizeInput(newMessage);
 
   // Security: Input validation to prevent large payloads (DoS/Cost)
   const validation = validateChatInput(history, sanitizedMessage);
   if (!validation.valid) {
-    return validation.error || "Invalid input.";
+    return { isValid: false, error: validation.error || "Invalid input." };
   }
 
   if (!ai || !apiKey) {
-    return "API Key is missing. Please configure the environment variable.";
+    return { isValid: false, error: "API Key is missing. Please configure the environment variable." };
   }
 
-  try {
-    // RAG: Retrieve relevant context from blog using sanitized query
-    const additionalContext = await retrieveAugmentedContext(sanitizedMessage, apiKey);
+  return { isValid: true, sanitizedMessage };
+}
 
-    // Prepare the conversation for the API
-    const contents = buildGeminiMessages(history, sanitizedMessage, additionalContext);
+/**
+ * Executes the generation request against the Gemini API.
+ */
+async function generateContent(contents: Content[], abortSignal?: AbortSignal): Promise<string> {
+  if (!ai) throw new Error("AI Client not initialized");
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: contents,
-      config: {
-        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
-        temperature: 0.7,
-        maxOutputTokens: 4000,
-        abortSignal: abortSignal,
-      },
-    });
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: contents,
+    config: {
+      systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+      temperature: 0.7,
+      maxOutputTokens: 4000,
+      abortSignal: abortSignal,
+    },
+  });
 
-    if (response.text) {
-      return response.text;
-    }
-    
-    return "I'm processing that signal, but returned no data.";
-
-  } catch (error) {
-    if (abortSignal?.aborted) {
-      throw error; // Allow AbortError to propagate
-    }
-    // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
-    const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
-    const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
-    console.error("Gemini API Error:", errorMessage);
-    return "Error: Connection to the neural link failed. Please try again.";
+  if (response.text) {
+    return response.text;
   }
-};
+
+  return "I'm processing that signal, but returned no data.";
+}
+
+/**
+ * Centralized error handler for the service.
+ */
+function handleServiceError(error: unknown, abortSignal?: AbortSignal): string {
+  if (abortSignal?.aborted) {
+    throw error; // Allow AbortError to propagate
+  }
+
+  // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
+  const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
+  const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
+
+  console.error("Gemini API Error:", errorMessage);
+  return "Error: Connection to the neural link failed. Please try again.";
+}
 
 /**
  * Retrieves and formats relevant context from the blog index.
@@ -117,7 +147,7 @@ async function retrieveAugmentedContext(query: string, key: string): Promise<str
 /**
  * Constructs the message array for the Gemini API.
  */
-function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string) {
+function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string): Content[] {
   // We treat the "history" as the context of conversation so far.
   // The "newMessage" is the latest user input.
   // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
@@ -128,7 +158,7 @@ function buildGeminiMessages(history: Message[], newMessage: string, additionalC
 
   return [
     ...history.map((msg) => ({
-      role: msg.role,
+      role: msg.role as "user" | "model",
       parts: [{ text: msg.text }],
     })),
     {

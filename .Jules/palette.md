@@ -13,3 +13,7 @@
 ## 2025-06-15 - Nested Interactive Controls
 **Learning:** Wrapping complex cards in `role="button"` creates nested interactive control violations when the card contains other buttons (like 'Share'), confusing screen readers.
 **Action:** Instead of making the container a button, use the "redundant click handler" pattern: keep the `onClick` on the container for mouse users, but rely on a semantic `<button>` inside the title for keyboard/SR users.
+
+## 2025-06-15 - Destructive Action Confirmation
+**Learning:** Destructive actions (like clearing chat) executed immediately on click can cause accidental data loss and user frustration.
+**Action:** Implement a "click-to-arm, click-to-fire" pattern for destructive buttons, changing the UI state (color/icon) to warn the user before execution.

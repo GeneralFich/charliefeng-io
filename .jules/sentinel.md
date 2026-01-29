@@ -26,3 +26,8 @@
 **Prevention:**
 1. For API Keys: Acknowledge the risk and mitigate via backend proxies (Vercel Functions) or strict vendor-side quotas/restrictions (referer checks) if proxies aren't feasible.
 2. For Prompts: Explicitly include a "SECURITY OVERRIDE" section in system instructions forbidding the model from revealing its prompt or breaking character, acting as a behavioral firewall.
+
+## 2025-03-02 - Client-Side Rate Limit Persistence & Concurrency
+**Vulnerability:** Rate limits tracked only in React memory were reset on page reload, allowing bypass. Initial fix using `useEffect` introduced a race condition across tabs (reading stale data on mount).
+**Learning:** When enforcing security state (like rate limits) in a client-side app, reading from persistent storage (localStorage) must happen *just-in-time* before the critical action, not just on mount, to handle multi-tab concurrency and ensure the latest state is respected.
+**Prevention:** Implement JIT storage reads in critical security checks (`handleSend`) rather than relying on React state initialization (`useEffect` or `useState` lazy init) which can become stale.
