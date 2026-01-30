@@ -19,3 +19,7 @@
 ## 2025-02-13 - [Browser Globals Mocking in Node]
 **Learning:** Functions relying on `window` or `document` can be unit tested in `node:test` by temporarily assigning to `global` in `before` hooks and restoring in `after`.
 **Action:** Use this pattern to test utility functions that mix logic with DOM manipulation, instead of skipping them.
+
+## 2025-02-14 - [List Filtering Verification]
+**Learning:** When testing search filtering in a grid layout where items act as buttons, generic locators like `getByRole('button')` can be too broad (capturing clear buttons, share buttons, etc.).
+**Action:** Use specific locators like `h3` or `article` titles to count visible items, or combine `getByRole` with accessible names if available.
