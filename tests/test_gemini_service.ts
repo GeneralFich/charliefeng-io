@@ -119,4 +119,35 @@ describe('Gemini Service', () => {
     // API should still be called (RAG failure shouldn't block)
     assert.strictEqual(generateContentMock.mock.callCount(), 1);
   });
+
+  it('should propagate AbortError when signal is aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort(); // Abort immediately
+
+    // Mock API to throw an error (simulating cancellation or network error during abort)
+    generateContentMock.mock.mockImplementationOnce(async () => {
+      throw new Error("Request Aborted");
+    });
+
+    try {
+      await sendMessageToGemini([], "Query", abortController.signal);
+      assert.fail("Should have thrown error");
+    } catch (err: any) {
+      assert.ok(err);
+      // Ensure the error was propagated, not swallowed
+      assert.strictEqual(err.message, "Request Aborted");
+    }
+  });
+
+  it('should catch generic API errors and return friendly message', async () => {
+    // Mock API to throw a generic error
+    generateContentMock.mock.mockImplementationOnce(async () => {
+      throw new Error("Service Unavailable");
+    });
+
+    const response = await sendMessageToGemini([], "Query");
+
+    // Should return the user-facing error message
+    assert.match(response, /Error: Connection to the neural link failed/);
+  });
 });
