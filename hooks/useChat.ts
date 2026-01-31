@@ -12,15 +12,15 @@ import { checkRateLimit, validateChatInput } from '../lib/security';
  * and help establish the professional, "Strategic Thought Partner" persona immediately.
  */
 const INITIAL_SUGGESTED_PROMPTS = [
-  "Who is Charlie?",
-  "What is his work experience?",
-  "Show me his resume.",
-  "What are his core skills?",
-  "What projects has he worked on?",
-  "How can I contact him?",
+  "Tell me about yourself.",
+  "What is your work experience?",
+  "Show me your resume.",
+  "What are your core skills?",
+  "What projects have you worked on?",
+  "How can I contact you?",
 ];
 
-const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
+const INITIAL_MESSAGE_TEXT = "Hello! I am Charlie. I can answer questions about my work, writing, and research. What would you like to know?";
 
 // Rate Limit Configuration
 // Why: 10 requests per minute is a balanced threshold that allows for natural

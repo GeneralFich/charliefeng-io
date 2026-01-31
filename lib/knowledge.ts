@@ -93,7 +93,7 @@ export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, cont
     body: parsed.body,
     readTime: calculateReadTime(parsed.body),
   };
-}).sort((a, b) => new Date(b.attributes.date).getTime() - new Date(a.attributes.date).getTime());
+}).sort((a, b) => b.dateTimestamp - a.dateTimestamp);
 
 // --- Raw Data for LLM Context ---
 // We pass the raw markdown (including frontmatter) so the LLM sees the structured data as well.
