@@ -1,0 +1,1211 @@
+
+> charlie-feng-portfolio@0.0.0 test /app
+> npx tsx --test --experimental-test-module-mocks tests/*.ts
+
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm.
+npm warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm.
+TAP version 13
+# Subtest: chunkText Logic
+    # Subtest: chunks text by sentences
+    ok 1 - chunks text by sentences
+      ---
+      duration_ms: 1.107119
+      type: 'test'
+      ...
+    # Subtest: splits when maxChars is exceeded
+    ok 2 - splits when maxChars is exceeded
+      ---
+      duration_ms: 0.291063
+      type: 'test'
+      ...
+    # Subtest: handles single sentence exceeding maxChars
+    ok 3 - handles single sentence exceeding maxChars
+      ---
+      duration_ms: 0.318655
+      type: 'test'
+      ...
+    # Subtest: handles empty input
+    ok 4 - handles empty input
+      ---
+      duration_ms: 0.203681
+      type: 'test'
+      ...
+    # Subtest: handles text without punctuation
+    ok 5 - handles text without punctuation
+      ---
+      duration_ms: 0.434919
+      type: 'test'
+      ...
+    # Subtest: handles standard abbreviations (limitation)
+    ok 6 - handles standard abbreviations (limitation)
+      ---
+      duration_ms: 0.31016
+      type: 'test'
+      ...
+    # Subtest: handles naive split behavior with small limits
+    ok 7 - handles naive split behavior with small limits
+      ---
+      duration_ms: 0.179372
+      type: 'test'
+      ...
+    1..7
+ok 1 - chunkText Logic
+  ---
+  duration_ms: 5.37107
+  type: 'test'
+  ...
+# Download attempted in non-browser environment
+# Subtest: formatChatHistory
+    # Subtest: formats messages correctly
+    ok 1 - formats messages correctly
+      ---
+      duration_ms: 1.134703
+      type: 'test'
+      ...
+    # Subtest: handles empty messages
+    ok 2 - handles empty messages
+      ---
+      duration_ms: 0.250642
+      type: 'test'
+      ...
+    # Subtest: handles single message
+    ok 3 - handles single message
+      ---
+      duration_ms: 0.182547
+      type: 'test'
+      ...
+    1..3
+ok 2 - formatChatHistory
+  ---
+  duration_ms: 3.164725
+  type: 'suite'
+  ...
+# Subtest: downloadTextFile
+    # Subtest: safely returns in non-browser environment
+    ok 1 - safely returns in non-browser environment
+      ---
+      duration_ms: 1.256935
+      type: 'test'
+      ...
+    # Subtest: creates and clicks download link in browser environment
+    ok 2 - creates and clicks download link in browser environment
+      ---
+      duration_ms: 1.724668
+      type: 'test'
+      ...
+    1..2
+ok 3 - downloadTextFile
+  ---
+  duration_ms: 3.746507
+  type: 'suite'
+  ...
+# Subtest: downloadChatHistory
+    # Subtest: does not download if history is empty or too short
+    ok 1 - does not download if history is empty or too short
+      ---
+      duration_ms: 0.429828
+      type: 'test'
+      ...
+    # Subtest: downloads formatted history
+    ok 2 - downloads formatted history
+      ---
+      duration_ms: 1.182569
+      type: 'test'
+      ...
+    1..2
+ok 4 - downloadChatHistory
+  ---
+  duration_ms: 2.294872
+  type: 'suite'
+  ...
+# Subtest: Browser Download Logic
+    # Subtest: downloadTextFile should create anchor, click it, and remove it
+    ok 1 - downloadTextFile should create anchor, click it, and remove it
+      ---
+      duration_ms: 0.913154
+      type: 'test'
+      ...
+    # Subtest: downloadChatHistory should trigger download with formatted content and date-stamped filename
+    ok 2 - downloadChatHistory should trigger download with formatted content and date-stamped filename
+      ---
+      duration_ms: 0.505592
+      type: 'test'
+      ...
+    # Subtest: downloadChatHistory should do nothing if history is short
+    ok 3 - downloadChatHistory should do nothing if history is short
+      ---
+      duration_ms: 0.308194
+      type: 'test'
+      ...
+    # Subtest: downloadTextFile should warn and return if window is undefined
+    ok 4 - downloadTextFile should warn and return if window is undefined
+      ---
+      duration_ms: 0.791821
+      type: 'test'
+      ...
+    1..4
+ok 5 - Browser Download Logic
+  ---
+  duration_ms: 5.046461
+  type: 'suite'
+  ...
+# Subtest: escapeHtml
+    # Subtest: escapes basic HTML characters
+    ok 1 - escapes basic HTML characters
+      ---
+      duration_ms: 1.038565
+      type: 'test'
+      ...
+    # Subtest: escapes quotes
+    ok 2 - escapes quotes
+      ---
+      duration_ms: 0.199837
+      type: 'test'
+      ...
+    # Subtest: escapes ampersands
+    ok 3 - escapes ampersands
+      ---
+      duration_ms: 0.165391
+      type: 'test'
+      ...
+    # Subtest: does not double escape ampersands if already escaped (simple check)
+    ok 4 - does not double escape ampersands if already escaped (simple check)
+      ---
+      duration_ms: 0.169927
+      type: 'test'
+      ...
+    # Subtest: returns original string if safe
+    ok 5 - returns original string if safe
+      ---
+      duration_ms: 0.162225
+      type: 'test'
+      ...
+    # Subtest: handles empty string
+    ok 6 - handles empty string
+      ---
+      duration_ms: 0.159858
+      type: 'test'
+      ...
+    1..6
+ok 6 - escapeHtml
+  ---
+  duration_ms: 3.923004
+  type: 'test'
+  ...
+# Subtest: filterAndSortEssays
+    # Subtest: filters by search query
+    ok 1 - filters by search query
+      ---
+      duration_ms: 0.946045
+      type: 'test'
+      ...
+    # Subtest: filters by search query (case insensitive)
+    ok 2 - filters by search query (case insensitive)
+      ---
+      duration_ms: 0.238347
+      type: 'test'
+      ...
+    # Subtest: returns empty array when no matches
+    ok 3 - returns empty array when no matches
+      ---
+      duration_ms: 0.183803
+      type: 'test'
+      ...
+    # Subtest: sorts by newest (default)
+    ok 4 - sorts by newest (default)
+      ---
+      duration_ms: 0.192062
+      type: 'test'
+      ...
+    # Subtest: sorts by oldest
+    ok 5 - sorts by oldest
+      ---
+      duration_ms: 0.171721
+      type: 'test'
+      ...
+    # Subtest: sorts by shortest read time
+    ok 6 - sorts by shortest read time
+      ---
+      duration_ms: 0.228473
+      type: 'test'
+      ...
+    # Subtest: sorts by longest read time
+    ok 7 - sorts by longest read time
+      ---
+      duration_ms: 0.193513
+      type: 'test'
+      ...
+    # Subtest: combines filtering and sorting
+    ok 8 - combines filtering and sorting
+      ---
+      duration_ms: 0.30873
+      type: 'test'
+      ...
+    1..8
+ok 7 - filterAndSortEssays
+  ---
+  duration_ms: 5.385258
+  type: 'test'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@google/genai' imported from /app/tests/test_gemini_service.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+#     at packageResolve (node:internal/modules/esm/resolve:767:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28)
+#     at resolveBase (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613364:2:3744)
+#     at resolveDirectory (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613364:2:4243)
+#     at resolveTsPaths (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613364:2:4984)
+#     at resolve (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613364:2:5361)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.22.0
+# Subtest: tests/test_gemini_service.ts
+not ok 5 - tests/test_gemini_service.ts
+  ---
+  duration_ms: 327.787667
+  type: 'test'
+  location: '/app/tests/test_gemini_service.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Link Safety Logic
+    # Subtest: allows http links
+    ok 1 - allows http links
+      ---
+      duration_ms: 0.917686
+      type: 'test'
+      ...
+    # Subtest: allows https links
+    ok 2 - allows https links
+      ---
+      duration_ms: 0.240061
+      type: 'test'
+      ...
+    # Subtest: allows mailto links
+    ok 3 - allows mailto links
+      ---
+      duration_ms: 0.163447
+      type: 'test'
+      ...
+    # Subtest: allows internal root-relative links
+    ok 4 - allows internal root-relative links
+      ---
+      duration_ms: 0.155263
+      type: 'test'
+      ...
+    # Subtest: allows anchor links
+    ok 5 - allows anchor links
+      ---
+      duration_ms: 0.197761
+      type: 'test'
+      ...
+    # Subtest: BLOCKS protocol-relative links (open redirect risk)
+    ok 6 - BLOCKS protocol-relative links (open redirect risk)
+      ---
+      duration_ms: 0.172235
+      type: 'test'
+      ...
+    # Subtest: BLOCKS javascript: schemes
+    ok 7 - BLOCKS javascript: schemes
+      ---
+      duration_ms: 0.161645
+      type: 'test'
+      ...
+    # Subtest: BLOCKS data: schemes
+    ok 8 - BLOCKS data: schemes
+      ---
+      duration_ms: 0.286529
+      type: 'test'
+      ...
+    1..8
+ok 9 - Link Safety Logic
+  ---
+  duration_ms: 4.885542
+  type: 'test'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@google/genai' imported from /app/lib/rag.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+#     at packageResolve (node:internal/modules/esm/resolve:767:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28)
+#     at resolveBase (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613674:2:3744)
+#     at resolveDirectory (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613674:2:4243)
+#     at resolveTsPaths (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613674:2:4984)
+#     at resolve (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613674:2:5361)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.22.0
+# Subtest: tests/test_rag_integration.ts
+not ok 7 - tests/test_rag_integration.ts
+  ---
+  duration_ms: 346.963841
+  type: 'test'
+  location: '/app/tests/test_rag_integration.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@google/genai' imported from /app/lib/rag.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+#     at packageResolve (node:internal/modules/esm/resolve:767:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28)
+#     at resolveBase (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613721:2:3744)
+#     at resolveDirectory (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613721:2:4243)
+#     at resolveTsPaths (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613721:2:4984)
+#     at resolve (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613721:2:5361)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.22.0
+# Subtest: tests/test_rag_logic.ts
+not ok 8 - tests/test_rag_logic.ts
+  ---
+  duration_ms: 332.474648
+  type: 'test'
+  location: '/app/tests/test_rag_logic.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@google/genai' imported from /app/lib/rag.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+#     at packageResolve (node:internal/modules/esm/resolve:767:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28)
+#     at resolveBase (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613700:2:3744)
+#     at resolveDirectory (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613700:2:4243)
+#     at resolveTsPaths (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613700:2:4984)
+#     at resolve (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819613700:2:5361)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.22.0
+# Subtest: tests/test_rag_robustness.ts
+not ok 9 - tests/test_rag_robustness.ts
+  ---
+  duration_ms: 308.91231
+  type: 'test'
+  location: '/app/tests/test_rag_robustness.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: redactSensitiveInfo
+    # Subtest: should redact a simple secret
+    ok 1 - should redact a simple secret
+      ---
+      duration_ms: 1.405477
+      type: 'test'
+      ...
+    # Subtest: should redact multiple occurrences of the same secret
+    ok 2 - should redact multiple occurrences of the same secret
+      ---
+      duration_ms: 0.210726
+      type: 'test'
+      ...
+    # Subtest: should redact multiple different secrets
+    ok 3 - should redact multiple different secrets
+      ---
+      duration_ms: 0.297363
+      type: 'test'
+      ...
+    # Subtest: should not redact secrets shorter than or equal to 4 characters
+    ok 4 - should not redact secrets shorter than or equal to 4 characters
+      ---
+      duration_ms: 0.165608
+      type: 'test'
+      ...
+    # Subtest: should escape special regex characters in secrets
+    ok 5 - should escape special regex characters in secrets
+      ---
+      duration_ms: 0.16204
+      type: 'test'
+      ...
+    # Subtest: should handle null or undefined secrets in the array
+    ok 6 - should handle null or undefined secrets in the array
+      ---
+      duration_ms: 0.249141
+      type: 'test'
+      ...
+    # Subtest: should return original text if secrets array is empty
+    ok 7 - should return original text if secrets array is empty
+      ---
+      duration_ms: 0.220549
+      type: 'test'
+      ...
+    # Subtest: should return original text if text is empty or null
+    ok 8 - should return original text if text is empty or null
+      ---
+      duration_ms: 0.204086
+      type: 'test'
+      ...
+    # Subtest: should correctly handle overlapping secrets
+    ok 9 - should correctly handle overlapping secrets
+      ---
+      duration_ms: 0.38856
+      type: 'test'
+      ...
+    1..9
+ok 13 - redactSensitiveInfo
+  ---
+  duration_ms: 5.171868
+  type: 'suite'
+  ...
+# Subtest: parseRoute
+    # Subtest: returns HOME when no params present
+    ok 1 - returns HOME when no params present
+      ---
+      duration_ms: 0.918301
+      type: 'test'
+      ...
+    # Subtest: returns HOME when view param is invalid
+    ok 2 - returns HOME when view param is invalid
+      ---
+      duration_ms: 0.359708
+      type: 'test'
+      ...
+    # Subtest: returns correct view for valid view param
+    ok 3 - returns correct view for valid view param
+      ---
+      duration_ms: 0.233829
+      type: 'test'
+      ...
+    # Subtest: returns correct view and slug for ESSAYS view with slug
+    ok 4 - returns correct view and slug for ESSAYS view with slug
+      ---
+      duration_ms: 0.210499
+      type: 'test'
+      ...
+    # Subtest: ignores slug if view is not ESSAYS
+    ok 5 - ignores slug if view is not ESSAYS
+      ---
+      duration_ms: 0.189716
+      type: 'test'
+      ...
+    # Subtest: returns ESSAYS view with null slug if slug is missing
+    ok 6 - returns ESSAYS view with null slug if slug is missing
+      ---
+      duration_ms: 0.346228
+      type: 'test'
+      ...
+    # Subtest: is case sensitive for view param values
+    ok 7 - is case sensitive for view param values
+      ---
+      duration_ms: 0.187585
+      type: 'test'
+      ...
+    1..7
+ok 14 - parseRoute
+  ---
+  duration_ms: 4.679609
+  type: 'test'
+  ...
+# Subtest: safeJsonParse
+    # Subtest: parses simple JSON array
+    ok 1 - parses simple JSON array
+      ---
+      duration_ms: 1.55693
+      type: 'test'
+      ...
+    # Subtest: parses simple JSON object
+    ok 2 - parses simple JSON object
+      ---
+      duration_ms: 0.204824
+      type: 'test'
+      ...
+    # Subtest: parses JSON embedded in conversational text (Array)
+    ok 3 - parses JSON embedded in conversational text (Array)
+      ---
+      duration_ms: 0.503139
+      type: 'test'
+      ...
+    # Subtest: parses JSON embedded in conversational text (Object)
+    ok 4 - parses JSON embedded in conversational text (Object)
+      ---
+      duration_ms: 0.208344
+      type: 'test'
+      ...
+    # Subtest: handles nested structures
+    ok 5 - handles nested structures
+      ---
+      duration_ms: 0.372733
+      type: 'test'
+      ...
+    # Subtest: handles brackets inside strings
+    ok 6 - handles brackets inside strings
+      ---
+      duration_ms: 0.210553
+      type: 'test'
+      ...
+    # Subtest: handles escaped quotes inside strings
+    ok 7 - handles escaped quotes inside strings
+      ---
+      duration_ms: 0.278176
+      type: 'test'
+      ...
+    # Subtest: returns first valid JSON structure found (Array first)
+    ok 8 - returns first valid JSON structure found (Array first)
+      ---
+      duration_ms: 0.360053
+      type: 'test'
+      ...
+    # Subtest: returns first valid JSON structure found (Object first)
+    ok 9 - returns first valid JSON structure found (Object first)
+      ---
+      duration_ms: 0.434532
+      type: 'test'
+      ...
+    # Subtest: returns null for malformed JSON
+    ok 10 - returns null for malformed JSON
+      ---
+      duration_ms: 0.298805
+      type: 'test'
+      ...
+    # Subtest: returns null for balanced but invalid JSON
+    ok 11 - returns null for balanced but invalid JSON
+      ---
+      duration_ms: 0.191286
+      type: 'test'
+      ...
+    # Subtest: handles malformed brackets
+    ok 12 - handles malformed brackets
+      ---
+      duration_ms: 0.194795
+      type: 'test'
+      ...
+    # Subtest: handles incomplete nested structure
+    ok 13 - handles incomplete nested structure
+      ---
+      duration_ms: 0.239708
+      type: 'test'
+      ...
+    1..13
+ok 15 - safeJsonParse
+  ---
+  duration_ms: 8.45214
+  type: 'test'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'react' imported from /app/tests/test_search_highlighter.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+#     at packageResolve (node:internal/modules/esm/resolve:767:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28)
+#     at resolveBase (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819614322:2:3744)
+#     at resolveDirectory (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819614322:2:4243)
+#     at resolveTsPaths (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819614322:2:4984)
+#     at resolve (file:///home/jules/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1769819614322:2:5361)
+#     at nextResolve (node:internal/modules/esm/hooks:748:28) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.22.0
+# Subtest: tests/test_search_highlighter.ts
+not ok 13 - tests/test_search_highlighter.ts
+  ---
+  duration_ms: 304.480238
+  type: 'test'
+  location: '/app/tests/test_search_highlighter.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: checkRateLimit allows requests within limit
+ok 17 - checkRateLimit allows requests within limit
+  ---
+  duration_ms: 1.227892
+  type: 'test'
+  ...
+# Subtest: checkRateLimit blocks requests over limit
+ok 18 - checkRateLimit blocks requests over limit
+  ---
+  duration_ms: 0.212605
+  type: 'test'
+  ...
+# Subtest: checkRateLimit clears old timestamps
+ok 19 - checkRateLimit clears old timestamps
+  ---
+  duration_ms: 0.247625
+  type: 'test'
+  ...
+# Subtest: sanitizeInput
+    # Subtest: removes null bytes
+    ok 1 - removes null bytes
+      ---
+      duration_ms: 0.310265
+      type: 'test'
+      ...
+    # Subtest: keeps newlines and tabs
+    ok 2 - keeps newlines and tabs
+      ---
+      duration_ms: 0.184195
+      type: 'test'
+      ...
+    # Subtest: removes other control characters
+    ok 3 - removes other control characters
+      ---
+      duration_ms: 0.162718
+      type: 'test'
+      ...
+    # Subtest: handles empty string
+    ok 4 - handles empty string
+      ---
+      duration_ms: 0.256681
+      type: 'test'
+      ...
+    # Subtest: handles emoji correctly
+    ok 5 - handles emoji correctly
+      ---
+      duration_ms: 0.274097
+      type: 'test'
+      ...
+    1..5
+ok 20 - sanitizeInput
+  ---
+  duration_ms: 2.730085
+  type: 'test'
+  ...
+# Subtest: validateChatInput
+    # Subtest: accepts valid input
+    ok 1 - accepts valid input
+      ---
+      duration_ms: 0.558489
+      type: 'test'
+      ...
+    # Subtest: rejects message exceeding max length
+    ok 2 - rejects message exceeding max length
+      ---
+      duration_ms: 0.185238
+      type: 'test'
+      ...
+    # Subtest: rejects history exceeding max total length
+    ok 3 - rejects history exceeding max total length
+      ---
+      duration_ms: 0.158387
+      type: 'test'
+      ...
+    # Subtest: rejects malformed history (invalid object)
+    ok 4 - rejects malformed history (invalid object)
+      ---
+      duration_ms: 0.160021
+      type: 'test'
+      ...
+    # Subtest: rejects malformed history (missing text)
+    ok 5 - rejects malformed history (missing text)
+      ---
+      duration_ms: 0.258237
+      type: 'test'
+      ...
+    # Subtest: rejects not array
+    ok 6 - rejects not array
+      ---
+      duration_ms: 0.126586
+      type: 'test'
+      ...
+    # Subtest: rejects repeated messages
+    ok 7 - rejects repeated messages
+      ---
+      duration_ms: 0.152267
+      type: 'test'
+      ...
+    # Subtest: rejects repeated messages even with intervening model message
+    ok 8 - rejects repeated messages even with intervening model message
+      ---
+      duration_ms: 0.145765
+      type: 'test'
+      ...
+    # Subtest: accepts different messages
+    ok 9 - accepts different messages
+      ---
+      duration_ms: 0.270807
+      type: 'test'
+      ...
+    1..9
+ok 21 - validateChatInput
+  ---
+  duration_ms: 2.993634
+  type: 'test'
+  ...
+# Subtest: RAG Math Utilities
+    # Subtest: magnitude
+        # Subtest: should calculate magnitude of a vector
+        ok 1 - should calculate magnitude of a vector
+          ---
+          duration_ms: 1.06598
+          type: 'test'
+          ...
+        # Subtest: should handle negative numbers
+        ok 2 - should handle negative numbers
+          ---
+          duration_ms: 0.24705
+          type: 'test'
+          ...
+        1..2
+    ok 1 - magnitude
+      ---
+      duration_ms: 2.181705
+      type: 'suite'
+      ...
+    # Subtest: dotProduct
+        # Subtest: should calculate dot product of two vectors
+        ok 1 - should calculate dot product of two vectors
+          ---
+          duration_ms: 0.318701
+          type: 'test'
+          ...
+        # Subtest: should handle negative numbers
+        ok 2 - should handle negative numbers
+          ---
+          duration_ms: 0.166891
+          type: 'test'
+          ...
+        1..2
+    ok 2 - dotProduct
+      ---
+      duration_ms: 0.829904
+      type: 'suite'
+      ...
+    # Subtest: cosineSimilarity
+        # Subtest: should calculate correct similarity
+        ok 1 - should calculate correct similarity
+          ---
+          duration_ms: 0.468871
+          type: 'test'
+          ...
+        # Subtest: should handle pre-calculated magnitudes
+        ok 2 - should handle pre-calculated magnitudes
+          ---
+          duration_ms: 0.244001
+          type: 'test'
+          ...
+        # Subtest: should return 0 for zero vectors
+        ok 3 - should return 0 for zero vectors
+          ---
+          duration_ms: 0.366068
+          type: 'test'
+          ...
+        # Subtest: should return 0 for length mismatch
+        ok 4 - should return 0 for length mismatch
+          ---
+          duration_ms: 0.269092
+          type: 'test'
+          ...
+        # Subtest: should return 0 for empty vectors
+        ok 5 - should return 0 for empty vectors
+          ---
+          duration_ms: 0.229621
+          type: 'test'
+          ...
+        # Subtest: should return 0 if one magnitude is 0
+        ok 6 - should return 0 if one magnitude is 0
+          ---
+          duration_ms: 0.306016
+          type: 'test'
+          ...
+        1..6
+    ok 3 - cosineSimilarity
+      ---
+      duration_ms: 2.506091
+      type: 'suite'
+      ...
+    1..3
+ok 22 - RAG Math Utilities
+  ---
+  duration_ms: 6.289179
+  type: 'suite'
+  ...
+# Subtest: slugify
+    # Subtest: converts to lowercase
+    ok 1 - converts to lowercase
+      ---
+      duration_ms: 1.183656
+      type: 'test'
+      ...
+    # Subtest: removes special characters
+    ok 2 - removes special characters
+      ---
+      duration_ms: 0.273202
+      type: 'test'
+      ...
+    # Subtest: handles multiple spaces
+    ok 3 - handles multiple spaces
+      ---
+      duration_ms: 0.159106
+      type: 'test'
+      ...
+    # Subtest: handles numbers
+    ok 4 - handles numbers
+      ---
+      duration_ms: 0.18144
+      type: 'test'
+      ...
+    # Subtest: handles dashes
+    ok 5 - handles dashes
+      ---
+      duration_ms: 0.153085
+      type: 'test'
+      ...
+    # Subtest: strips emojis
+    ok 6 - strips emojis
+      ---
+      duration_ms: 0.290546
+      type: 'test'
+      ...
+    1..6
+ok 23 - slugify
+  ---
+  duration_ms: 4.329369
+  type: 'test'
+  ...
+# Subtest: extractTextFromMarkdown
+    # Subtest: removes bold
+    ok 1 - removes bold
+      ---
+      duration_ms: 0.520635
+      type: 'test'
+      ...
+    # Subtest: removes italic
+    ok 2 - removes italic
+      ---
+      duration_ms: 0.312517
+      type: 'test'
+      ...
+    # Subtest: removes links
+    ok 3 - removes links
+      ---
+      duration_ms: 0.226728
+      type: 'test'
+      ...
+    # Subtest: removes code
+    ok 4 - removes code
+      ---
+      duration_ms: 0.223503
+      type: 'test'
+      ...
+    1..4
+ok 24 - extractTextFromMarkdown
+  ---
+  duration_ms: 2.541881
+  type: 'test'
+  ...
+# Subtest: TOC Parsing
+    # Subtest: ignores headers in code blocks
+    ok 1 - ignores headers in code blocks
+      ---
+      duration_ms: 2.000401
+      type: 'test'
+      ...
+    # Subtest: handles frontmatter
+    ok 2 - handles frontmatter
+      ---
+      duration_ms: 0.356001
+      type: 'test'
+      ...
+    1..2
+ok 25 - TOC Parsing
+  ---
+  duration_ms: 3.580387
+  type: 'test'
+  ...
+# Subtest: escapeRegExp
+    # Subtest: escapes special characters
+    ok 1 - escapes special characters
+      ---
+      duration_ms: 1.209696
+      type: 'test'
+      ...
+    # Subtest: does not change standard text
+    ok 2 - does not change standard text
+      ---
+      duration_ms: 0.196807
+      type: 'test'
+      ...
+    # Subtest: handles empty string
+    ok 3 - handles empty string
+      ---
+      duration_ms: 0.262848
+      type: 'test'
+      ...
+    # Subtest: handles mixed content
+    ok 4 - handles mixed content
+      ---
+      duration_ms: 0.178621
+      type: 'test'
+      ...
+    1..4
+ok 26 - escapeRegExp
+  ---
+  duration_ms: 3.533575
+  type: 'test'
+  ...
+# Subtest: parseFollowUpPrompts
+    # Subtest: extracts prompts correctly
+    ok 1 - extracts prompts correctly
+      ---
+      duration_ms: 1.242348
+      type: 'test'
+      ...
+    # Subtest: handles missing FOLLOW_UP tag
+    ok 2 - handles missing FOLLOW_UP tag
+      ---
+      duration_ms: 0.174472
+      type: 'test'
+      ...
+    # Subtest: handles malformed JSON with fallback
+    ok 3 - handles malformed JSON with fallback
+      ---
+      duration_ms: 0.545524
+      type: 'test'
+      ...
+    # Subtest: handles completely invalid JSON
+    ok 4 - handles completely invalid JSON
+      ---
+      duration_ms: 0.323232
+      type: 'test'
+      ...
+    # Subtest: handles multiple markers (preserves rest)
+    ok 5 - handles multiple markers (preserves rest)
+      ---
+      duration_ms: 0.359133
+      type: 'test'
+      ...
+    # Subtest: handles brackets inside strings
+    ok 6 - handles brackets inside strings
+      ---
+      duration_ms: 0.25576
+      type: 'test'
+      ...
+    # Subtest: handles nested arrays
+    ok 7 - handles nested arrays
+      ---
+      duration_ms: 0.246761
+      type: 'test'
+      ...
+    1..7
+ok 27 - parseFollowUpPrompts
+  ---
+  duration_ms: 4.502789
+  type: 'test'
+  ...
+# Subtest: calculateReadTime
+    # Subtest: returns 1 for empty text
+    ok 1 - returns 1 for empty text
+      ---
+      duration_ms: 0.209173
+      type: 'test'
+      ...
+    # Subtest: returns 1 for whitespace only
+    ok 2 - returns 1 for whitespace only
+      ---
+      duration_ms: 0.13435
+      type: 'test'
+      ...
+    # Subtest: calculates time correctly
+    ok 3 - calculates time correctly
+      ---
+      duration_ms: 0.343335
+      type: 'test'
+      ...
+    # Subtest: calculates time for 201 words (2 mins)
+    ok 4 - calculates time for 201 words (2 mins)
+      ---
+      duration_ms: 0.240471
+      type: 'test'
+      ...
+    # Subtest: calculates time for 200 words (1 min)
+    ok 5 - calculates time for 200 words (1 min)
+      ---
+      duration_ms: 0.243098
+      type: 'test'
+      ...
+    1..5
+ok 28 - calculateReadTime
+  ---
+  duration_ms: 1.807361
+  type: 'test'
+  ...
+# Subtest: redactSensitiveInfo
+    # Subtest: redacts secrets
+    ok 1 - redacts secrets
+      ---
+      duration_ms: 0.267397
+      type: 'test'
+      ...
+    # Subtest: ignores short secrets
+    ok 2 - ignores short secrets
+      ---
+      duration_ms: 0.192676
+      type: 'test'
+      ...
+    # Subtest: handles regex special chars in secret
+    ok 3 - handles regex special chars in secret
+      ---
+      duration_ms: 0.168121
+      type: 'test'
+      ...
+    # Subtest: handles undefined/null secrets
+    ok 4 - handles undefined/null secrets
+      ---
+      duration_ms: 0.154644
+      type: 'test'
+      ...
+    1..4
+ok 29 - redactSensitiveInfo
+  ---
+  duration_ms: 1.503881
+  type: 'test'
+  ...
+# Subtest: extractTextFromReactNode
+    # Subtest: extracts from string
+    ok 1 - extracts from string
+      ---
+      duration_ms: 0.248552
+      type: 'test'
+      ...
+    # Subtest: extracts from number
+    ok 2 - extracts from number
+      ---
+      duration_ms: 0.119616
+      type: 'test'
+      ...
+    # Subtest: extracts from simple array
+    ok 3 - extracts from simple array
+      ---
+      duration_ms: 0.169906
+      type: 'test'
+      ...
+    # Subtest: extracts from nested elements (mocked)
+    ok 4 - extracts from nested elements (mocked)
+      ---
+      duration_ms: 0.145375
+      type: 'test'
+      ...
+    # Subtest: handles deeply nested structure
+    ok 5 - handles deeply nested structure
+      ---
+      duration_ms: 0.111779
+      type: 'test'
+      ...
+    # Subtest: handles empty/null/undefined
+    ok 6 - handles empty/null/undefined
+      ---
+      duration_ms: 0.105895
+      type: 'test'
+      ...
+    # Subtest: ignores non-text props
+    ok 7 - ignores non-text props
+      ---
+      duration_ms: 0.108446
+      type: 'test'
+      ...
+    1..7
+ok 30 - extractTextFromReactNode
+  ---
+  duration_ms: 2.849962
+  type: 'test'
+  ...
+# Subtest: extractTextFromMarkdown
+    # Subtest: removes bold formatting
+    ok 1 - removes bold formatting
+      ---
+      duration_ms: 0.340338
+      type: 'test'
+      ...
+    # Subtest: removes italic formatting
+    ok 2 - removes italic formatting
+      ---
+      duration_ms: 0.147446
+      type: 'test'
+      ...
+    # Subtest: removes inline code formatting
+    ok 3 - removes inline code formatting
+      ---
+      duration_ms: 0.114487
+      type: 'test'
+      ...
+    # Subtest: removes link formatting (keeps text)
+    ok 4 - removes link formatting (keeps text)
+      ---
+      duration_ms: 0.156324
+      type: 'test'
+      ...
+    # Subtest: removes header prefixes
+    ok 5 - removes header prefixes
+      ---
+      duration_ms: 0.12333
+      type: 'test'
+      ...
+    # Subtest: handles nested formatting (bold inside italic)
+    ok 6 - handles nested formatting (bold inside italic)
+      ---
+      duration_ms: 0.098696
+      type: 'test'
+      ...
+    # Subtest: handles combined formatting
+    ok 7 - handles combined formatting
+      ---
+      duration_ms: 0.105394
+      type: 'test'
+      ...
+    # Subtest: handles empty string
+    ok 8 - handles empty string
+      ---
+      duration_ms: 0.100006
+      type: 'test'
+      ...
+    # Subtest: handles text with no markdown
+    ok 9 - handles text with no markdown
+      ---
+      duration_ms: 0.110502
+      type: 'test'
+      ...
+    1..9
+ok 31 - extractTextFromMarkdown
+  ---
+  duration_ms: 2.074221
+  type: 'test'
+  ...
+1..31
+# tests 166
+# suites 9
+# pass 161
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2087.554721
+ ELIFECYCLE  Test failed. See above for more details.
+ WARN   Local package.json exists, but node_modules missing, did you mean to install?
