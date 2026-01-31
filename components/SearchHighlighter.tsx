@@ -48,15 +48,32 @@ export const highlightNodes = (nodes: React.ReactNode, regex: RegExp | null): Re
 
   // Case 2: Array of Nodes (Fragment contents)
   if (Array.isArray(nodes)) {
-    return nodes.map((node, i) => <React.Fragment key={i}>{highlightNodes(node, regex)}</React.Fragment>);
+    let hasChanges = false;
+    const mapped = nodes.map((node, i) => {
+      const highlighted = highlightNodes(node, regex);
+      if (highlighted !== node) {
+        hasChanges = true;
+      }
+      return <React.Fragment key={i}>{highlighted}</React.Fragment>;
+    });
+
+    return hasChanges ? mapped : nodes;
   }
 
   // Case 3: React Element (div, span, p, custom component)
   if (React.isValidElement(nodes)) {
+    const originalChildren = (nodes.props as any).children;
+    const highlightedChildren = highlightNodes(originalChildren, regex);
+
+    // Optimization: If children haven't changed, return the original element reference
+    if (highlightedChildren === originalChildren) {
+      return nodes;
+    }
+
     // Clone the element to preserve its type and props (className, style, etc.)
     // but replace its `children` with the highlighted version.
     return React.cloneElement(nodes as React.ReactElement<any>, {
-      children: highlightNodes((nodes.props as any).children, regex)
+      children: highlightedChildren
     });
   }
 

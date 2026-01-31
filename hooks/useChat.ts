@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
-import { checkRateLimit } from '../lib/security';
+import { checkRateLimit, validateChatInput } from '../lib/security';
 
 /**
  * Curated list of initial prompts to guide the user towards the persona's core competencies.
@@ -99,16 +99,43 @@ export const useChat = () => {
   const handleSend = useCallback(async (text: string) => {
     if (!text.trim() || isLoadingRef.current) return;
 
-    // Security: Input length validation
-    if (text.length > 2000) {
-      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
+    // Security: Input validation (length, content safety, spam)
+    // We validate against the *current* history (messagesRef.current) which is the state before this new message
+    const validation = validateChatInput(messagesRef.current, text);
+    if (!validation.valid) {
+      const errorMsg: Message = { role: 'model', text: `Error: ${validation.error || "Invalid input."}` };
       setMessages(prev => [...prev, errorMsg]);
       return;
     }
 
     // Security: Rate limiting
-    const { allowed, newTimestamps } = checkRateLimit(requestTimestampsRef.current, RATE_LIMIT_WINDOW, MAX_REQUESTS);
+    // Load latest timestamps from storage to handle multi-tab synchronization
+    let currentTimestamps = requestTimestampsRef.current;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('chat_rate_limit_timestamps');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            currentTimestamps = parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load rate limit timestamps:', e);
+      }
+    }
+
+    const { allowed, newTimestamps } = checkRateLimit(currentTimestamps, RATE_LIMIT_WINDOW, MAX_REQUESTS);
     requestTimestampsRef.current = newTimestamps;
+
+    // Persist to local storage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('chat_rate_limit_timestamps', JSON.stringify(newTimestamps));
+      } catch (e) {
+        console.warn('Failed to save rate limit timestamps:', e);
+      }
+    }
 
     if (!allowed) {
       const errorMsg: Message = { role: 'model', text: "System: Rate limit exceeded. Please wait a moment before sending more messages." };
@@ -147,6 +174,8 @@ export const useChat = () => {
         return;
       }
       console.error("Chat error:", error);
+      const errorMsg: Message = { role: 'model', text: "Error: Failed to connect to the model. Please try again." };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;

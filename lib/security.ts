@@ -51,8 +51,23 @@ export function checkRateLimit(
 
 import { Message } from '../types';
 
-export const MAX_NEW_MESSAGE_LENGTH = 10000;
+export const MAX_NEW_MESSAGE_LENGTH = 2000;
 export const MAX_TOTAL_HISTORY_LENGTH = 100000;
+
+/**
+ * Sanitizes input text to remove potentially harmful control characters.
+ *
+ * Why: To prevent log flooding, invisible character attacks, or confusion in downstream processing.
+ *
+ * @param input The raw input string.
+ * @returns The sanitized string.
+ */
+export function sanitizeInput(input: string): string {
+    if (!input) return "";
+    // Remove control characters (ASCII 0-31) except for newline (10), carriage return (13), and tab (9)
+    // Also remove Delete (127)
+    return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
 
 /**
  * Validates the chat input to prevent Denial of Service (DoS) and abuse.
@@ -84,6 +99,20 @@ export function validateChatInput(history: Message[], newMessage: string): { val
 
     if (totalLength > MAX_TOTAL_HISTORY_LENGTH) {
         return { valid: false, error: "Conversation history is too long. Please clear chat to continue." };
+    }
+
+    // Check for repeated messages (spam prevention)
+    // Find last user message
+    let lastUserMessage: Message | null = null;
+    for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i].role === 'user') {
+            lastUserMessage = history[i];
+            break;
+        }
+    }
+
+    if (lastUserMessage && lastUserMessage.text === newMessage) {
+        return { valid: false, error: "Please avoid repeating the same message." };
     }
 
     return { valid: true };

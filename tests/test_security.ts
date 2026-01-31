@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { checkRateLimit, validateChatInput, MAX_NEW_MESSAGE_LENGTH, MAX_TOTAL_HISTORY_LENGTH } from '../lib/security';
+import { checkRateLimit, validateChatInput, sanitizeInput, MAX_NEW_MESSAGE_LENGTH, MAX_TOTAL_HISTORY_LENGTH } from '../lib/security';
 import { Message } from '../types';
 
 test('checkRateLimit allows requests within limit', () => {
@@ -34,6 +34,35 @@ test('checkRateLimit clears old timestamps', () => {
   assert.strictEqual(result.allowed, true);
   // Should remove the old one and add the new one
   assert.strictEqual(result.newTimestamps.length, 1);
+});
+
+test('sanitizeInput', async (t) => {
+    await t.test('removes null bytes', () => {
+        const input = 'Hello\u0000World';
+        const result = sanitizeInput(input);
+        assert.strictEqual(result, 'HelloWorld');
+    });
+
+    await t.test('keeps newlines and tabs', () => {
+        const input = 'Hello\n\tWorld';
+        const result = sanitizeInput(input);
+        assert.strictEqual(result, 'Hello\n\tWorld');
+    });
+
+    await t.test('removes other control characters', () => {
+        const input = 'Hello\u0007World'; // Bell character
+        const result = sanitizeInput(input);
+        assert.strictEqual(result, 'HelloWorld');
+    });
+
+    await t.test('handles empty string', () => {
+        assert.strictEqual(sanitizeInput(''), '');
+    });
+
+    await t.test('handles emoji correctly', () => {
+        const input = 'Hello 🛡️';
+        assert.strictEqual(sanitizeInput(input), 'Hello 🛡️');
+    });
 });
 
 test('validateChatInput', async (t) => {
@@ -83,5 +112,31 @@ test('validateChatInput', async (t) => {
         const result = validateChatInput(history, newMessage);
         assert.strictEqual(result.valid, false);
         assert.strictEqual(result.error, "Invalid history format.");
+    });
+
+    await t.test('rejects repeated messages', () => {
+        const history: Message[] = [{ role: 'user', text: 'Hello' }];
+        const newMessage = 'Hello';
+        const result = validateChatInput(history, newMessage);
+        assert.strictEqual(result.valid, false);
+        assert.strictEqual(result.error, "Please avoid repeating the same message.");
+    });
+
+    await t.test('rejects repeated messages even with intervening model message', () => {
+        const history: Message[] = [
+            { role: 'user', text: 'What is AGI?' },
+            { role: 'model', text: 'AGI is...' }
+        ];
+        const newMessage = 'What is AGI?';
+        const result = validateChatInput(history, newMessage);
+        assert.strictEqual(result.valid, false);
+        assert.strictEqual(result.error, "Please avoid repeating the same message.");
+    });
+
+    await t.test('accepts different messages', () => {
+        const history: Message[] = [{ role: 'user', text: 'Hello' }];
+        const newMessage = 'World';
+        const result = validateChatInput(history, newMessage);
+        assert.strictEqual(result.valid, true);
     });
 });

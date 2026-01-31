@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Loader2, RotateCcw, Download } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Loader2, RotateCcw, Download, Trash2 } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -24,6 +24,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<ChatInputHandle>(null);
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const clearTimeoutRef = useRef<NodeJS.Timeout>(undefined);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeout(clearTimeoutRef.current);
+    };
+  }, []);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -43,8 +52,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   };
 
   const handleClearChat = () => {
-    clearChat();
-    inputRef.current?.clear();
+    if (isConfirmingClear) {
+      clearChat();
+      inputRef.current?.clear();
+      setIsConfirmingClear(false);
+      clearTimeout(clearTimeoutRef.current);
+    } else {
+      setIsConfirmingClear(true);
+      clearTimeoutRef.current = setTimeout(() => {
+        setIsConfirmingClear(false);
+      }, 3000);
+    }
   };
 
   return (
@@ -114,11 +132,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
 
               <button
                 onClick={handleClearChat}
-                aria-label="Clear chat"
-                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
-                title="Clear chat history"
+                aria-label={isConfirmingClear ? "Confirm clear chat" : "Clear chat"}
+                className={`p-3.5 rounded-xl border transition-all shrink-0 group ${
+                  isConfirmingClear
+                    ? "bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30"
+                    : "bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
+                }`}
+                title={isConfirmingClear ? "Click again to confirm" : "Clear chat history"}
               >
-                <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                {isConfirmingClear ? (
+                  <Trash2 size={20} className="animate-pulse" />
+                ) : (
+                  <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                )}
               </button>
             </>
           )}
