@@ -8,7 +8,7 @@ import { useChat } from '../hooks/useChat';
 import { downloadChatHistory } from '../lib/download';
 
 interface ChatInterfaceProps {
-  onNavigate?: (view: View, slug?: string) => void;
+  onNavigate?: (view: View, slug?: string, hash?: string) => void;
   className?: string;
 }
 

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { View } from '../types';
 
 interface UseGlobalShortcutsProps {
-  onNavigate: (view: View) => void;
+  onNavigate: (view: View, slug?: string, hash?: string) => void;
   toggleShortcutsModal: () => void;
   isModalOpen: boolean;
 }

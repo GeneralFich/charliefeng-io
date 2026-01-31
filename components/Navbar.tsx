@@ -6,7 +6,7 @@ import { MessageSquare, FileText, Menu, X, BookOpen } from 'lucide-react';
 
 interface NavbarProps {
   currentView: View;
-  onNavigate: (view: View, slug?: string) => void;
+  onNavigate: (view: View, slug?: string, hash?: string) => void;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
 }

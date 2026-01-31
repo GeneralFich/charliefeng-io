@@ -11,29 +11,37 @@ const MARKDOWN_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeSanitize];
 
 // Helper for handling internal links
-const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) => void) => {
+const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string, hash?: string) => void) => {
   if (!onNavigate) return false;
 
-  if (href === '/whitepaper' || href === '/dashboard') {
-    onNavigate(View.DASHBOARD);
+  // Helper to parse potential hash from url
+  const parseUrl = (url: string) => {
+    const [path, hash] = url.split('#');
+    return { path, hash };
+  };
+
+  const { path, hash } = parseUrl(href);
+
+  if (path === '/whitepaper' || path === '/dashboard') {
+    onNavigate(View.DASHBOARD, undefined, hash);
     return true;
   }
-  if (href === '/resume' || href === '/about') {
-    onNavigate(View.ABOUT);
+  if (path === '/resume' || path === '/about') {
+    onNavigate(View.ABOUT, undefined, hash);
     return true;
   }
-  if (href === '/contact') {
+  if (path === '/contact') {
     // Redirect legacy contact links to About page (which has LinkedIn)
-    onNavigate(View.ABOUT);
+    onNavigate(View.ABOUT, undefined, hash);
     return true;
   }
-  if (href.startsWith('/essays/')) {
-    const slug = href.replace('/essays/', '');
-    onNavigate(View.ESSAYS, slug);
+  if (path.startsWith('/essays/')) {
+    const slug = path.replace('/essays/', '');
+    onNavigate(View.ESSAYS, slug, hash);
     return true;
   }
-  if (href === '/essays' || href === '/blog') {
-    onNavigate(View.ESSAYS);
+  if (path === '/essays' || path === '/blog') {
+    onNavigate(View.ESSAYS, undefined, hash);
     return true;
   }
   return false;
@@ -64,7 +72,7 @@ const STATIC_MARKDOWN_COMPONENTS = {
 
 interface ChatMessageProps {
   message: Message;
-  onNavigate?: (view: View, slug?: string) => void;
+  onNavigate?: (view: View, slug?: string, hash?: string) => void;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate }) => {

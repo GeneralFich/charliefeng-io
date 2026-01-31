@@ -1,11 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, MapPin, Briefcase, GraduationCap, Users, Share2, Check, Linkedin } from 'lucide-react';
 import { RESUME_CONTENT, LINKEDIN_URL } from '../lib/knowledge';
 import { View } from '../types';
+import { slugify } from '../lib/utils';
 
-export const Resume: React.FC = () => {
+interface ResumeProps {
+  initialHash?: string | null;
+}
+
+export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
   const { name, location, summary, experience, education, leadership, skills } = RESUME_CONTENT;
   const [isCopied, setIsCopied] = useState(false);
+
+  // Handle hash scrolling on mount or update
+  // We use window.location.hash directly as a fallback, but listening to hash changes or remounts is key.
+  // Since Resume is mounted when view=ABOUT, it should run this effect.
+  useEffect(() => {
+    const scrollToHash = () => {
+        const hashToUse = initialHash || window.location.hash;
+        if (hashToUse) {
+          const id = hashToUse.replace(/^#/, '');
+          // Try to find the element
+          const element = document.getElementById(id);
+          if (element) {
+            // Add a small delay to ensure rendering is complete
+            setTimeout(() => {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add a temporary highlight effect
+                element.classList.add('bg-blue-900/20', 'transition-colors', 'duration-1000');
+                setTimeout(() => {
+                    element.classList.remove('bg-blue-900/20');
+                }, 2000);
+            }, 100);
+          }
+        }
+    };
+
+    scrollToHash();
+
+    // Also listen for hash changes if the user clicks another anchor link while on the page
+    window.addEventListener('hashchange', scrollToHash);
+    return () => window.removeEventListener('hashchange', scrollToHash);
+  }, [initialHash]);
 
   const handleShare = async () => {
     try {
@@ -67,7 +103,7 @@ export const Resume: React.FC = () => {
       </div>
 
       {/* Summary */}
-      <section className="mb-12 print:mb-6">
+      <section className="mb-12 print:mb-6" id="summary">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4 print:text-blue-700 print:mb-2">Executive Summary</h2>
         <p className="leading-relaxed text-slate-300 max-w-3xl print:text-slate-800">
           {summary}
@@ -75,7 +111,7 @@ export const Resume: React.FC = () => {
       </section>
 
       {/* Experience */}
-      <section className="mb-12 print:mb-6">
+      <section className="mb-12 print:mb-6" id="experience">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
            <Briefcase size={18} /> Professional Experience
         </h2>
@@ -83,7 +119,7 @@ export const Resume: React.FC = () => {
         <div className="space-y-10 border-l border-slate-800 ml-2 pl-8 relative print:border-slate-300 print:space-y-6">
           
           {experience.map((exp, index) => (
-            <div key={index} className="relative">
+            <div key={index} className="relative scroll-mt-24" id={`experience-${slugify(exp.company)}`}>
               <div className={`absolute -left-[38px] top-1 w-5 h-5 bg-slate-950 border-2 rounded-full print:bg-white print:w-4 print:h-4 print:-left-[37px] ${index === 0 ? 'border-blue-500 print:border-blue-700' : 'border-slate-700 print:border-slate-400'}`}></div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-2">
                 <h3 className="text-xl font-semibold text-white print:text-black">{exp.company}</h3>
@@ -109,7 +145,7 @@ export const Resume: React.FC = () => {
       </section>
 
       {/* Education */}
-      <section className="mb-12 print:mb-6">
+      <section className="mb-12 print:mb-6" id="education">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
            <GraduationCap size={18} /> Education
         </h2>
@@ -126,13 +162,13 @@ export const Resume: React.FC = () => {
 
       {/* Leadership */}
       {leadership && leadership.length > 0 && (
-        <section className="mb-12 print:mb-6">
+        <section className="mb-12 print:mb-6" id="leadership">
           <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
             <Users size={18} /> Leadership & Community
           </h2>
           <div className="grid gap-6 print:gap-4">
             {leadership.map((item, index) => (
-              <div key={index} className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 print:bg-transparent print:border-slate-200 print:p-4">
+              <div key={index} className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 print:bg-transparent print:border-slate-200 print:p-4 scroll-mt-24" id={`leadership-${slugify(item.organization)}`}>
                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-2">
                     <h3 className="text-white font-semibold print:text-black">{item.organization}</h3>
                     <span className="text-slate-400 text-sm print:text-slate-600">{item.dates}</span>
@@ -146,7 +182,7 @@ export const Resume: React.FC = () => {
       )}
 
       {/* Skills */}
-      <section className="mb-12 print:mb-6">
+      <section className="mb-12 print:mb-6" id="skills">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 print:text-blue-700 print:mb-4">Skills</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:gap-2">
           {skills.map((skill, index) => (
