@@ -19,8 +19,16 @@ export function filterAndSortEssays(
   let isMutable = false;
 
   if (searchQuery) {
-    const lowerQuery = searchQuery.toLowerCase();
-    filteredPosts = filteredPosts.filter(post => post.searchContent.includes(lowerQuery));
+    // Optimization: Use RegExp with 'i' flag to avoid creating lowercased copies of content
+    // Escape special regex characters to treat the query as a literal string
+    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'i');
+
+    filteredPosts = filteredPosts.filter(post =>
+      regex.test(post.attributes.title) ||
+      regex.test(post.attributes.description) ||
+      regex.test(post.body)
+    );
     isMutable = true;
   }
 

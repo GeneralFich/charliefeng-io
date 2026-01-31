@@ -73,7 +73,6 @@ export interface BlogPost {
   attributes: PostAttributes;
   body: string;
   readTime: number;
-  searchContent: string;
 }
 
 // --- Parsing ---
@@ -93,7 +92,6 @@ export const BLOG_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, cont
     attributes: parsed.attributes,
     body: parsed.body,
     readTime: calculateReadTime(parsed.body),
-    searchContent: (parsed.attributes.title + ' ' + parsed.attributes.description + ' ' + parsed.body).toLowerCase(),
   };
 }).sort((a, b) => new Date(b.attributes.date).getTime() - new Date(a.attributes.date).getTime());
 
