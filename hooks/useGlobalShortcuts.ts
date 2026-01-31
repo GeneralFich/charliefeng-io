@@ -7,7 +7,27 @@ interface UseGlobalShortcutsProps {
   isModalOpen: boolean;
 }
 
+/**
+ * @fileoverview Global Keyboard Shortcuts Hook
+ *
+ * This hook implements a "Chorded" keyboard shortcut system (similar to Gmail, Jira, or Vim)
+ * to allow power users to navigate the application without leaving the keyboard.
+ *
+ * "Why" Chords (Sequence Shortcuts)?
+ * Single-key shortcuts (like 'H' for Home) often conflict with normal typing or
+ * can be triggered accidentally. Two-key sequences (e.g., press 'G', then 'H')
+ * are deliberate actions that are significantly safer to implement globally.
+ *
+ * Logic:
+ * 1. **Leader Key**: Listen for the initial keypress ('G').
+ * 2. **Time Window**: Start a 1-second timer.
+ * 3. **Follower Key**: If a valid second key ('H', 'A', 'E') is pressed within that window,
+ *    trigger the corresponding navigation action.
+ * 4. **Safety**: Automatically ignores events when the user is typing in an input field
+ *    or content-editable element to prevent disrupting text entry.
+ */
 export const useGlobalShortcuts = ({ onNavigate, toggleShortcutsModal, isModalOpen }: UseGlobalShortcutsProps) => {
+  // Track the last key pressed and when it happened to detect chords
   const lastKeyTime = useRef<number>(0);
   const lastKey = useRef<string | null>(null);
 
@@ -21,7 +41,7 @@ export const useGlobalShortcuts = ({ onNavigate, toggleShortcutsModal, isModalOp
           return;
       }
 
-      // Ignore if user is typing in an input, textarea, or contentEditable
+      // Safeguard: Ignore if user is typing in an input, textarea, or contentEditable
       const target = event.target as HTMLElement;
       if (
         target.tagName === 'INPUT' ||
@@ -38,7 +58,7 @@ export const useGlobalShortcuts = ({ onNavigate, toggleShortcutsModal, isModalOp
       }
 
       const now = Date.now();
-      // 1000ms timeout for chord
+      // 1000ms timeout window to complete the chord
       const isChord = now - lastKeyTime.current < 1000;
 
       if (event.key.toLowerCase() === 'g') {
