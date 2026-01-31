@@ -59,6 +59,7 @@ interface BlogChunk {
   text: string;
   embedding?: number[];
   _magnitude?: number;
+  language?: string;
 }
 
 /**
@@ -109,7 +110,17 @@ async function ingest() {
 
     console.log(`Processing: ${parsed.attributes.title}`);
 
-    const slug = file.replace('.md', '');
+    let language = 'en';
+    let slug = file.replace('.md', '');
+
+    if (file.endsWith('.zh.md')) {
+        language = 'zh';
+        slug = file.replace('.zh.md', '');
+    } else if (file.endsWith('.es.md')) {
+        language = 'es';
+        slug = file.replace('.es.md', '');
+    }
+
     // Using a fake URL format that could be useful later, or just informative
     const url = `/essays/${slug}`;
 
@@ -129,7 +140,8 @@ async function ingest() {
            publishedDate: parsed.attributes.date,
            text: chunk,
            embedding: embedding,
-           _magnitude: magnitude(embedding)
+           _magnitude: magnitude(embedding),
+           language: language
          });
        }
 

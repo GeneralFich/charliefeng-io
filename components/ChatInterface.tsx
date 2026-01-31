@@ -6,6 +6,7 @@ import { ChatWelcome } from './ChatWelcome';
 import { ChatInput, ChatInputHandle } from './ChatInput';
 import { useChat } from '../hooks/useChat';
 import { downloadChatHistory } from '../lib/download';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string, hash?: string) => void;
@@ -13,6 +14,7 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className }) => {
+  const { t } = useLanguage();
   const {
     messages,
     isLoading,
@@ -93,7 +95,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
                   <Loader2 size={16} className="text-blue-400 animate-spin" />
                 </div>
                 <div className="text-slate-500 text-xs tracking-widest animate-pulse">
-                  THINKING...
+                  {t.chat.thinking}
                 </div>
                 <span className="sr-only">Charlie is thinking...</span>
               </div>
@@ -123,22 +125,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
             <>
               <button
                 onClick={handleDownloadChat}
-                aria-label="Download chat"
+                aria-label={t.chat.download}
                 className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all shrink-0 group"
-                title="Download chat history"
+                title={t.chat.download}
               >
                 <Download size={20} className="group-hover:scale-110 transition-transform duration-300" />
               </button>
 
               <button
                 onClick={handleClearChat}
-                aria-label={isConfirmingClear ? "Confirm clear chat" : "Clear chat"}
+                aria-label={isConfirmingClear ? t.chat.confirmClear : t.chat.clear}
                 className={`p-3.5 rounded-xl border transition-all shrink-0 group ${
                   isConfirmingClear
                     ? "bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30"
                     : "bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
                 }`}
-                title={isConfirmingClear ? "Click again to confirm" : "Clear chat history"}
+                title={isConfirmingClear ? t.chat.confirmClear : t.chat.clear}
               >
                 {isConfirmingClear ? (
                   <Trash2 size={20} className="animate-pulse" />
@@ -153,6 +155,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
             ref={inputRef}
             onSend={sendMessage}
             isLoading={isLoading}
+            placeholder={t.chat.inputPlaceholder}
           />
         </div>
       </div>

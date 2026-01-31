@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Download, MapPin, Briefcase, GraduationCap, Users, Share2, Check, Linkedin } from 'lucide-react';
-import { RESUME_CONTENT, LINKEDIN_URL } from '../lib/knowledge';
+import { getResumeAttributes, LINKEDIN_URL } from '../lib/knowledge';
 import { View } from '../types';
 import { slugify } from '../lib/utils';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface ResumeProps {
   initialHash?: string | null;
 }
 
 export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
-  const { name, location, summary, experience, education, leadership, skills } = RESUME_CONTENT;
+  const { t, language } = useLanguage();
+  const { name, location, summary, experience, education, leadership, skills } = getResumeAttributes(language);
   const [isCopied, setIsCopied] = useState(false);
 
   // Handle hash scrolling on mount or update
@@ -41,7 +43,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
     // Also listen for hash changes if the user clicks another anchor link while on the page
     window.addEventListener('hashchange', scrollToHash);
     return () => window.removeEventListener('hashchange', scrollToHash);
-  }, [initialHash]);
+  }, [initialHash, language]); // Re-run if language changes (DOM re-renders)
 
   const handleShare = async () => {
     try {
@@ -73,8 +75,8 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
-            title="View LinkedIn Profile"
-            aria-label="View LinkedIn Profile"
+            title={t.actions.viewLinkedin}
+            aria-label={t.actions.viewLinkedin}
           >
             <Linkedin size={16} />
             <span>LinkedIn</span>
@@ -83,29 +85,29 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
           <button
             onClick={handleShare}
             className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
-            title="Copy link to resume"
-            aria-label={isCopied ? "Link copied" : "Copy link to resume"}
+            title={t.actions.share}
+            aria-label={isCopied ? t.actions.copied : t.actions.share}
           >
             {isCopied ? <Check size={16} className="text-green-400" /> : <Share2 size={16} />}
-            <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? 'Copied!' : 'Share'}</span>
+            <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? t.actions.copied : t.actions.share}</span>
           </button>
 
           <button
             onClick={() => window.print()}
-            title="Print or Save as PDF"
-            aria-label="Print or Save as PDF"
+            title={t.actions.downloadPdf}
+            aria-label={t.actions.downloadPdf}
             className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
           >
             <Download size={16} />
-            <span>Download PDF</span>
+            <span>{t.actions.downloadPdf}</span>
           </button>
         </div>
       </div>
 
       {/* Summary */}
       <section className="mb-12 print:mb-6" id="summary">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4 print:text-blue-700 print:mb-2">Executive Summary</h2>
-        <p className="leading-relaxed text-slate-300 max-w-3xl print:text-slate-800">
+        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4 print:text-blue-700 print:mb-2">{t.sections.summary}</h2>
+        <p className="leading-relaxed text-slate-300 max-w-3xl print:text-slate-800 whitespace-pre-wrap">
           {summary}
         </p>
       </section>
@@ -113,7 +115,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
       {/* Experience */}
       <section className="mb-12 print:mb-6" id="experience">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
-           <Briefcase size={18} /> Professional Experience
+           <Briefcase size={18} /> {t.sections.experience}
         </h2>
 
         <div className="space-y-10 border-l border-slate-800 ml-2 pl-8 relative print:border-slate-300 print:space-y-6">
@@ -147,7 +149,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
       {/* Education */}
       <section className="mb-12 print:mb-6" id="education">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
-           <GraduationCap size={18} /> Education
+           <GraduationCap size={18} /> {t.sections.education}
         </h2>
         <div className="grid md:grid-cols-2 gap-6 print:gap-4">
           {education.map((edu, index) => (
@@ -164,7 +166,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
       {leadership && leadership.length > 0 && (
         <section className="mb-12 print:mb-6" id="leadership">
           <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 print:text-blue-700 print:mb-4">
-            <Users size={18} /> Leadership & Community
+            <Users size={18} /> {t.sections.leadership}
           </h2>
           <div className="grid gap-6 print:gap-4">
             {leadership.map((item, index) => (
@@ -183,7 +185,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
 
       {/* Skills */}
       <section className="mb-12 print:mb-6" id="skills">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 print:text-blue-700 print:mb-4">Skills</h2>
+        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 print:text-blue-700 print:mb-4">{t.sections.skills}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:gap-2">
           {skills.map((skill, index) => (
             <div key={index} className="p-4 bg-slate-900/30 border border-slate-800 rounded-lg print:bg-transparent print:border-slate-200 print:p-2">
