@@ -26,7 +26,7 @@ test('verify title attributes for improved accessibility', async ({ page }) => {
   await logoButton.focus();
 
   // Check if tooltip text is visible
-  const tooltipText = page.getByText('Interactive Knowledge Model');
+  const tooltipText = page.getByText('An AI version of me trained on my work & writing');
   // Note: Playwright's toBeVisible() checks for opacity/visibility.
   // We added group-focus-visible:block.
   // We need to ensure focus-visible is active.

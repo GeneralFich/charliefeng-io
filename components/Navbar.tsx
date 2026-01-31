@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
                 <div className="relative cursor-help w-max">
                   <p className="text-[10px] text-blue-400 uppercase tracking-widest font-semibold border-b border-dashed border-blue-400/50">Digital Twin</p>
                   <div className="absolute top-full left-0 mt-2 hidden group-hover:block group-focus-visible:block w-max bg-slate-900/90 backdrop-blur-md text-xs text-slate-300 px-3 py-1.5 rounded border border-slate-700 shadow-xl z-50">
-                    Interactive Knowledge Model
+                    An AI version of me trained on my work & writing
                   </div>
                 </div>
               </div>
