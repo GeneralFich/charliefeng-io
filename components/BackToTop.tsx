@@ -36,10 +36,20 @@ export const BackToTop: React.FC = () => {
   }, []);
 
   const scrollToTop = () => {
+    // Check for reduced motion preference
+    const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: isReducedMotion ? 'auto' : 'smooth',
     });
+
+    // Move focus to main content for keyboard users to restore navigation context
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      // Use preventScroll: true because we are already scrolling to top via window.scrollTo
+      mainContent.focus({ preventScroll: true });
+    }
   };
 
   return (

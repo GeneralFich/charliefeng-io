@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "npx tsx --test --experimental-test-module-mocks tests/*.ts"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

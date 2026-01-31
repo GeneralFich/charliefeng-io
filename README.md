@@ -92,7 +92,19 @@ Open your browser and navigate to `http://localhost:3000` (or the port shown in 
 - **`pnpm dev`**: Starts the development server.
 - **`pnpm build`**: Builds the production-ready bundle.
 - **`npx tsx scripts/ingest_blog.ts`**: Runs the RAG ingestion pipeline to update the blog index (`lib/blog_data.json`). Run this after adding new essays.
+- **`pnpm test`**: Runs the backend unit test suite.
 - **`npx playwright test`**: Runs the frontend verification suite.
+
+## Testing
+
+The project employs a dual testing strategy:
+
+1.  **Unit Tests (`tests/`)**: Verify backend logic, RAG math, and utilities using `node:test` and `tsx`.
+    -   Run with `pnpm test`.
+    -   See [tests/README.md](tests/README.md) for details on writing and running unit tests.
+
+2.  **E2E Verification (`verification/`)**: Verifies the UI and browser interactions using Playwright.
+    -   Run with `npx playwright test`.
 
 ## Project Structure
 

@@ -1,7 +1,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { cosineSimilarity, magnitude, dotProduct } from '../lib/rag';
+import { cosineSimilarity, magnitude, dotProduct } from '../lib/vector';
 
 describe('RAG Math Utilities', () => {
   describe('magnitude', () => {
