@@ -15,7 +15,8 @@ const createMockPost = (id: string, title: string, readTime: number, date: strin
   },
   body: `Body content for ${title}`,
   readTime,
-  searchContent: `${title} description body content for ${title}`.toLowerCase()
+  searchContent: `${title} description body content for ${title}`.toLowerCase(),
+  dateTimestamp: new Date(date).getTime(),
 });
 
 test('filterAndSortEssays', async (t) => {
