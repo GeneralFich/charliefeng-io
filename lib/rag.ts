@@ -1,6 +1,5 @@
 
 import { GoogleGenAI } from "@google/genai";
-import blogData from "./blog_data.json";
 import { magnitude, cosineSimilarity } from "./vector";
 
 /**
@@ -37,8 +36,10 @@ export interface RelevantChunk {
 // Lazy initialization of blog data with magnitudes
 let cachedBlogData: BlogChunk[] | null = null;
 
-const getBlogData = (): BlogChunk[] => {
+const getBlogData = async (): Promise<BlogChunk[]> => {
   if (cachedBlogData) return cachedBlogData;
+
+  const { default: blogData } = await import("./blog_data.json");
 
   // Optimization: Filter out chunks without embeddings during initialization
   // and pre-calculate magnitude for valid chunks.
@@ -98,7 +99,7 @@ export async function getRelevantContext(
       queryEmbedding = response.embeddings[0].values;
     }
     const queryMagnitude = magnitude(queryEmbedding);
-    const data = customData || getBlogData();
+    const data = customData || await getBlogData();
 
     // Optimization: Use a single loop to calculate score and filter,
     // avoiding intermediate array allocations (map + filter).
