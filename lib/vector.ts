@@ -12,7 +12,7 @@
  * @param vec - The vector.
  * @returns The magnitude.
  */
-export function magnitude(vec: number[]): number {
+export function magnitude(vec: ArrayLike<number>): number {
   let sum = 0;
   for (let i = 0; i < vec.length; i++) {
     sum += vec[i] * vec[i];
@@ -26,7 +26,7 @@ export function magnitude(vec: number[]): number {
  * @param vecB - The second vector.
  * @returns The dot product.
  */
-export function dotProduct(vecA: number[], vecB: number[]): number {
+export function dotProduct(vecA: ArrayLike<number>, vecB: ArrayLike<number>): number {
   let product = 0;
   for (let i = 0; i < vecA.length; i++) {
     product += vecA[i] * vecB[i];
@@ -52,7 +52,7 @@ export function dotProduct(vecA: number[], vecB: number[]): number {
  * @returns A number between -1 and 1 representing the similarity.
  *          Returns 0 if dimensions mismatch or magnitude is zero to prevent errors.
  */
-export function cosineSimilarity(vecA: number[], vecB: number[], magA?: number, magB?: number): number {
+export function cosineSimilarity(vecA: ArrayLike<number>, vecB: ArrayLike<number>, magA?: number, magB?: number): number {
   if (vecA.length !== vecB.length || vecA.length === 0) return 0;
 
   const dot = dotProduct(vecA, vecB);
