@@ -22,7 +22,7 @@ export interface BlogChunk {
   url: string;
   title: string;
   publishedDate: string;
-  embedding?: number[];
+  embedding?: number[] | Float32Array;
   // Optimization: Pre-calculated magnitude for the embedding
   _magnitude?: number;
 }
@@ -40,9 +40,21 @@ let cachedBlogData: BlogChunk[] | null = null;
 const getBlogData = (): BlogChunk[] => {
   if (cachedBlogData) return cachedBlogData;
 
-  // Optimization: Filter out chunks without embeddings during initialization.
-  // Magnitudes are now pre-calculated in the JSON file.
-  cachedBlogData = (blogData as BlogChunk[]).filter(chunk => chunk.embedding && chunk.embedding.length > 0);
+  // Optimization: Filter out chunks without embeddings during initialization
+  // and pre-calculate magnitude for valid chunks.
+  // This avoids checking `chunk.embedding` exists in the hot loop.
+  cachedBlogData = (blogData as BlogChunk[]).reduce<BlogChunk[]>((acc, chunk) => {
+    if (chunk.embedding && chunk.embedding.length > 0) {
+      // Optimization: Convert to Float32Array for memory efficiency
+      const embedding = new Float32Array(chunk.embedding);
+      acc.push({
+        ...chunk,
+        embedding,
+        _magnitude: magnitude(embedding)
+      });
+    }
+    return acc;
+  }, []);
 
   return cachedBlogData;
 };
@@ -71,7 +83,7 @@ export async function getRelevantContext(
   customData?: BlogChunk[]
 ): Promise<RelevantChunk[]> {
   try {
-    let queryEmbedding: number[];
+    let queryEmbedding: number[] | Float32Array;
 
     if (customEmbedder) {
       queryEmbedding = await customEmbedder(query);
@@ -88,6 +100,12 @@ export async function getRelevantContext(
       }
       queryEmbedding = response.embeddings[0].values;
     }
+
+    // Optimization: Convert query to Float32Array
+    if (!(queryEmbedding instanceof Float32Array)) {
+        queryEmbedding = new Float32Array(queryEmbedding);
+    }
+
     const queryMagnitude = magnitude(queryEmbedding);
     const data = customData || getBlogData();
 
