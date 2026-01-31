@@ -28,6 +28,7 @@ import path from 'path';
 import fs from 'fs';
 import fm from 'front-matter';
 import { chunkText } from '../lib/utils';
+import { magnitude } from '../lib/vector';
 
 // --- Configuration ---
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -57,6 +58,7 @@ interface BlogChunk {
   publishedDate: string;
   text: string;
   embedding?: number[];
+  _magnitude?: number;
 }
 
 /**
@@ -119,14 +121,17 @@ async function ingest() {
 
        const embedding = await getEmbeddings(chunk);
 
-       chunks.push({
+       if (embedding && embedding.length > 0) {
+         chunks.push({
            id: `${slug}#chunk${i}`,
            url: url,
            title: parsed.attributes.title,
            publishedDate: parsed.attributes.date,
            text: chunk,
-           embedding: embedding
-       });
+           embedding: embedding,
+           _magnitude: magnitude(embedding)
+         });
+       }
 
        // Rate limiting aid
        await new Promise(resolve => setTimeout(resolve, 200));

@@ -40,18 +40,9 @@ let cachedBlogData: BlogChunk[] | null = null;
 const getBlogData = (): BlogChunk[] => {
   if (cachedBlogData) return cachedBlogData;
 
-  // Optimization: Filter out chunks without embeddings during initialization
-  // and pre-calculate magnitude for valid chunks.
-  // This avoids checking `chunk.embedding` exists in the hot loop.
-  cachedBlogData = (blogData as BlogChunk[]).reduce<BlogChunk[]>((acc, chunk) => {
-    if (chunk.embedding && chunk.embedding.length > 0) {
-      acc.push({
-        ...chunk,
-        _magnitude: magnitude(chunk.embedding)
-      });
-    }
-    return acc;
-  }, []);
+  // Optimization: Filter out chunks without embeddings during initialization.
+  // Magnitudes are now pre-calculated in the JSON file.
+  cachedBlogData = (blogData as BlogChunk[]).filter(chunk => chunk.embedding && chunk.embedding.length > 0);
 
   return cachedBlogData;
 };
