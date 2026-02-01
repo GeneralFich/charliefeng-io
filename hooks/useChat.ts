@@ -3,29 +3,9 @@ import { Message } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { checkRateLimit, validateChatInput } from '../lib/security';
-
-/**
- * Curated list of initial prompts to guide the user towards the persona's core competencies.
- *
- * Why: Users often don't know what to ask a "Digital Twin". These specific questions
- * act as signposts to the high-value content (Resume, Projects, Contact info)
- * and help establish the professional, "Strategic Thought Partner" persona immediately.
- */
-const INITIAL_SUGGESTED_PROMPTS = [
-  "Tell me about yourself.",
-  "What is your work experience?",
-  "Show me your resume.",
-  "What are your core skills?",
-  "What projects have you worked on?",
-  "How can I contact you?",
-];
-
-const INITIAL_MESSAGE_TEXT = "Hello! I am Charlie. I can answer questions about my work, writing, and research. What would you like to know?";
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 // Rate Limit Configuration
-// Why: 10 requests per minute is a balanced threshold that allows for natural
-// conversation flow (bursts of questions) while effectively mitigating automated
-// abuse or accidental "enter key" spamming that could drain API quotas.
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS = 10;
 
@@ -46,11 +26,12 @@ const MAX_REQUESTS = 10;
  * - `clearChat`: Function to reset the chat history.
  */
 export const useChat = () => {
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: INITIAL_MESSAGE_TEXT }
+    { role: 'model', text: t.chat.greeting }
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(t.chat.suggestions);
 
   // Use refs to keep track of latest state without causing re-renders in callbacks
   // This allows handleSend to be stable (memoized) while accessing fresh data.
@@ -67,6 +48,14 @@ export const useChat = () => {
     isLoadingRef.current = isLoading;
   }, [isLoading]);
 
+  // Handle language switch: Update greeting and prompts if chat is in initial state
+  useEffect(() => {
+    if (messagesRef.current.length <= 1 && messagesRef.current[0].role === 'model') {
+       setMessages([{ role: 'model', text: t.chat.greeting }]);
+       setSuggestedPrompts(t.chat.suggestions);
+    }
+  }, [language, t]);
+
   /**
    * Resets the chat to its initial state.
    *
@@ -78,10 +67,10 @@ export const useChat = () => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
-    setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
+    setMessages([{ role: 'model', text: t.chat.greeting }]);
+    setSuggestedPrompts(t.chat.suggestions);
     setIsLoading(false);
-  }, []);
+  }, [t]);
 
   /**
    * Sends a message to the AI model.
@@ -158,7 +147,7 @@ export const useChat = () => {
     abortControllerRef.current = controller;
 
     try {
-      const rawResponse = await sendMessageToGemini(apiHistory, text, controller.signal);
+      const rawResponse = await sendMessageToGemini(apiHistory, text, language, controller.signal);
 
       // If aborted during processing (race condition check)
       if (controller.signal.aborted) return;
@@ -180,7 +169,7 @@ export const useChat = () => {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, []); // Stable dependency
+  }, [language]); // Depends on language
 
   return {
     messages,

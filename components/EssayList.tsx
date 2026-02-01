@@ -4,6 +4,7 @@ import { BlogPost } from '../lib/knowledge';
 import { escapeRegExp } from '../lib/utils';
 import { EssayItem } from './EssayItem';
 import { SortOption } from '../types';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssayListProps {
   posts: BlogPost[];
@@ -27,6 +28,7 @@ export const EssayList: React.FC<EssayListProps> = ({
   onSelectPost,
   isInsideSplitView
 }) => {
+  const { t } = useLanguage();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Use highlightQuery if provided, otherwise fallback to searchQuery
@@ -68,9 +70,9 @@ export const EssayList: React.FC<EssayListProps> = ({
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white mb-4">Essays</h2>
+        <h2 className="text-3xl font-bold text-white mb-4">{t.nav.essays}</h2>
         <p className="text-slate-400 text-lg max-w-2xl">
-          Thoughts on technology, infrastructure, and the future of AI.
+          {t.essays.subtitle}
         </p>
       </div>
 
@@ -105,7 +107,7 @@ export const EssayList: React.FC<EssayListProps> = ({
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search essays... (⌘K)"
+            placeholder={`${t.essays.searchPlaceholder} (⌘K)`}
             aria-label="Search essays"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -140,12 +142,12 @@ export const EssayList: React.FC<EssayListProps> = ({
             role="status"
             aria-live="polite"
           >
-            <p>No essays found matching "{searchQuery}"</p>
+            <p>{t.essays.noResults} "{searchQuery}"</p>
             <button
               onClick={() => onSearchChange('')}
               className="text-blue-400 hover:text-blue-300 text-sm mt-2"
             >
-              Clear search
+              {t.essays.clearSearch}
             </button>
           </div>
         )}

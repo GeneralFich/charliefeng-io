@@ -1,6 +1,6 @@
 import { GoogleGenAI, Content } from "@google/genai";
-import { FULL_CONTEXT } from "../lib/knowledge";
-import { Message } from "../types";
+import { getFullContext } from "../lib/knowledge";
+import { Message, Language } from "../types";
 import { getRelevantContext, RelevantChunk } from "../lib/rag";
 import { redactSensitiveInfo } from "../lib/utils";
 import { validateChatInput, sanitizeInput } from "../lib/security";
@@ -37,11 +37,13 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
  *
  * @param history - The conversation history so far (excluding the new message).
  * @param newMessage - The user's current question/input.
+ * @param language - The language of the interaction (used for RAG and System Prompt).
  * @returns A Promise resolving to the model's text response (markdown formatted).
  */
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string,
+  language: Language,
   abortSignal?: AbortSignal
 ): Promise<string> => {
   // 1. Validation & Guard Clauses
@@ -50,13 +52,13 @@ export const sendMessageToGemini = async (
 
   try {
     // 2. Retrieval Augmented Generation (RAG)
-    const additionalContext = await retrieveAugmentedContext(sanitizedMessage!, apiKey!);
+    const additionalContext = await retrieveAugmentedContext(sanitizedMessage!, apiKey!, language);
 
     // 3. Prompt Construction
     const contents = buildGeminiMessages(history, sanitizedMessage!, additionalContext);
 
     // 4. API Execution
-    return await generateContent(contents, abortSignal);
+    return await generateContent(contents, language, abortSignal);
 
   } catch (error) {
     return handleServiceError(error, abortSignal);
@@ -86,14 +88,16 @@ function validateRequest(history: Message[], newMessage: string): { isValid: boo
 /**
  * Executes the generation request against the Gemini API.
  */
-async function generateContent(contents: Content[], abortSignal?: AbortSignal): Promise<string> {
+async function generateContent(contents: Content[], language: Language, abortSignal?: AbortSignal): Promise<string> {
   if (!ai) throw new Error("AI Client not initialized");
+
+  const systemInstructionText = getFullContext(language);
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: contents,
     config: {
-      systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+      systemInstruction: { parts: [{ text: systemInstructionText }] },
       temperature: 0.7,
       maxOutputTokens: 4000,
       abortSignal: abortSignal,
@@ -126,9 +130,9 @@ function handleServiceError(error: unknown, abortSignal?: AbortSignal): string {
 /**
  * Retrieves and formats relevant context from the blog index.
  */
-async function retrieveAugmentedContext(query: string, key: string): Promise<string> {
+async function retrieveAugmentedContext(query: string, key: string, language: Language): Promise<string> {
   try {
-    const relevantChunks = await getRelevantContext(query, key);
+    const relevantChunks = await getRelevantContext(query, key, language);
     if (relevantChunks.length > 0) {
       return "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
         relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");

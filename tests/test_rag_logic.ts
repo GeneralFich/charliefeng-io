@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import * as assert from 'node:assert';
 import { getRelevantContext, BlogChunk } from '../lib/rag';
+import { Language } from '../types';
 
 // Mock embedder that returns a simple vector [1, 0, 0] for the query
 const mockEmbedder = async (text: string) => {
@@ -42,7 +43,7 @@ test('getRelevantContext Logic', async (t) => {
       }
     ];
 
-    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    const results = await getRelevantContext('query', 'fake-key', Language.EN, mockEmbedder, mockData);
 
     // If threshold is strictly > 0.5, then 0.5 is excluded.
     assert.strictEqual(results.length, 1);
@@ -72,7 +73,7 @@ test('getRelevantContext Logic', async (t) => {
       }
     ];
 
-    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    const results = await getRelevantContext('query', 'fake-key', Language.EN, mockEmbedder, mockData);
 
     assert.strictEqual(results.length, 2);
     assert.strictEqual(results[0].text, 'Most Relevant');
@@ -95,7 +96,7 @@ test('getRelevantContext Logic', async (t) => {
         });
     }
 
-    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    const results = await getRelevantContext('query', 'fake-key', Language.EN, mockEmbedder, mockData);
     assert.strictEqual(results.length, 5);
     // Should be sorted
     assert.ok(results[0].score >= results[1].score);
@@ -113,7 +114,7 @@ test('getRelevantContext Logic', async (t) => {
       }
     ];
 
-    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    const results = await getRelevantContext('query', 'fake-key', Language.EN, mockEmbedder, mockData);
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].text, 'No Mag');
     assert.strictEqual(results[0].score, 1);
@@ -132,7 +133,7 @@ test('getRelevantContext Logic', async (t) => {
       }
     ];
 
-    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    const results = await getRelevantContext('query', 'fake-key', Language.EN, mockEmbedder, mockData);
     assert.strictEqual(results.length, 0);
   });
 
@@ -149,7 +150,7 @@ test('getRelevantContext Logic', async (t) => {
       }
     ];
     // query [1,0,0] vs [0,1,0] -> 0
-    const results = await getRelevantContext('query', 'fake-key', mockEmbedder, mockData);
+    const results = await getRelevantContext('query', 'fake-key', Language.EN, mockEmbedder, mockData);
     assert.strictEqual(results.length, 0);
   });
 });

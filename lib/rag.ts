@@ -1,6 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { magnitude, cosineSimilarity } from "./vector";
+import { Language } from "../types";
 
 /**
  * @fileoverview RAG (Retrieval-Augmented Generation) Logic
@@ -24,6 +25,7 @@ export interface BlogChunk {
   embedding?: number[] | Float32Array;
   // Optimization: Pre-calculated magnitude for the embedding
   _magnitude?: number;
+  language?: string;
 }
 
 export interface RelevantChunk {
@@ -73,6 +75,7 @@ const getBlogData = async (): Promise<BlogChunk[]> => {
  *
  * @param query - The user's search query or question.
  * @param apiKey - The Google Gemini API key.
+ * @param language - The language to filter chunks by (default EN).
  * @param customEmbedder - Optional custom function to generate embeddings (for testing).
  * @param customData - Optional array of blog chunks to use instead of the file system (for testing).
  * @returns A promise resolving to an array of the top 5 relevant text chunks.
@@ -80,6 +83,7 @@ const getBlogData = async (): Promise<BlogChunk[]> => {
 export async function getRelevantContext(
   query: string,
   apiKey: string,
+  language: Language = Language.EN,
   customEmbedder?: (text: string) => Promise<number[]>,
   customData?: BlogChunk[]
 ): Promise<RelevantChunk[]> {
@@ -117,6 +121,10 @@ export async function getRelevantContext(
     for (const chunk of data) {
       // Ensure embedding exists before calculation (important for customData or corrupted ingestion)
       if (!chunk.embedding) continue;
+
+      // Filter by language
+      const chunkLang = chunk.language || Language.EN;
+      if (chunkLang !== language) continue;
 
       const score = cosineSimilarity(queryEmbedding, chunk.embedding, queryMagnitude, chunk._magnitude);
 

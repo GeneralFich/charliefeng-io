@@ -1,7 +1,7 @@
-
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { getRelevantContext, BlogChunk } from '../lib/rag';
+import { Language } from '../types';
 
 /**
  * @fileoverview RAG Integration Tests
@@ -37,7 +37,7 @@ describe('RAG Integration Plumbing', () => {
     };
 
     // Should catch error and return empty array instead of crashing
-    const result = await getRelevantContext('test query', mockApiKey, mockEmbedder, mockData);
+    const result = await getRelevantContext('test query', mockApiKey, Language.EN, mockEmbedder, mockData);
     assert.deepStrictEqual(result, []);
   });
 
@@ -46,7 +46,7 @@ describe('RAG Integration Plumbing', () => {
        return []; // Simulating an API response that has no vector
     };
 
-    const result = await getRelevantContext('test', mockApiKey, mockEmbedder, mockData);
+    const result = await getRelevantContext('test', mockApiKey, Language.EN, mockEmbedder, mockData);
     // magnitude of [] is 0. cosineSimilarity returns 0.
     // 0 < 0.5 (threshold), so filtered out.
     assert.deepStrictEqual(result, []);
@@ -57,7 +57,7 @@ describe('RAG Integration Plumbing', () => {
       return [1, 0, 0]; // Perfect match for the mock data
     };
 
-    const result = await getRelevantContext('test query', mockApiKey, mockEmbedder, mockData);
+    const result = await getRelevantContext('test query', mockApiKey, Language.EN, mockEmbedder, mockData);
 
     assert.strictEqual(result.length, 1);
     assert.strictEqual(result[0].text, 'Target Content');
