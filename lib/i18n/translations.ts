@@ -7,6 +7,8 @@ export const TRANSLATIONS = {
       about: 'About',
       essays: 'Essays',
       home: 'Home',
+      digitalTwin: 'Digital Twin',
+      digitalTwinDesc: 'An AI version of me trained on my work & writing',
     },
     sections: {
       resume: 'Resume',
@@ -55,6 +57,8 @@ export const TRANSLATIONS = {
       about: '简历',
       essays: '文章',
       home: '首页',
+      digitalTwin: '数字孪生',
+      digitalTwinDesc: '基于我的作品和写作训练的AI版本',
     },
     sections: {
       resume: '简历',
