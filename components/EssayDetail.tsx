@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import rehypeSanitize from 'rehype-sanitize';
+import remarkMath from 'remark-math';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import rehypeKatex from 'rehype-katex';
 import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes, HighlightContext } from './SearchHighlighter';
@@ -20,8 +22,25 @@ interface EssayDetailProps {
 }
 
 // Define plugins outside component to maintain reference stability
-const MARKDOWN_PLUGINS = [remarkGfm];
-const REHYPE_PLUGINS = [rehypeSanitize];
+const MARKDOWN_PLUGINS = [remarkGfm, remarkMath];
+const REHYPE_PLUGINS = [
+  [rehypeSanitize, {
+    ...defaultSchema,
+    attributes: {
+      ...defaultSchema.attributes,
+      // Allow className on spans and divs so KaTeX can find them
+      span: [
+        ...(defaultSchema.attributes?.span || []),
+        ['className', 'math-inline', 'math-display', 'katex']
+      ],
+      div: [
+        ...(defaultSchema.attributes?.div || []),
+        ['className', 'math-inline', 'math-display', 'katex']
+      ]
+    }
+  }],
+  rehypeKatex
+];
 
 export const EssayDetail: React.FC<EssayDetailProps> = ({
   post,
