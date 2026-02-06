@@ -21,11 +21,10 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
-import { writeFileSync } from 'fs';
 import { join } from 'path';
 import dotenv from 'dotenv';
 import path from 'path';
-import fs from 'fs';
+import { promises as fsPromises } from 'fs';
 import fm from 'front-matter';
 import { chunkText } from '../lib/utils';
 import { magnitude } from '../lib/vector';
@@ -93,22 +92,25 @@ async function getEmbeddings(text: string): Promise<number[]> {
 async function ingest() {
   console.log(`Scanning for posts in ${POSTS_DIR}...`);
 
-  if (!fs.existsSync(POSTS_DIR)) {
+  try {
+      await fsPromises.access(POSTS_DIR);
+  } catch {
       console.error(`Directory not found: ${POSTS_DIR}`);
       process.exit(1);
   }
 
-  const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));
+  const allFiles = await fsPromises.readdir(POSTS_DIR);
+  const mdFiles = allFiles.filter(f => f.endsWith('.md'));
   const chunks: BlogChunk[] = [];
 
-  console.log(`Found ${files.length} posts.`);
+  console.log(`Found ${mdFiles.length} posts.`);
 
-  for (const file of files) {
+  // Phase 1: Parallel Read & Parse
+  // We read and parse all files concurrently to maximize I/O and CPU throughput.
+  const parsedDocs = await Promise.all(mdFiles.map(async (file) => {
     const filePath = join(POSTS_DIR, file);
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = await fsPromises.readFile(filePath, 'utf-8');
     const parsed = fm<PostAttributes>(content);
-
-    console.log(`Processing: ${parsed.attributes.title}`);
 
     let language = 'en';
     let slug = file.replace('.md', '');
@@ -121,27 +123,43 @@ async function ingest() {
         slug = file.replace('.es.md', '');
     }
 
-    // Using a fake URL format that could be useful later, or just informative
     const url = `/essays/${slug}`;
-
     const textChunks = chunkText(parsed.body);
 
-    for (let i = 0; i < textChunks.length; i++) {
-       const chunk = textChunks[i];
+    return {
+      file,
+      attributes: parsed.attributes,
+      url,
+      language,
+      slug,
+      textChunks
+    };
+  }));
+
+  // Ensure deterministic order
+  parsedDocs.sort((a, b) => a.file.localeCompare(b.file));
+
+  // Phase 2: Sequential Embedding
+  // We iterate sequentially to respect the API rate limits (avoiding 429 errors).
+  for (const doc of parsedDocs) {
+    console.log(`Processing: ${doc.attributes.title}`);
+
+    for (let i = 0; i < doc.textChunks.length; i++) {
+       const chunk = doc.textChunks[i];
        if (chunk.length < 50) continue; // Skip tiny chunks
 
        const embedding = await getEmbeddings(chunk);
 
        if (embedding && embedding.length > 0) {
          chunks.push({
-           id: `${slug}#chunk${i}`,
-           url: url,
-           title: parsed.attributes.title,
-           publishedDate: parsed.attributes.date,
+           id: `${doc.slug}#chunk${i}`,
+           url: doc.url,
+           title: doc.attributes.title,
+           publishedDate: doc.attributes.date,
            text: chunk,
            embedding: embedding,
            _magnitude: magnitude(embedding),
-           language: language
+           language: doc.language
          });
        }
 
@@ -150,7 +168,7 @@ async function ingest() {
     }
   }
 
-  writeFileSync(OUTPUT_FILE, JSON.stringify(chunks, null, 2));
+  await fsPromises.writeFile(OUTPUT_FILE, JSON.stringify(chunks, null, 2));
   console.log(`Successfully wrote ${chunks.length} chunks to ${OUTPUT_FILE}`);
 }
 
