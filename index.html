@@ -12,6 +12,19 @@
     <meta property="og:type" content="website" />
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <style>
+      @media print {
+        body {
+          background-color: white !important;
+          color: black !important;
+        }
+        * {
+          color: black !important;
+          background-color: transparent !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+        }
+      }
+
       /* Custom Scrollbar for the futuristic feel */
       ::-webkit-scrollbar {
         width: 8px;

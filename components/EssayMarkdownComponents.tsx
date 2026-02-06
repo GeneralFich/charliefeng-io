@@ -87,13 +87,13 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     );
   },
   // Apply context-aware highlighter to text blocks and auto-generated IDs
-  h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-white mt-12 mb-6" {...props} />,
-  h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props} />,
-  h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props} />,
-  p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</SearchHighlighter>,
-  li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300" {...props}>{children}</SearchHighlighter>,
+  h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-white mt-12 mb-6 print:text-black" {...props} />,
+  h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4 print:text-black" {...props} />,
+  h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3 print:text-black" {...props} />,
+  p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6 print:text-black" {...props}>{children}</SearchHighlighter>,
+  li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300 print:text-black" {...props}>{children}</SearchHighlighter>,
   blockquote: ({ node, children, ...props }: any) => (
-    <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8">
+    <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8 print:text-slate-700 print:border-slate-400">
       <SearchHighlighter>{children}</SearchHighlighter>
     </blockquote>
   ),
