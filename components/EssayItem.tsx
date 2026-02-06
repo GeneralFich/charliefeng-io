@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Share2, Check } from 'lucide-react';
-import { BlogPost } from '../lib/knowledge';
+import { BlogPostMetadata } from '../lib/knowledge';
 import { highlightNodes } from './SearchHighlighter';
 import { View } from '../types';
 
 interface EssayItemProps {
-  post: BlogPost;
+  post: BlogPostMetadata;
   searchRegex: RegExp | null;
-  onSelectPost: (post: BlogPost) => void;
+  onSelectPost: (post: BlogPostMetadata) => void;
 }
 
 export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchRegex, onSelectPost }) => {

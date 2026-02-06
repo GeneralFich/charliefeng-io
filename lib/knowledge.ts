@@ -18,7 +18,7 @@
  */
 
 import fm from 'front-matter';
-import { calculateReadTime } from './utils';
+import metadata from './blog_metadata.json';
 import { Language } from '../types';
 
 // --- Raw Data Imports ---
@@ -77,13 +77,17 @@ export interface PostAttributes {
   description: string;
 }
 
-export interface BlogPost {
+export interface BlogPostMetadata {
   slug: string;
+  filename: string;
   attributes: PostAttributes;
-  body: string;
   readTime: number;
   dateTimestamp: number;
   language: Language;
+}
+
+export interface BlogPost extends BlogPostMetadata {
+  body: string;
 }
 
 // --- Parsing Helper ---
@@ -93,32 +97,39 @@ export const getResumeAttributes = (lang: Language) => getParsedResume(lang).att
 export const getResumeBody = (lang: Language) => RESUME_RAW[lang] || RESUME_RAW[Language.EN];
 
 // --- Blog Posts ---
-// Load all markdown files in posts directory
-const postFiles = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default', eager: true });
 
-const ALL_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) => {
-  const parsed = fm<PostAttributes>(content as string);
-  const filename = path.split('/').pop() || '';
+// Cast metadata to the correct type
+const ALL_POSTS_METADATA = metadata as unknown as BlogPostMetadata[];
 
-  let language = Language.EN;
-  let slug = filename.replace('.md', '');
+// Lazy load content
+const postContentLoaders = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default', eager: false });
 
-  if (filename.endsWith('.zh.md')) {
-    language = Language.ZH;
-    slug = filename.replace('.zh.md', '');
+export const ALL_POSTS = ALL_POSTS_METADATA;
+
+export const getPosts = (lang: Language): BlogPostMetadata[] => {
+  return ALL_POSTS_METADATA.filter(p => p.language === lang);
+};
+
+export async function getPost(slug: string): Promise<BlogPost | undefined> {
+  const meta = ALL_POSTS_METADATA.find(p => p.slug === slug);
+  if (!meta) return undefined;
+
+  const filePath = `../content/posts/${meta.filename}`;
+  const loader = postContentLoaders[filePath];
+
+  if (!loader) {
+    console.error(`Content loader not found for path: ${filePath}`);
+    return undefined;
   }
 
-  return {
-    slug,
-    attributes: parsed.attributes,
-    body: parsed.body,
-    readTime: calculateReadTime(parsed.body),
-    dateTimestamp: new Date(parsed.attributes.date).getTime(),
-    language,
-  };
-}).sort((a, b) => b.dateTimestamp - a.dateTimestamp);
+  const rawContent = await loader() as string;
+  const parsed = fm<PostAttributes>(rawContent);
 
-export const getPosts = (lang: Language) => ALL_POSTS.filter(p => p.language === lang);
+  return {
+    ...meta,
+    body: parsed.body
+  };
+}
 
 
 // --- Legacy Exports (for backward compatibility during migration) ---

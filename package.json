@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "generate-metadata": "npx tsx scripts/generate_blog_metadata.ts",
+    "dev": "pnpm generate-metadata && vite",
+    "build": "pnpm generate-metadata && vite build",
     "preview": "vite preview",
     "test": "npx tsx --test --experimental-test-module-mocks tests/*.ts"
   },

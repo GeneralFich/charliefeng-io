@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeKatex from 'rehype-katex';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown } from 'lucide-react';
-import { BlogPost } from '../lib/knowledge';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
+import { BlogPostMetadata, getPost } from '../lib/knowledge';
 import { highlightNodes, HighlightContext } from './SearchHighlighter';
 import { TableOfContents } from './TableOfContents';
 import { View } from '../types';
@@ -14,10 +14,10 @@ import { ESSAY_MARKDOWN_COMPONENTS } from './EssayMarkdownComponents';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssayDetailProps {
-  post: BlogPost;
-  filteredPosts: BlogPost[];
+  post: BlogPostMetadata;
+  filteredPosts: BlogPostMetadata[];
   onBack: () => void;
-  onNavigate: (post: BlogPost) => void;
+  onNavigate: (post: BlogPostMetadata) => void;
   isInsideSplitView?: boolean;
 }
 
@@ -51,6 +51,33 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
 }) => {
   const { t } = useLanguage();
   const [isCopied, setIsCopied] = useState(false);
+  const [content, setContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setContent(null);
+
+    getPost(post.slug).then(fullPost => {
+      if (mounted) {
+        if (fullPost) {
+          setContent(fullPost.body);
+        } else {
+          setContent('# Error loading post');
+        }
+        setLoading(false);
+      }
+    }).catch(err => {
+      console.error("Failed to load post content", err);
+      if (mounted) {
+        setContent('# Error loading post');
+        setLoading(false);
+      }
+    });
+
+    return () => { mounted = false; };
+  }, [post.slug]);
 
   const {
     articleSearchQuery,
@@ -79,15 +106,18 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   };
 
   // Memoize the rendered markdown content
-  const markdownContent = useMemo(() => (
-    <ReactMarkdown
-      remarkPlugins={MARKDOWN_PLUGINS}
-      rehypePlugins={REHYPE_PLUGINS}
-      components={ESSAY_MARKDOWN_COMPONENTS}
-    >
-      {post.body}
-    </ReactMarkdown>
-  ), [post]);
+  const markdownContent = useMemo(() => {
+    if (!content) return null;
+    return (
+      <ReactMarkdown
+        remarkPlugins={MARKDOWN_PLUGINS}
+        rehypePlugins={REHYPE_PLUGINS}
+        components={ESSAY_MARKDOWN_COMPONENTS}
+      >
+        {content}
+      </ReactMarkdown>
+    );
+  }, [content]);
 
   // Navigation Logic
   const currentIndex = filteredPosts.findIndex(p => p.slug === post.slug);
@@ -264,14 +294,22 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           </div>
         </header>
 
-        {/* Table of Contents */}
-        <div className="print:hidden">
-          <TableOfContents markdown={post.body} />
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="animate-spin text-blue-400" size={48} />
+          </div>
+        ) : (
+          <>
+            {/* Table of Contents */}
+            <div className="print:hidden">
+              <TableOfContents markdown={content || ''} />
+            </div>
 
-        <HighlightContext.Provider value={articleSearchRegex}>
-          {markdownContent}
-        </HighlightContext.Provider>
+            <HighlightContext.Provider value={articleSearchRegex}>
+              {markdownContent}
+            </HighlightContext.Provider>
+          </>
+        )}
       </article>
 
       {/* Contextual Navigation Footer */}

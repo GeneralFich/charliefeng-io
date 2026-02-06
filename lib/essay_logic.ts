@@ -1,5 +1,12 @@
-import { BlogPost } from './knowledge';
+import { BlogPostMetadata } from './knowledge';
 import { SortOption } from '../types';
+
+export interface BlogSearchEntry {
+  slug: string;
+  title: string;
+  description: string;
+  searchContent: string;
+}
 
 /**
  * Filters and sorts a list of blog posts based on a search query and sort option.
@@ -7,13 +14,15 @@ import { SortOption } from '../types';
  * @param posts - The list of blog posts to filter and sort.
  * @param searchQuery - The search query string.
  * @param sortBy - The sort option ('newest', 'oldest', 'shortest', 'longest').
+ * @param searchIndex - Optional search index containing full text content.
  * @returns The filtered and sorted list of blog posts.
  */
 export function filterAndSortEssays(
-  posts: BlogPost[],
+  posts: BlogPostMetadata[],
   searchQuery: string,
-  sortBy: SortOption
-): BlogPost[] {
+  sortBy: SortOption,
+  searchIndex?: BlogSearchEntry[]
+): BlogPostMetadata[] {
   let filteredPosts = posts;
   // Track if we have created a new array (via filter) that we can safely mutate
   let isMutable = false;
@@ -24,11 +33,23 @@ export function filterAndSortEssays(
     const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escapedQuery, 'i');
 
-    filteredPosts = filteredPosts.filter(post =>
-      regex.test(post.attributes.title) ||
-      regex.test(post.attributes.description) ||
-      regex.test(post.body)
-    );
+    if (searchIndex) {
+      const matchingSlugs = new Set(
+        searchIndex
+          .filter(entry =>
+            regex.test(entry.title) ||
+            regex.test(entry.description) ||
+            regex.test(entry.searchContent)
+          )
+          .map(entry => entry.slug)
+      );
+      filteredPosts = filteredPosts.filter(post => matchingSlugs.has(post.slug));
+    } else {
+      filteredPosts = filteredPosts.filter(post =>
+        regex.test(post.attributes.title) ||
+        regex.test(post.attributes.description)
+      );
+    }
     isMutable = true;
   }
 

@@ -9,6 +9,7 @@ import { Language } from '../types';
 // Helper to create mock blog posts
 const createMockPost = (id: string, title: string, readTime: number, date: string): BlogPost => ({
   slug: id,
+  filename: `${id}.md`,
   attributes: {
     title,
     date,

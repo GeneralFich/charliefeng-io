@@ -28,3 +28,7 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# Generated Content
+lib/blog_metadata.json
+lib/blog_search_index.json
