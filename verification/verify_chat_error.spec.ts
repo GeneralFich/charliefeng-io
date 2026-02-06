@@ -11,10 +11,10 @@ test('Chat displays error message when API call fails', async ({ page }) => {
   });
 
   // Find the chat input
-  const input = page.getByPlaceholder('Ask anything...');
+  const input = page.getByPlaceholder('Ask me a question...');
 
   // Wait for the chat to be ready (maybe check if initial message is there)
-  await expect(page.getByText("Hello! I can answer questions")).toBeVisible();
+  await expect(page.getByText("Hello! I'm Charlie's AI Digital Twin")).toBeVisible();
 
   // Type a message
   await input.fill('Hello');

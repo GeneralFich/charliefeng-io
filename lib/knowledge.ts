@@ -20,6 +20,7 @@
 import fm from 'front-matter';
 import { calculateReadTime } from './utils';
 import { Language } from '../types';
+import blogMetadata from './blog_metadata.json';
 
 // --- Raw Data Imports ---
 import resumeEnRaw from '../content/resume.md?raw';
@@ -108,11 +109,14 @@ const ALL_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) =>
     slug = filename.replace('.zh.md', '');
   }
 
+  const metadata = (blogMetadata as Record<string, { readTime: number }>)[filename];
+  const readTime = metadata?.readTime || calculateReadTime(parsed.body);
+
   return {
     slug,
     attributes: parsed.attributes,
     body: parsed.body,
-    readTime: calculateReadTime(parsed.body),
+    readTime,
     dateTimestamp: new Date(parsed.attributes.date).getTime(),
     language,
   };

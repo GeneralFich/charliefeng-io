@@ -21,10 +21,10 @@ test('Essays view allows searching and filtering', async ({ page }) => {
 
   // Assert that the list filters down
   // 1. "The Thermodynamic Wall" should be visible
-  await expect(page.getByText('The Thermodynamic Wall')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The Thermodynamic Wall' })).toBeVisible();
 
   // 2. "Strategic Whitepaper" (or others) should disappear
-  await expect(page.getByText('Strategic Whitepaper')).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Strategic Whitepaper' })).not.toBeVisible();
 
   // Verify count is exactly 1
   await expect(essayTitles).toHaveCount(1);
