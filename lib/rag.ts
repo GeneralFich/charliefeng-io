@@ -36,29 +36,42 @@ export interface RelevantChunk {
 }
 
 // Lazy initialization of blog data with magnitudes
-let cachedBlogData: BlogChunk[] | null = null;
+let cachedBlogData: Record<Language, BlogChunk[]> | null = null;
 
-const getBlogData = async (): Promise<BlogChunk[]> => {
+const getBlogData = async (): Promise<Record<Language, BlogChunk[]>> => {
   if (cachedBlogData) return cachedBlogData;
 
   const { default: blogData } = await import("./blog_data.json");
 
+  // Initialize partitions
+  const partitionedData: Record<Language, BlogChunk[]> = {
+    [Language.EN]: [],
+    [Language.ZH]: []
+  };
+
   // Optimization: Filter out chunks without embeddings during initialization
   // and pre-calculate magnitude for valid chunks.
   // This avoids checking `chunk.embedding` exists in the hot loop.
-  cachedBlogData = (blogData as BlogChunk[]).reduce<BlogChunk[]>((acc, chunk) => {
+  (blogData as BlogChunk[]).forEach((chunk) => {
     if (chunk.embedding && chunk.embedding.length > 0) {
       // Optimization: Convert to Float32Array for memory efficiency
       const embedding = new Float32Array(chunk.embedding);
-      acc.push({
+      const enrichedChunk = {
         ...chunk,
         embedding,
         _magnitude: magnitude(embedding)
-      });
-    }
-    return acc;
-  }, []);
+      };
 
+      const lang = (chunk.language as Language) || Language.EN;
+      if (partitionedData[lang]) {
+        partitionedData[lang].push(enrichedChunk);
+      } else {
+        partitionedData[Language.EN].push(enrichedChunk);
+      }
+    }
+  });
+
+  cachedBlogData = partitionedData;
   return cachedBlogData;
 };
 
@@ -85,7 +98,7 @@ export async function getRelevantContext(
   apiKey: string,
   language: Language = Language.EN,
   customEmbedder?: (text: string) => Promise<number[]>,
-  customData?: BlogChunk[]
+  customData?: BlogChunk[] | Record<Language, BlogChunk[]>
 ): Promise<RelevantChunk[]> {
   try {
     let queryEmbedding: number[] | Float32Array;
@@ -112,19 +125,35 @@ export async function getRelevantContext(
     }
 
     const queryMagnitude = magnitude(queryEmbedding);
-    const data = customData || await getBlogData();
+
+    let chunksToProcess: BlogChunk[] = [];
+    let needsLangFilter = false;
+
+    if (customData) {
+      if (Array.isArray(customData)) {
+        chunksToProcess = customData;
+        needsLangFilter = true;
+      } else {
+        chunksToProcess = customData[language] || [];
+      }
+    } else {
+      const data = await getBlogData();
+      chunksToProcess = data[language] || [];
+    }
 
     // Optimization: Use a single loop to calculate score and filter,
     // avoiding intermediate array allocations (map + filter).
     const scoredChunks: RelevantChunk[] = [];
 
-    for (const chunk of data) {
+    for (const chunk of chunksToProcess) {
       // Ensure embedding exists before calculation (important for customData or corrupted ingestion)
       if (!chunk.embedding) continue;
 
-      // Filter by language
-      const chunkLang = chunk.language || Language.EN;
-      if (chunkLang !== language) continue;
+      // Filter by language if needed (legacy array case)
+      if (needsLangFilter) {
+        const chunkLang = chunk.language || Language.EN;
+        if (chunkLang !== language) continue;
+      }
 
       const score = cosineSimilarity(queryEmbedding, chunk.embedding, queryMagnitude, chunk._magnitude);
 
