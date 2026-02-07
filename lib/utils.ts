@@ -271,7 +271,8 @@ export function extractTextFromReactNode(nodes: any): string {
  */
 export function chunkText(text: string, maxChars: number = 1000): string[] {
   const chunks: string[] = [];
-  let currentChunk = "";
+  let currentChunkSentences: string[] = [];
+  let currentChunkLength = 0;
 
   // The previous regex `/[^.!?]+[.!?]+/g` only matched if punctuation was present.
   // This causes data loss for "This is a test" (no dot) or "Sentence 1. Sentence 2" (last one might not have dot if poorly formatted).
@@ -296,18 +297,24 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
     const sentence = rawSentence.trim(); // Normalize whitespace
     if (!sentence) continue;
 
-    const potentialLength = currentChunk.length + (currentChunk ? 1 : 0) + sentence.length;
+    // Calculate length to add: sentence length + 1 space if not first sentence
+    const spaceNeeded = currentChunkSentences.length > 0 ? 1 : 0;
+    const potentialLength = currentChunkLength + spaceNeeded + sentence.length;
 
     if (potentialLength > maxChars) {
        // If current chunk is non-empty, push it
-       if (currentChunk.length > 0) {
-           chunks.push(currentChunk);
-           currentChunk = "";
+       if (currentChunkSentences.length > 0) {
+           chunks.push(currentChunkSentences.join(" "));
+           currentChunkSentences = [];
+           currentChunkLength = 0;
        }
     }
 
-    // Append to current chunk (or start new one if we just cleared it)
-    currentChunk += (currentChunk ? " " : "") + sentence;
+    // Append to current chunk
+    // Recalculate space needed because we might have just cleared the chunk
+    const effectiveSpace = currentChunkSentences.length > 0 ? 1 : 0;
+    currentChunkSentences.push(sentence);
+    currentChunkLength += effectiveSpace + sentence.length;
   }
 
   if (!hasMatches) {
@@ -315,8 +322,8 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
     return [text];
   }
 
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk);
+  if (currentChunkSentences.length > 0) {
+    chunks.push(currentChunkSentences.join(" "));
   }
   return chunks;
 }
