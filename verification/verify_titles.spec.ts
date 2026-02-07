@@ -19,7 +19,7 @@ test('verify title attributes for improved accessibility', async ({ page }) => {
 
   // 2. Verify Digital Twin tooltip accessibility
   // The logo is in the navbar
-  const logoButton = page.getByRole('button', { name: 'Go to Home' });
+  const logoButton = page.getByRole('button', { name: 'Home' });
   await expect(logoButton).toBeVisible();
 
   // Focus the logo button (should trigger tooltip via group-focus-visible)

@@ -4,10 +4,10 @@ test('Clear Chat button requires confirmation', async ({ page }) => {
   await page.goto('/');
 
   // Wait for initial load
-  await expect(page.getByText("Hello! I can answer questions")).toBeVisible();
+  await expect(page.getByText("Hello! I'm Charlie's AI Digital Twin")).toBeVisible();
 
   // Type a message to ensure we are not in initial state (buttons are hidden in initial state)
-  const input = page.getByPlaceholder('Ask anything...');
+  const input = page.getByPlaceholder('Ask me a question...');
   await input.fill('Test message');
   await input.press('Enter');
 
@@ -22,13 +22,13 @@ test('Clear Chat button requires confirmation', async ({ page }) => {
   await clearButton.click();
 
   // Verify state change
-  await expect(page.getByTitle('Click again to confirm')).toBeVisible();
+  await expect(page.getByTitle('Confirm Clear')).toBeVisible();
 
   // Screenshot of confirmation state
   await page.screenshot({ path: 'verification/clear_confirmation_state.png' });
 
   // Second click: Should Clear
-  await page.getByLabel('Confirm clear chat').click();
+  await page.getByLabel('Confirm Clear').click();
 
   // Verify clear
   await expect(page.getByText('Test message', { exact: true })).not.toBeVisible();

@@ -20,13 +20,13 @@ test('rate limit persists across reloads', async ({ page }) => {
   await page.goto('/');
 
   // wait for initial message
-  await expect(page.locator('text=Hello! I can answer questions')).toBeVisible();
+  await expect(page.locator("text=Hello! I'm Charlie's AI Digital Twin")).toBeVisible();
 
   // Send 10 messages to hit the limit (limit is 10 per minute)
   // Note: The first "Hello!" message is hardcoded and doesn't count against rate limit.
   for (let i = 0; i < 10; i++) {
     // Wait for input to be enabled (not loading)
-    const input = page.getByPlaceholder('Ask anything...');
+    const input = page.getByPlaceholder('Ask me a question...');
     await expect(input).toBeEnabled();
 
     await input.fill(`Message ${i}`);
@@ -39,7 +39,7 @@ test('rate limit persists across reloads', async ({ page }) => {
   }
 
   // 11th message should be blocked
-  await page.getByPlaceholder('Ask anything...').fill('Message 11');
+  await page.getByPlaceholder('Ask me a question...').fill('Message 11');
   await page.getByRole('button', { name: 'Send message' }).click();
 
   // Expect error message
@@ -49,11 +49,11 @@ test('rate limit persists across reloads', async ({ page }) => {
   await page.reload();
 
   // Wait for app to hydrate
-  await expect(page.getByPlaceholder('Ask anything...')).toBeVisible();
+  await expect(page.getByPlaceholder('Ask me a question...')).toBeVisible();
 
   // Try to send another message immediately.
   // If persistence works, this should still be blocked because we are still within the 1-minute window of the previous 10 requests.
-  await page.getByPlaceholder('Ask anything...').fill('Message 12 (After Reload)');
+  await page.getByPlaceholder('Ask me a question...').fill('Message 12 (After Reload)');
   await page.getByRole('button', { name: 'Send message' }).click();
 
   // Expect error message AGAIN

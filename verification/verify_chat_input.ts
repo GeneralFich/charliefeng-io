@@ -22,7 +22,7 @@ async function verifyChatInput() {
     console.log('Page loaded');
 
     // The input should be visible
-    const input = page.getByPlaceholder('Ask anything...');
+    const input = page.getByPlaceholder('Ask me a question...');
     await input.waitFor();
     console.log('Input found');
 

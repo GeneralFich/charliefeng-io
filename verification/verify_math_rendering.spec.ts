@@ -5,7 +5,7 @@ test('Math formulas are rendered correctly using KaTeX', async ({ page }) => {
   await page.goto('/?view=ESSAYS&essay=the-thermodynamic-wall');
 
   // Wait for the content to load and verify the title is visible
-  await expect(page.getByRole('heading', { name: 'The Thermodynamic Wall' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The Thermodynamic Wall', level: 1 })).toBeVisible();
 
   // Check for the presence of KaTeX rendered elements
   // KaTeX renders with a class "katex"

@@ -18,7 +18,7 @@ test('verify copy button feedback', async ({ page }) => {
 
   await page.goto('/?view=ESSAYS');
 
-  const card = page.locator('article, div[role="button"]').filter({ hasText: 'min read' }).first();
+  const card = page.locator('.group').filter({ hasText: 'min read' }).first();
   await expect(card).toBeVisible();
   await card.hover();
 

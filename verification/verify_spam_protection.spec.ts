@@ -5,10 +5,10 @@ test('verify spam protection', async ({ page }) => {
   await page.goto('http://localhost:3000');
 
   // Wait for initial message
-  await expect(page.locator('text=Hello! I can answer questions')).toBeVisible();
+  await expect(page.locator("text=Hello! I'm Charlie's AI Digital Twin")).toBeVisible();
 
   // Type first message
-  const input = page.getByPlaceholder('Ask anything...');
+  const input = page.getByPlaceholder('Ask me a question...');
   const sendButton = page.getByRole('button', { name: 'Send message' });
 
   await input.fill('Spam Test');
