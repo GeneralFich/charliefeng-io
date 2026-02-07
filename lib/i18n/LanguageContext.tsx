@@ -19,11 +19,15 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const savedLang = localStorage.getItem(LANGUAGE_KEY) as Language;
     if (savedLang && Object.values(Language).includes(savedLang)) {
       setLanguageState(savedLang);
+      document.documentElement.lang = savedLang;
+    } else {
+      document.documentElement.lang = Language.EN;
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
+    document.documentElement.lang = lang;
     localStorage.setItem(LANGUAGE_KEY, lang);
   };
 
