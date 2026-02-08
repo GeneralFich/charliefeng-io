@@ -83,6 +83,34 @@ async function getEmbeddings(text: string): Promise<number[]> {
     }
 }
 
+/**
+ * Helper to process items concurrently with a limit.
+ */
+async function processConcurrently<T, R>(
+  items: T[],
+  concurrency: number,
+  processor: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let index = 0;
+
+  const worker = async () => {
+    while (index < items.length) {
+      const i = index++;
+      if (i >= items.length) break;
+      results[i] = await processor(items[i]);
+    }
+  };
+
+  const workers = [];
+  for (let i = 0; i < concurrency; i++) {
+    workers.push(worker());
+  }
+
+  await Promise.all(workers);
+  return results;
+}
+
 
 /**
  * Main ingestion routine.
@@ -101,7 +129,6 @@ async function ingest() {
 
   const allFiles = await fsPromises.readdir(POSTS_DIR);
   const mdFiles = allFiles.filter(f => f.endsWith('.md'));
-  const chunks: BlogChunk[] = [];
 
   console.log(`Found ${mdFiles.length} posts.`);
 
@@ -139,37 +166,43 @@ async function ingest() {
   // Ensure deterministic order
   parsedDocs.sort((a, b) => a.file.localeCompare(b.file));
 
-  // Phase 2: Sequential Embedding
-  // We iterate sequentially to respect the API rate limits (avoiding 429 errors).
+  // Phase 2: Parallel Embedding
+  // We use a concurrency limit to speed up processing while respecting API rate limits.
+  const CONCURRENCY = 5;
+  console.log(`Generating embeddings with concurrency: ${CONCURRENCY}...`);
+
+  // Flatten all chunks into a single list of tasks
+  const tasks: { doc: typeof parsedDocs[0]; text: string; chunkIndex: number }[] = [];
   for (const doc of parsedDocs) {
-    console.log(`Processing: ${doc.attributes.title}`);
-
     for (let i = 0; i < doc.textChunks.length; i++) {
-       const chunk = doc.textChunks[i];
-       if (chunk.length < 50) continue; // Skip tiny chunks
-
-       const embedding = await getEmbeddings(chunk);
-
-       if (embedding && embedding.length > 0) {
-         chunks.push({
-           id: `${doc.slug}#chunk${i}`,
-           url: doc.url,
-           title: doc.attributes.title,
-           publishedDate: doc.attributes.date,
-           text: chunk,
-           embedding: embedding,
-           _magnitude: magnitude(embedding),
-           language: doc.language
-         });
-       }
-
-       // Rate limiting aid
-       await new Promise(resolve => setTimeout(resolve, 200));
+      tasks.push({ doc, text: doc.textChunks[i], chunkIndex: i });
     }
   }
 
-  await fsPromises.writeFile(OUTPUT_FILE, JSON.stringify(chunks, null, 2));
-  console.log(`Successfully wrote ${chunks.length} chunks to ${OUTPUT_FILE}`);
+  const processedChunks = await processConcurrently(tasks, CONCURRENCY, async (task) => {
+    if (task.text.length < 50) return null; // Skip tiny chunks
+
+    const embedding = await getEmbeddings(task.text);
+
+    if (embedding && embedding.length > 0) {
+      return {
+        id: `${task.doc.slug}#chunk${task.chunkIndex}`,
+        url: task.doc.url,
+        title: task.doc.attributes.title,
+        publishedDate: task.doc.attributes.date,
+        text: task.text,
+        embedding: embedding,
+        _magnitude: magnitude(embedding),
+        language: task.doc.language
+      };
+    }
+    return null;
+  });
+
+  const validChunks = processedChunks.filter((c): c is BlogChunk => c !== null);
+
+  await fsPromises.writeFile(OUTPUT_FILE, JSON.stringify(validChunks, null, 2));
+  console.log(`Successfully wrote ${validChunks.length} chunks to ${OUTPUT_FILE}`);
 }
 
 ingest();
