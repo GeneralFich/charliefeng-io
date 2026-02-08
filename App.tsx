@@ -68,7 +68,12 @@ const App: React.FC = () => {
         </div>
 
         {currentView === View.ABOUT && <Resume initialHash={targetHash} />}
-        {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+        {currentView === View.ESSAYS && (
+          <Essays
+            slug={targetEssaySlug}
+            onNavigate={handleNavigate}
+          />
+        )}
       </>
     );
   };
