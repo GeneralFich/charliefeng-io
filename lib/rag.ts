@@ -146,25 +146,29 @@ export async function getRelevantContext(
     const scoredChunks: RelevantChunk[] = [];
 
     for (const chunk of chunksToProcess) {
-      // Ensure embedding exists before calculation (important for customData or corrupted ingestion)
-      if (!chunk.embedding) continue;
+      try {
+        // Ensure embedding exists before calculation (important for customData or corrupted ingestion)
+        if (!chunk.embedding) continue;
 
-      // Filter by language if needed (legacy array case)
-      if (needsLangFilter) {
-        const chunkLang = chunk.language || Language.EN;
-        if (chunkLang !== language) continue;
-      }
+        // Filter by language if needed (legacy array case)
+        if (needsLangFilter) {
+          const chunkLang = chunk.language || Language.EN;
+          if (chunkLang !== language) continue;
+        }
 
-      const score = cosineSimilarity(queryEmbedding, chunk.embedding, queryMagnitude, chunk._magnitude);
+        const score = cosineSimilarity(queryEmbedding, chunk.embedding, queryMagnitude, chunk._magnitude);
 
-      // Filter by threshold (0.5) directly to avoid allocating objects for irrelevant chunks
-      if (score > 0.5) {
-        scoredChunks.push({
-          text: chunk.text,
-          title: chunk.title,
-          url: chunk.url,
-          score
-        });
+        // Filter by threshold (0.5) directly to avoid allocating objects for irrelevant chunks
+        if (score > 0.5) {
+          scoredChunks.push({
+            text: chunk.text,
+            title: chunk.title,
+            url: chunk.url,
+            score
+          });
+        }
+      } catch (e) {
+        console.warn(`Error processing chunk ${chunk?.id || 'unknown'}:`, e);
       }
     }
 
