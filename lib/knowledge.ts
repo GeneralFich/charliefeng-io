@@ -124,13 +124,7 @@ const ALL_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) =>
 
 export const getPosts = (lang: Language) => ALL_POSTS.filter(p => p.language === lang);
 
-
-// --- Legacy Exports (for backward compatibility during migration) ---
-export const RESUME_CONTENT = getResumeAttributes(Language.EN);
-export const RESUME_DATA = getResumeBody(Language.EN);
-export const BLOG_POSTS = getPosts(Language.EN);
 export const LINKEDIN_URL = "https://www.linkedin.com/in/fengcharlie";
-
 
 // --- Full Context Generation ---
 

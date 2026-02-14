@@ -33,7 +33,7 @@ export function filterAndSortEssays(
   }
 
   // Optimization: posts is assumed to be sorted by newest (descending date) initially.
-  // This assumption comes from lib/knowledge.ts where BLOG_POSTS is sorted.
+  // This assumption comes from lib/knowledge.ts where the blog posts are sorted during discovery.
   switch (sortBy) {
     case 'newest':
       return filteredPosts;
