@@ -59,7 +59,7 @@ const getBlogData = async (): Promise<Record<Language, BlogChunk[]>> => {
       const enrichedChunk = {
         ...chunk,
         embedding,
-        _magnitude: magnitude(embedding)
+        _magnitude: chunk._magnitude ?? magnitude(embedding)
       };
 
       const lang = (chunk.language as Language) || Language.EN;
