@@ -4,11 +4,36 @@ import path from 'path';
 import fm from 'front-matter';
 import { calculateReadTime } from '../lib/utils';
 
+interface PostAttributes {
+  title: string;
+  date: string;
+  author: string;
+  description: string;
+}
+
+interface BlogPostMeta {
+  slug: string;
+  filename: string;
+  attributes: PostAttributes;
+  readTime: number;
+  dateTimestamp: number;
+  language: string;
+}
+
+interface SearchIndexEntry {
+  slug: string;
+  language: string;
+  title: string;
+  description: string;
+  body: string;
+}
+
 const POSTS_DIR = path.join(process.cwd(), 'content', 'posts');
-const OUTPUT_FILE = path.join(process.cwd(), 'lib', 'blog_metadata.json');
+const METADATA_FILE = path.join(process.cwd(), 'lib', 'blog_metadata.json');
+const SEARCH_INDEX_FILE = path.join(process.cwd(), 'lib', 'blog_search_index.json');
 
 async function generateMetadata() {
-  console.log('Generating blog metadata...');
+  console.log('Generating blog metadata and search index...');
 
   try {
     if (!fs.existsSync(POSTS_DIR)) {
@@ -17,50 +42,51 @@ async function generateMetadata() {
     }
 
     const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));
-    const metadata: Record<string, { readTime: number }> = {};
+    const metadata: BlogPostMeta[] = [];
+    const searchIndex: SearchIndexEntry[] = [];
 
     console.log(`Processing ${files.length} posts...`);
 
     for (const file of files) {
       const content = fs.readFileSync(path.join(POSTS_DIR, file), 'utf-8');
-      const parsed = fm<{ title: string }>(content);
+      const parsed = fm<PostAttributes>(content);
 
+      let language = 'en';
       let slug = file.replace('.md', '');
+
       if (file.endsWith('.zh.md')) {
-          slug = file.replace('.zh.md', '');
-      } else if (file.endsWith('.es.md')) {
-          slug = file.replace('.es.md', '');
+        language = 'zh';
+        slug = file.replace('.zh.md', '');
       }
 
       const readTime = calculateReadTime(parsed.body);
 
-      // If the slug already exists (e.g. from another language), we might overwrite.
-      // Ideally, metadata might be language specific or keyed by file name.
-      // However, looking at lib/knowledge.ts:
-      // "slug" is derived from filename, but stripping .zh.md.
-      // So 'foo.zh.md' and 'foo.md' have same slug 'foo'.
-      // But they are separate objects in ALL_POSTS.
+      metadata.push({
+        slug,
+        filename: file,
+        attributes: parsed.attributes,
+        readTime,
+        dateTimestamp: new Date(parsed.attributes.date).getTime(),
+        language,
+      });
 
-      // In lib/knowledge.ts:
-      // const ALL_POSTS = ... .map(...)
-      // return { slug, ..., language }
-
-      // If I store by slug only, I might have collisions if readTime differs by language.
-      // Let's store by filename to be safe and precise.
-      // Then in lib/knowledge.ts, I can look up by filename (which I can reconstruct or extract).
-
-      // Re-reading lib/knowledge.ts:
-      // const filename = path.split('/').pop() || '';
-      // ...
-
-      // It uses filename to determine slug and language.
-      // So if I key by filename, I can look it up easily.
-
-      metadata[file] = { readTime };
+      searchIndex.push({
+        slug,
+        language,
+        title: parsed.attributes.title,
+        description: parsed.attributes.description,
+        body: parsed.body,
+      });
     }
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(metadata, null, 2));
-    console.log(`Successfully wrote metadata for ${Object.keys(metadata).length} files to ${OUTPUT_FILE}`);
+    // Sort metadata by date descending (newest first)
+    metadata.sort((a, b) => b.dateTimestamp - a.dateTimestamp);
+
+    fs.writeFileSync(METADATA_FILE, JSON.stringify(metadata, null, 2));
+    console.log(`Wrote metadata for ${metadata.length} posts to ${METADATA_FILE}`);
+
+    fs.writeFileSync(SEARCH_INDEX_FILE, JSON.stringify(searchIndex));
+    console.log(`Wrote search index for ${searchIndex.length} posts to ${SEARCH_INDEX_FILE}`);
 
   } catch (err) {
     console.error('Failed to generate metadata:', err);

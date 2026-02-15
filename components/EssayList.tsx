@@ -1,20 +1,20 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { Search, X, ArrowUpDown } from 'lucide-react';
-import { BlogPost } from '../lib/knowledge';
+import { BlogPostMeta } from '../lib/knowledge';
 import { escapeRegExp } from '../lib/utils';
 import { EssayItem } from './EssayItem';
 import { SortOption } from '../types';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssayListProps {
-  posts: BlogPost[];
+  posts: BlogPostMeta[];
   searchQuery: string;
   // Optional debounced query for highlighting to avoid re-calculating regex on every keystroke
   highlightQuery?: string;
   onSearchChange: (query: string) => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
-  onSelectPost: (post: BlogPost) => void;
+  onSelectPost: (post: BlogPostMeta) => void;
   isInsideSplitView?: boolean;
 }
 

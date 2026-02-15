@@ -5,7 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeKatex from 'rehype-katex';
 import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown } from 'lucide-react';
-import { BlogPost } from '../lib/knowledge';
+import { BlogPost, BlogPostMeta } from '../lib/knowledge';
 import { highlightNodes, HighlightContext } from './SearchHighlighter';
 import { TableOfContents } from './TableOfContents';
 import { View } from '../types';
@@ -15,9 +15,9 @@ import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssayDetailProps {
   post: BlogPost;
-  filteredPosts: BlogPost[];
+  filteredPosts: BlogPostMeta[];
   onBack: () => void;
-  onNavigate: (post: BlogPost) => void;
+  onNavigate: (post: BlogPostMeta) => void;
   isInsideSplitView?: boolean;
 }
 

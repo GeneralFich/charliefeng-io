@@ -1,26 +1,106 @@
-{
-  "evolving-landscape-of-data-centers.md": {
-    "readTime": 5
+[
+  {
+    "slug": "the-thermodynamic-wall",
+    "filename": "the-thermodynamic-wall.md",
+    "attributes": {
+      "title": "The Thermodynamic Wall: The Collision of AI Scaling Laws and Physical Infrastructure",
+      "date": "2025-12-21",
+      "author": "Charlie Feng",
+      "description": "A deep dive into the energy constraints facing AI scaling, exploring the collision between exponential compute demand and physical infrastructure limitations."
+    },
+    "readTime": 26,
+    "dateTimestamp": 1766275200000,
+    "language": "en"
   },
-  "evolving-landscape-of-data-centers.zh.md": {
-    "readTime": 1
+  {
+    "slug": "the-thermodynamic-wall",
+    "filename": "the-thermodynamic-wall.zh.md",
+    "attributes": {
+      "title": "热力学之墙：AI扩展定律与物理基础设施的碰撞",
+      "date": "2025-12-21",
+      "author": "Charlie Feng",
+      "description": "深入剖析AI扩展面临的能源约束，探索指数级计算需求与物理基础设施限制之间的碰撞。"
+    },
+    "readTime": 6,
+    "dateTimestamp": 1766275200000,
+    "language": "zh"
   },
-  "making-data-centers-greener.md": {
-    "readTime": 5
+  {
+    "slug": "strategic-whitepaper",
+    "filename": "strategic-whitepaper.md",
+    "attributes": {
+      "title": "The Asymptotic Trajectory: A Comprehensive Analysis of the Path, Timing, and Impact of Artificial General Intelligence (2025–2030)",
+      "date": "2025-12-14T00:00:00.000Z",
+      "author": "Charlie Feng",
+      "description": "A strategic whitepaper analyzing the 'Agentic Inflection Point', the economic metamorphosis driven by autonomous agents, and the timeline to robust AGI."
+    },
+    "readTime": 21,
+    "dateTimestamp": 1765670400000,
+    "language": "en"
   },
-  "making-data-centers-greener.zh.md": {
-    "readTime": 1
+  {
+    "slug": "strategic-whitepaper",
+    "filename": "strategic-whitepaper.zh.md",
+    "attributes": {
+      "title": "渐近轨迹：人工智能通用智能（AGI）路径、时机和影响的综合分析（2025-2030）",
+      "date": "2025-12-14T00:00:00.000Z",
+      "author": "Charlie Feng",
+      "description": "一份战略白皮书，分析'智能体拐点'、自主智能体驱动的经济蜕变以及通往强大AGI的时间表。"
+    },
+    "readTime": 7,
+    "dateTimestamp": 1765670400000,
+    "language": "zh"
   },
-  "strategic-whitepaper.md": {
-    "readTime": 21
+  {
+    "slug": "evolving-landscape-of-data-centers",
+    "filename": "evolving-landscape-of-data-centers.md",
+    "attributes": {
+      "title": "The Evolving Landscape of Data Centers: From Terrestrial Transformations to Orbital Aspirations",
+      "date": "2024-10-26T00:00:00.000Z",
+      "author": "Charlie Feng",
+      "description": "The rapid evolution of AI is fundamentally reshaping the data center landscape, pushing the boundaries of existing infrastructure and sparking a wave of innovation."
+    },
+    "readTime": 5,
+    "dateTimestamp": 1729900800000,
+    "language": "en"
   },
-  "strategic-whitepaper.zh.md": {
-    "readTime": 7
+  {
+    "slug": "evolving-landscape-of-data-centers",
+    "filename": "evolving-landscape-of-data-centers.zh.md",
+    "attributes": {
+      "title": "数据中心不断演变的格局：从地面转型到轨道愿景",
+      "date": "2024-10-26T00:00:00.000Z",
+      "author": "Charlie Feng",
+      "description": "人工智能的快速发展正在从根本上重塑数据中心的格局，突破现有基础设施的界限并引发创新浪潮。"
+    },
+    "readTime": 1,
+    "dateTimestamp": 1729900800000,
+    "language": "zh"
   },
-  "the-thermodynamic-wall.md": {
-    "readTime": 26
+  {
+    "slug": "making-data-centers-greener",
+    "filename": "making-data-centers-greener.md",
+    "attributes": {
+      "title": "Making Data Centers Greener with Machine Learning",
+      "date": "2023-05-03T00:00:00.000Z",
+      "author": "Charlie Feng",
+      "description": "In the field of information technology, particularly in data centers, energy consumption is a pressing concern. Machine learning offers a compelling part of the solution for energy efficiency."
+    },
+    "readTime": 5,
+    "dateTimestamp": 1683072000000,
+    "language": "en"
   },
-  "the-thermodynamic-wall.zh.md": {
-    "readTime": 6
+  {
+    "slug": "making-data-centers-greener",
+    "filename": "making-data-centers-greener.zh.md",
+    "attributes": {
+      "title": "利用机器学习打造更绿色的数据中心",
+      "date": "2023-05-03T00:00:00.000Z",
+      "author": "Charlie Feng",
+      "description": "在信息技术领域，特别是在数据中心，能源消耗是一个紧迫的问题。机器学习为提高能源效率提供了一个引人注目的解决方案。"
+    },
+    "readTime": 1,
+    "dateTimestamp": 1683072000000,
+    "language": "zh"
   }
-}
+]

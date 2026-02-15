@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { BlogPost, getPosts } from '../lib/knowledge';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { BlogPostMeta, getPostMetas, getFullPost, getSearchIndex, BlogPost } from '../lib/knowledge';
 import { EssayList } from './EssayList';
 import { SortOption, View } from '../types';
 import { EssayDetail } from './EssayDetail';
 import { useDebounce } from '../hooks/useDebounce';
-import { filterAndSortEssays } from '../lib/essay_logic';
+import { filterAndSortEssays, searchPostSlugs } from '../lib/essay_logic';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssaysProps {
@@ -15,27 +15,65 @@ interface EssaysProps {
 
 export const Essays: React.FC<EssaysProps> = ({ slug, onNavigate, isInsideSplitView }) => {
   const { language } = useLanguage();
-  const posts = useMemo(() => getPosts(language), [language]);
+  const posts = useMemo(() => getPostMetas(language), [language]);
 
-  const selectedPost = useMemo(() => {
-    return slug ? posts.find(p => p.slug === slug) || null : null;
-  }, [slug, posts]);
+  // Lazy-loaded full post for detail view
+  const [loadedPost, setLoadedPost] = useState<BlogPost | null>(null);
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
 
-  // Debounce the search query to avoid filtering and re-rendering the list
-  // on every keystroke. This improves performance for fast typists.
+  // Debounce the search query
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Filter and sort posts for the main list
-  // Kept in parent to preserve context for navigation between posts
-  // Depends on debouncedSearchQuery instead of searchQuery
-  const filteredPosts = useMemo(() => {
-    return filterAndSortEssays(posts, debouncedSearchQuery, sortBy);
-  }, [debouncedSearchQuery, sortBy, posts]);
+  // Async search: matching slugs from the lazy-loaded search index
+  const [matchingSlugs, setMatchingSlugs] = useState<Set<string> | null>(null);
 
-  const handleSelectPost = useCallback((post: BlogPost) => {
+  // Load search index and perform search when debounced query changes
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setMatchingSlugs(null);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const index = await getSearchIndex();
+      if (cancelled) return;
+      const slugs = searchPostSlugs(index, debouncedSearchQuery, language);
+      setMatchingSlugs(slugs);
+    })();
+
+    return () => { cancelled = true; };
+  }, [debouncedSearchQuery, language]);
+
+  // Filter and sort posts using matching slugs
+  const filteredPosts = useMemo(() => {
+    return filterAndSortEssays(posts, matchingSlugs, sortBy);
+  }, [matchingSlugs, sortBy, posts]);
+
+  // Load full post content when slug changes
+  useEffect(() => {
+    if (!slug) {
+      setLoadedPost(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingPost(true);
+
+    (async () => {
+      const fullPost = await getFullPost(slug, language);
+      if (cancelled) return;
+      setLoadedPost(fullPost);
+      setIsLoadingPost(false);
+    })();
+
+    return () => { cancelled = true; };
+  }, [slug, language]);
+
+  const handleSelectPost = useCallback((post: BlogPostMeta) => {
     onNavigate(View.ESSAYS, post.slug);
   }, [onNavigate]);
 
@@ -43,15 +81,25 @@ export const Essays: React.FC<EssaysProps> = ({ slug, onNavigate, isInsideSplitV
     onNavigate(View.ESSAYS, undefined);
   }, [onNavigate]);
 
-  const handleNavigate = useCallback((post: BlogPost) => {
+  const handleNavigate = useCallback((post: BlogPostMeta) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     onNavigate(View.ESSAYS, post.slug);
   }, [onNavigate]);
 
-  if (selectedPost) {
+  if (slug) {
+    if (isLoadingPost || !loadedPost) {
+      return (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in duration-500">
+          <div className="flex items-center justify-center py-24">
+            <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <EssayDetail
-        post={selectedPost}
+        post={loadedPost}
         filteredPosts={filteredPosts}
         onBack={handleBack}
         onNavigate={handleNavigate}
@@ -63,8 +111,8 @@ export const Essays: React.FC<EssaysProps> = ({ slug, onNavigate, isInsideSplitV
   return (
     <EssayList
       posts={filteredPosts}
-      searchQuery={searchQuery} // Instant for Input
-      highlightQuery={debouncedSearchQuery} // Debounced for Highlighting
+      searchQuery={searchQuery}
+      highlightQuery={debouncedSearchQuery}
       onSearchChange={setSearchQuery}
       sortBy={sortBy}
       onSortChange={setSortBy}

@@ -6,11 +6,13 @@
  * the runtime React application and the Gemini LLM.
  *
  * Key Responsibilities:
- * 1. **Content Loading**: Uses Vite's `?raw` suffix to import Markdown files as strings at build time.
- * 2. **Structure Parsing**: Uses `front-matter` to extract YAML metadata (attributes) from the Markdown body.
- * 3. **Dynamic Blog Indexing**: Uses `import.meta.glob` to automatically discover and load all blog posts
- *    without manual registration.
- * 4. **AI Persona Construction**: Aggregates the Resume, Whitepaper, and Blog Index into a single
+ * 1. **Metadata Loading**: Uses a pre-generated `blog_metadata.json` to provide blog post
+ *    metadata (title, date, description, readTime) without loading full markdown content.
+ * 2. **Lazy Content Loading**: Individual post markdown bodies are loaded on-demand via
+ *    Vite's lazy `import.meta.glob` to reduce initial bundle size.
+ * 3. **Search Index**: A separate `blog_search_index.json` is lazy-loaded only when
+ *    search is performed, keeping the initial load fast.
+ * 4. **AI Persona Construction**: Aggregates the Resume and Blog Index into a single
  *    `FULL_CONTEXT` system prompt that defines the "Charlie Feng" digital twin persona.
  *
  * @see {@link https://vitejs.dev/guide/features.html#glob-import Vite Glob Import}
@@ -18,9 +20,8 @@
  */
 
 import fm from 'front-matter';
-import { calculateReadTime } from './utils';
 import { Language } from '../types';
-import blogMetadata from './blog_metadata.json';
+import blogMetadataRaw from './blog_metadata.json';
 
 // --- Raw Data Imports ---
 import resumeEnRaw from '../content/resume.md?raw';
@@ -62,8 +63,6 @@ export interface ResumeAttributes {
   name: string;
   title: string;
   location: string;
-  // email: string; // Removed for PII protection
-  // phone: string; // Removed for PII protection
   summary: string;
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -78,13 +77,17 @@ export interface PostAttributes {
   description: string;
 }
 
-export interface BlogPost {
+export interface BlogPostMeta {
   slug: string;
+  filename: string;
   attributes: PostAttributes;
-  body: string;
   readTime: number;
   dateTimestamp: number;
   language: Language;
+}
+
+export interface BlogPost extends BlogPostMeta {
+  body: string;
 }
 
 // --- Parsing Helper ---
@@ -93,36 +96,93 @@ const getParsedResume = (lang: Language) => fm<ResumeAttributes>(RESUME_RAW[lang
 export const getResumeAttributes = (lang: Language) => getParsedResume(lang).attributes;
 export const getResumeBody = (lang: Language) => RESUME_RAW[lang] || RESUME_RAW[Language.EN];
 
-// --- Blog Posts ---
-// Load all markdown files in posts directory
-const postFiles = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default', eager: true });
+// --- Blog Post Metadata (no body content, instant load) ---
 
-const ALL_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) => {
-  const parsed = fm<PostAttributes>(content as string);
-  const filename = path.split('/').pop() || '';
+const ALL_POST_METAS: BlogPostMeta[] = (blogMetadataRaw as Array<{
+  slug: string;
+  filename: string;
+  attributes: PostAttributes;
+  readTime: number;
+  dateTimestamp: number;
+  language: string;
+}>).map(entry => ({
+  ...entry,
+  language: entry.language as Language,
+}));
 
-  let language = Language.EN;
-  let slug = filename.replace('.md', '');
+export const getPostMetas = (lang: Language): BlogPostMeta[] =>
+  ALL_POST_METAS.filter(p => p.language === lang);
 
-  if (filename.endsWith('.zh.md')) {
-    language = Language.ZH;
-    slug = filename.replace('.zh.md', '');
+// --- Lazy Content Loading ---
+
+// Vite lazy glob: returns a map of path -> () => Promise<module>
+const postLoaders = import.meta.glob('../content/posts/*.md', { query: '?raw', import: 'default' });
+
+// Cache for loaded post bodies
+const postContentCache = new Map<string, string>();
+
+/**
+ * Lazily loads the markdown body for a single post.
+ * Results are cached after first load.
+ */
+export async function getPostContent(filename: string): Promise<string> {
+  const cached = postContentCache.get(filename);
+  if (cached !== undefined) return cached;
+
+  const loaderKey = `../content/posts/${filename}`;
+  const loader = postLoaders[loaderKey];
+
+  if (!loader) {
+    console.warn(`No loader found for post: ${filename}`);
+    return '';
   }
 
-  const metadata = (blogMetadata as Record<string, { readTime: number }>)[filename];
-  const readTime = metadata?.readTime || calculateReadTime(parsed.body);
+  const raw = await loader() as string;
+  const parsed = fm<PostAttributes>(raw);
+  postContentCache.set(filename, parsed.body);
+  return parsed.body;
+}
 
-  return {
-    slug,
-    attributes: parsed.attributes,
-    body: parsed.body,
-    readTime,
-    dateTimestamp: new Date(parsed.attributes.date).getTime(),
-    language,
-  };
-}).sort((a, b) => b.dateTimestamp - a.dateTimestamp);
+/**
+ * Loads a full BlogPost (with body) by slug and language.
+ * Used when navigating to a specific essay.
+ */
+export async function getFullPost(slug: string, lang: Language): Promise<BlogPost | null> {
+  const meta = ALL_POST_METAS.find(p => p.slug === slug && p.language === lang);
+  if (!meta) return null;
 
-export const getPosts = (lang: Language) => ALL_POSTS.filter(p => p.language === lang);
+  const body = await getPostContent(meta.filename);
+  return { ...meta, body };
+}
+
+// --- Search Index (lazy loaded) ---
+
+interface SearchIndexEntry {
+  slug: string;
+  language: string;
+  title: string;
+  description: string;
+  body: string;
+}
+
+let searchIndexCache: SearchIndexEntry[] | null = null;
+
+/**
+ * Lazily loads the full-text search index.
+ * Only fetched when the user actually performs a search.
+ */
+export async function getSearchIndex(): Promise<SearchIndexEntry[]> {
+  if (searchIndexCache) return searchIndexCache;
+
+  const { default: index } = await import('./blog_search_index.json');
+  searchIndexCache = index as SearchIndexEntry[];
+  return searchIndexCache;
+}
+
+// --- Backward compatibility: getPosts returns BlogPostMeta[] ---
+// Components that only need metadata (list view) use this.
+// The return type is BlogPostMeta[] but aliased for minimal migration.
+export const getPosts = getPostMetas;
 
 export const LINKEDIN_URL = "https://www.linkedin.com/in/fengcharlie";
 
@@ -130,14 +190,14 @@ export const LINKEDIN_URL = "https://www.linkedin.com/in/fengcharlie";
 
 export const getFullContext = (lang: Language): string => {
   const resumeRaw = getResumeBody(lang);
-  const posts = getPosts(lang);
+  const posts = getPostMetas(lang);
   const isZh = lang === Language.ZH;
 
   const intro = isZh
     ? `你是Charlie Feng的AI数字孪生。在这个对话中，你将扮演Charlie Feng。
-你的角色是Google的基础设施产品负责人和“战略思想伙伴”。
+你的角色是Google的基础设施产品负责人和"战略思想伙伴"。
 你简洁、数据驱动、具有未来感且专业。
-你的语气具有“指挥家”的美学——精确，将复杂的想法编排成清晰的叙述。`
+你的语气具有"指挥家"的美学——精确，将复杂的想法编排成清晰的叙述。`
     : `You are the AI Digital Twin of Charlie Feng. You are acting as Charlie Feng for the purposes of this chat.
 Your persona is a "Strategic Thought Partner" and an Infrastructure Product Leader at Google.
 You are concise, data-driven, futuristic, and professional.
