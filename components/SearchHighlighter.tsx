@@ -48,16 +48,22 @@ export const highlightNodes = (nodes: React.ReactNode, regex: RegExp | null): Re
 
   // Case 2: Array of Nodes (Fragment contents)
   if (Array.isArray(nodes)) {
-    let hasChanges = false;
-    const mapped = nodes.map((node, i) => {
-      const highlighted = highlightNodes(node, regex);
-      if (highlighted !== node) {
-        hasChanges = true;
-      }
-      return <React.Fragment key={i}>{highlighted}</React.Fragment>;
-    });
+    // Performance Optimization:
+    // First map all items.
+    const processedNodes = nodes.map((node) => highlightNodes(node, regex));
 
-    return hasChanges ? mapped : nodes;
+    // Check if any node changed identity.
+    // If not, return the original array to avoid creating a new array and new Fragment wrappers.
+    // This saves massive amount of object allocation/GC during search when nothing matches.
+    const hasChanges = processedNodes.some((node, i) => node !== nodes[i]);
+
+    if (!hasChanges) {
+      return nodes;
+    }
+
+    // If changes occurred, we must wrap in Fragments to ensure proper key handling
+    // for the new structure (especially if text nodes were split into arrays).
+    return processedNodes.map((node, i) => <React.Fragment key={i}>{node}</React.Fragment>);
   }
 
   // Case 3: React Element (div, span, p, custom component)
@@ -65,7 +71,9 @@ export const highlightNodes = (nodes: React.ReactNode, regex: RegExp | null): Re
     const originalChildren = (nodes.props as any).children;
     const highlightedChildren = highlightNodes(originalChildren, regex);
 
-    // Optimization: If children haven't changed, return the original element reference
+    // Performance Optimization:
+    // If children didn't change (identity check), do NOT clone the element.
+    // Return the original node.
     if (highlightedChildren === originalChildren) {
       return nodes;
     }
