@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { streamMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { checkRateLimit, validateChatInput } from '../lib/security';
 import { useLanguage } from '../lib/i18n/LanguageContext';
+import { saveChatState, loadChatState, clearChatState } from '../lib/chatStorage';
 
 // Rate Limit Configuration
+// Why: 10 requests per minute is a balanced threshold that allows for natural
+// conversation flow (bursts of questions) while effectively mitigating automated
+// abuse or accidental "enter key" spamming that could drain API quotas.
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS = 10;
 
@@ -27,11 +31,15 @@ const MAX_REQUESTS = 10;
  */
 export const useChat = () => {
   const { t, language } = useLanguage();
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: t.chat.greeting }
-  ]);
+  const stored = loadChatState();
+  const [messages, setMessages] = useState<Message[]>(
+    stored?.messages ?? [{ role: 'model', text: t.chat.greeting }]
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(t.chat.suggestions);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(
+    stored?.suggestedPrompts.length ? stored.suggestedPrompts : t.chat.suggestions
+  );
 
   // Use refs to keep track of latest state without causing re-renders in callbacks
   // This allows handleSend to be stable (memoized) while accessing fresh data.
@@ -56,6 +64,12 @@ export const useChat = () => {
     }
   }, [language, t]);
 
+  // Persist chat state to localStorage (skip during streaming to avoid saving partial messages)
+  useEffect(() => {
+    if (isStreaming) return;
+    saveChatState(messages, suggestedPrompts);
+  }, [messages, suggestedPrompts, isStreaming]);
+
   /**
    * Resets the chat to its initial state.
    *
@@ -70,6 +84,7 @@ export const useChat = () => {
     setMessages([{ role: 'model', text: t.chat.greeting }]);
     setSuggestedPrompts(t.chat.suggestions);
     setIsLoading(false);
+    clearChatState();
   }, [t]);
 
   /**
@@ -146,16 +161,49 @@ export const useChat = () => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    try {
-      const rawResponse = await sendMessageToGemini(apiHistory, text, language, controller.signal);
+    // Optimistically add an empty model message — chunks will fill it in
+    setMessages(prev => [...prev, { role: 'model', text: '' }]);
 
-      // If aborted during processing (race condition check)
+    let firstChunk = true;
+
+    try {
+      const rawResponse = await streamMessageToGemini(
+        apiHistory,
+        text,
+        language,
+        (chunk: string) => {
+          if (controller.signal.aborted) return;
+          if (firstChunk) {
+            firstChunk = false;
+            setIsLoading(false);
+            setIsStreaming(true);
+          }
+          setMessages(prev => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === 'model') {
+              updated[updated.length - 1] = { ...last, text: last.text + chunk };
+            }
+            return updated;
+          });
+        },
+        controller.signal
+      );
+
       if (controller.signal.aborted) return;
 
+      // Parse follow-up prompts from the fully assembled response
       const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
 
-      const modelMsg: Message = { role: 'model', text: cleanText };
-      setMessages(prev => [...prev, modelMsg]);
+      // Replace last message with clean text (strips the JSON prompt block)
+      setMessages(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.role === 'model') {
+          updated[updated.length - 1] = { ...last, text: cleanText };
+        }
+        return updated;
+      });
       setSuggestedPrompts(prompts);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -167,6 +215,7 @@ export const useChat = () => {
       setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
       abortControllerRef.current = null;
     }
   }, [language]); // Depends on language
@@ -174,6 +223,7 @@ export const useChat = () => {
   return {
     messages,
     isLoading,
+    isStreaming,
     suggestedPrompts,
     sendMessage: handleSend,
     clearChat
