@@ -91,6 +91,62 @@ export const sendMessageToGemini = async (
 };
 
 /**
+ * Streams a message to the Gemini API, calling onChunk for each text chunk received.
+ * Returns the full assembled text when complete (for follow-up prompt parsing).
+ */
+export const streamMessageToGemini = async (
+  history: Message[],
+  newMessage: string,
+  onChunk: (text: string) => void,
+  abortSignal?: AbortSignal
+): Promise<string> => {
+  const validation = validateChatInput(history, newMessage);
+  if (!validation.valid) {
+    const err = validation.error || "Invalid input.";
+    onChunk(err);
+    return err;
+  }
+
+  if (!ai || !apiKey) {
+    const err = "API Key is missing. Please configure the environment variable.";
+    onChunk(err);
+    return err;
+  }
+
+  try {
+    const additionalContext = await retrieveAugmentedContext(newMessage, apiKey);
+    const contents = buildGeminiMessages(history, newMessage, additionalContext);
+
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-3-flash-preview",
+      contents: contents,
+      config: {
+        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+        temperature: 0.7,
+        maxOutputTokens: 4000,
+      },
+    });
+
+    let fullText = "";
+    for await (const chunk of stream) {
+      if (abortSignal?.aborted) break;
+      const chunkText = chunk.text ?? "";
+      if (chunkText) {
+        fullText += chunkText;
+        onChunk(chunkText);
+      }
+    }
+    return fullText || "I'm processing that signal, but returned no data.";
+  } catch (error) {
+    if (abortSignal?.aborted) throw error;
+    const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
+    console.error("Gemini Streaming Error:", errorMessage);
+    return "Connection to the neural link failed. Please try again.";
+  }
+};
+
+/**
  * Retrieves and formats relevant context from the blog index.
  */
 async function retrieveAugmentedContext(query: string, key: string): Promise<string> {

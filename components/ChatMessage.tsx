@@ -65,9 +65,10 @@ const STATIC_MARKDOWN_COMPONENTS = {
 interface ChatMessageProps {
   message: Message;
   onNavigate?: (view: View, slug?: string) => void;
+  isStreaming?: boolean;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate, isStreaming }) => {
   const [isCopied, setIsCopied] = React.useState(false);
 
   const handleCopyMessage = async () => {
@@ -143,6 +144,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
         >
           {message.text}
         </ReactMarkdown>
+        {isStreaming && message.role === 'model' && (
+          <span className="inline-block w-0.5 h-4 bg-blue-400 animate-pulse ml-0.5 align-middle" aria-hidden="true" />
+        )}
       </div>
     </div>
   );

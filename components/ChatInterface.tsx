@@ -16,6 +16,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   const {
     messages,
     isLoading,
+    isStreaming,
     suggestedPrompts,
     sendMessage,
     clearChat
@@ -63,9 +64,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
         ) : (
           <>
             {messages.map((msg, idx) => (
-              <ChatMessage key={idx} message={msg} onNavigate={onNavigate} />
+              <ChatMessage
+                key={idx}
+                message={msg}
+                onNavigate={onNavigate}
+                isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'model'}
+              />
             ))}
-            {isLoading && (
+            {isLoading && !isStreaming && (
               <div
                 className="flex items-center gap-3"
                 role="status"

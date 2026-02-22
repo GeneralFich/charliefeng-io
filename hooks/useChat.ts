@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { streamMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { checkRateLimit } from '../lib/security';
 
@@ -50,6 +50,7 @@ export const useChat = () => {
     { role: 'model', text: INITIAL_MESSAGE_TEXT }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
 
   // Use refs to keep track of latest state without causing re-renders in callbacks
@@ -130,16 +131,48 @@ export const useChat = () => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    try {
-      const rawResponse = await sendMessageToGemini(apiHistory, text, controller.signal);
+    // Optimistically add an empty model message — chunks will fill it in
+    setMessages(prev => [...prev, { role: 'model', text: '' }]);
 
-      // If aborted during processing (race condition check)
+    let firstChunk = true;
+
+    try {
+      const rawResponse = await streamMessageToGemini(
+        apiHistory,
+        text,
+        (chunk: string) => {
+          if (controller.signal.aborted) return;
+          if (firstChunk) {
+            firstChunk = false;
+            setIsLoading(false);
+            setIsStreaming(true);
+          }
+          setMessages(prev => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === 'model') {
+              updated[updated.length - 1] = { ...last, text: last.text + chunk };
+            }
+            return updated;
+          });
+        },
+        controller.signal
+      );
+
       if (controller.signal.aborted) return;
 
+      // Parse follow-up prompts from the fully assembled response
       const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
 
-      const modelMsg: Message = { role: 'model', text: cleanText };
-      setMessages(prev => [...prev, modelMsg]);
+      // Replace last message with clean text (strips the JSON prompt block)
+      setMessages(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.role === 'model') {
+          updated[updated.length - 1] = { ...last, text: cleanText };
+        }
+        return updated;
+      });
       setSuggestedPrompts(prompts);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -149,6 +182,7 @@ export const useChat = () => {
       console.error("Chat error:", error);
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
       abortControllerRef.current = null;
     }
   }, []); // Stable dependency
@@ -156,6 +190,7 @@ export const useChat = () => {
   return {
     messages,
     isLoading,
+    isStreaming,
     suggestedPrompts,
     sendMessage: handleSend,
     clearChat
