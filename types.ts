@@ -5,6 +5,11 @@ export enum View {
   ESSAYS = 'ESSAYS',
 }
 
+export enum Language {
+  EN = 'en',
+  ZH = 'zh',
+}
+
 export interface Message {
   role: 'user' | 'model';
   text: string;

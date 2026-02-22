@@ -19,14 +19,14 @@ test('verify title attributes for improved accessibility', async ({ page }) => {
 
   // 2. Verify Digital Twin tooltip accessibility
   // The logo is in the navbar
-  const logoButton = page.getByRole('button', { name: 'Go to Home' });
+  const logoButton = page.getByRole('button', { name: 'Home' });
   await expect(logoButton).toBeVisible();
 
   // Focus the logo button (should trigger tooltip via group-focus-visible)
   await logoButton.focus();
 
   // Check if tooltip text is visible
-  const tooltipText = page.getByText('Interactive Knowledge Model');
+  const tooltipText = page.getByText('An AI version of me trained on my work & writing');
   // Note: Playwright's toBeVisible() checks for opacity/visibility.
   // We added group-focus-visible:block.
   // We need to ensure focus-visible is active.

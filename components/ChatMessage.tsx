@@ -11,29 +11,37 @@ const MARKDOWN_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeSanitize];
 
 // Helper for handling internal links
-const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string) => void) => {
+const handleLinkClick = (href: string, onNavigate?: (view: View, slug?: string, hash?: string) => void) => {
   if (!onNavigate) return false;
 
-  if (href === '/whitepaper' || href === '/dashboard') {
-    onNavigate(View.DASHBOARD);
+  // Helper to parse potential hash from url
+  const parseUrl = (url: string) => {
+    const [path, hash] = url.split('#');
+    return { path, hash };
+  };
+
+  const { path, hash } = parseUrl(href);
+
+  if (path === '/whitepaper' || path === '/dashboard') {
+    onNavigate(View.DASHBOARD, undefined, hash);
     return true;
   }
-  if (href === '/resume' || href === '/about') {
-    onNavigate(View.ABOUT);
+  if (path === '/resume' || path === '/about') {
+    onNavigate(View.ABOUT, undefined, hash);
     return true;
   }
-  if (href === '/contact') {
+  if (path === '/contact') {
     // Redirect legacy contact links to About page (which has LinkedIn)
-    onNavigate(View.ABOUT);
+    onNavigate(View.ABOUT, undefined, hash);
     return true;
   }
-  if (href.startsWith('/essays/')) {
-    const slug = href.replace('/essays/', '');
-    onNavigate(View.ESSAYS, slug);
+  if (path.startsWith('/essays/')) {
+    const slug = path.replace('/essays/', '');
+    onNavigate(View.ESSAYS, slug, hash);
     return true;
   }
-  if (href === '/essays' || href === '/blog') {
-    onNavigate(View.ESSAYS);
+  if (path === '/essays' || path === '/blog') {
+    onNavigate(View.ESSAYS, undefined, hash);
     return true;
   }
   return false;
@@ -64,7 +72,7 @@ const STATIC_MARKDOWN_COMPONENTS = {
 
 interface ChatMessageProps {
   message: Message;
-  onNavigate?: (view: View, slug?: string) => void;
+  onNavigate?: (view: View, slug?: string, hash?: string) => void;
   isStreaming?: boolean;
 }
 
@@ -105,6 +113,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     },
   }), [onNavigate]);
 
+  const isError = message.role === 'model' && (message.text.startsWith('Error:') || message.text.startsWith('System:'));
+
   return (
     <div
       className={`group flex items-start gap-3 ${
@@ -113,16 +123,25 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
     >
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-          message.role === 'user' ? 'bg-blue-600' : 'bg-slate-700 border border-slate-600'
+          message.role === 'user'
+            ? 'bg-blue-600'
+            : isError
+              ? 'bg-red-900/20 border border-red-500/30'
+              : 'bg-slate-700 border border-slate-600'
         }`}
       >
-        {message.role === 'user' ? <User size={16} /> : <Bot size={16} className="text-blue-400" />}
+        {message.role === 'user'
+          ? <User size={16} />
+          : <Bot size={16} className={isError ? "text-red-400" : "text-blue-400"} />
+        }
       </div>
       <div
         className={`relative group p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
           message.role === 'user'
             ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
-            : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
+            : isError
+              ? 'bg-red-900/10 border border-red-500/30 text-red-200 rounded-tl-sm shadow-xl'
+              : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
         }`}
       >
         {/* Copy Button for Model messages */}

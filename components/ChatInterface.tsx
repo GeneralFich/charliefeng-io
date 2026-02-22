@@ -1,18 +1,20 @@
-import React, { useRef, useEffect } from 'react';
-import { Loader2, RotateCcw, Download } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Loader2, RotateCcw, Download, Trash2 } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
 import { ChatInput, ChatInputHandle } from './ChatInput';
 import { useChat } from '../hooks/useChat';
 import { downloadChatHistory } from '../lib/download';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface ChatInterfaceProps {
-  onNavigate?: (view: View, slug?: string) => void;
+  onNavigate?: (view: View, slug?: string, hash?: string) => void;
   className?: string;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className }) => {
+  const { t } = useLanguage();
   const {
     messages,
     isLoading,
@@ -25,6 +27,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   const isInitialState = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<ChatInputHandle>(null);
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const clearTimeoutRef = useRef<NodeJS.Timeout>(undefined);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeout(clearTimeoutRef.current);
+    };
+  }, []);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -44,8 +55,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   };
 
   const handleClearChat = () => {
-    clearChat();
-    inputRef.current?.clear();
+    if (isConfirmingClear) {
+      clearChat();
+      inputRef.current?.clear();
+      setIsConfirmingClear(false);
+      clearTimeout(clearTimeoutRef.current);
+    } else {
+      setIsConfirmingClear(true);
+      clearTimeoutRef.current = setTimeout(() => {
+        setIsConfirmingClear(false);
+      }, 3000);
+    }
   };
 
   return (
@@ -81,7 +101,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
                   <Loader2 size={16} className="text-blue-400 animate-spin" />
                 </div>
                 <div className="text-slate-500 text-xs tracking-widest animate-pulse">
-                  THINKING...
+                  {t.chat.thinking}
                 </div>
                 <span className="sr-only">Charlie is thinking...</span>
               </div>
@@ -111,20 +131,28 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
             <>
               <button
                 onClick={handleDownloadChat}
-                aria-label="Download chat"
+                aria-label={t.chat.download}
                 className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all shrink-0 group"
-                title="Download chat history"
+                title={t.chat.download}
               >
                 <Download size={20} className="group-hover:scale-110 transition-transform duration-300" />
               </button>
 
               <button
                 onClick={handleClearChat}
-                aria-label="Clear chat"
-                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10 transition-all shrink-0 group"
-                title="Clear chat history"
+                aria-label={isConfirmingClear ? t.chat.confirmClear : t.chat.clear}
+                className={`p-3.5 rounded-xl border transition-all shrink-0 group ${
+                  isConfirmingClear
+                    ? "bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30"
+                    : "bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
+                }`}
+                title={isConfirmingClear ? t.chat.confirmClear : t.chat.clear}
               >
-                <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                {isConfirmingClear ? (
+                  <Trash2 size={20} className="animate-pulse" />
+                ) : (
+                  <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                )}
               </button>
             </>
           )}
@@ -133,6 +161,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
             ref={inputRef}
             onSend={sendMessage}
             isLoading={isLoading}
+            placeholder={t.chat.inputPlaceholder}
           />
         </div>
       </div>

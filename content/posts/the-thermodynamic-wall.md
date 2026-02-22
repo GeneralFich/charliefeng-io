@@ -15,6 +15,7 @@ collision
 
 Our analysis projects that by 2030, the largest AI training runs will demand between 4 and 10 gigawatts (GW) of power—equivalent to the output of multiple nuclear power stations—while inference workloads will generate a long-tail energy demand rivaling the industrial consumption of nations.[^1] This demand curve collides directly with a US electrical grid characterized by interconnection queues averaging five years and a manufacturing base struggling to produce high-assay low-enriched uranium (HALEU) for next-generation nuclear reactors.[^2]
 This report dissects the mechanics of this collision, explores the leverage points available in infrastructure asymmetry (such as silicon photonics, active electrical cabling, and software-defined power), and outlines an optimal "Green Compute" strategy for 2025. It argues that while the Thermodynamic Wall is formidable, it acts as a forcing function for necessary architectural evolution, driving the industry toward liquid cooling, on-site generation, and optical interconnects. The analysis draws upon the concept of the "Planetary Forest" model as a counter to the "Tower of Babel" approach, suggesting a shift from monolithic centralization to distributed, biomimetic resilience.[^4]
+
 ---
 ## Section 1: The Mechanics of the Wall — Energy, Entropy, and AI Scaling
 To understand the Thermodynamic Wall, one must first quantify the force striking it. The demand for compute is not merely growing; it is undergoing a phase transition driven by the shift from analytical AI to generative and reasoning models. This shift represents a fundamental decoupling of economic value creation from energy efficiency, threatening to make the marginal cost of intelligence energetically unsustainable.
@@ -91,7 +92,7 @@ Small Modular Reactors promise to factory-fabricate nuclear power, reducing cost
 * Microsoft: Focusing on restarting Three Mile Island Unit 1 to provide dedicated baseload power for its AI operations.[^23]
 ### 3.2 The Reality Check: NuScale and Economics
 The collapse of the NuScale "Carbon Free Power Project" (CFPP) in late 2023 serves as a critical cautionary tale for the sector. NuScale was the industry frontrunner, the only SMR design with US Nuclear Regulatory Commission (NRC) approval.
-* The Failure: The project was cancelled because too few customers (municipal utilities) signed up to buy the power. The target price for power rose from $58/MWh to $89/MWh, making it uncompetitive with wind, solar, and gas.[^25]
+* The Failure: The project was cancelled because too few customers (municipal utilities) signed up to buy the power. The target price for power rose from \$58/MWh to \$89/MWh, making it uncompetitive with wind, solar, and gas.[^25]
 * Root Causes: The failure was driven by rising commodity prices (steel, concrete) and high interest rates, which punish capital-intensive nuclear projects. It exposed the "economies of scale" disadvantage: SMRs lose the efficiency of large reactors but still incur high regulatory and security overhead costs.[^26] The "modular" promise of cost reduction via factory learning curves has yet to be proven, as no factory currently exists.
 ### 3.3 The Fuel Wall: The HALEU Shortage
 Perhaps the most critical, yet under-discussed, constraint is the fuel itself. Most advanced SMR designs (including those from X-energy and TerraPower) require High-Assay Low-Enriched Uranium (HALEU), enriched to 5-20% U-235. Standard reactors use Low-Enriched Uranium (LEU) at 3-5%.
@@ -135,7 +136,7 @@ Table 2: Data Center Cabling Technologies Comparison
    * Leverage: AECs extend copper reach to 5-7 meters (spanning multiple racks) with lower cost than optics and thinner gauges than passive copper (improving airflow).[^35] They are becoming the standard for connecting AI accelerators within a row where DAC is too short and AOC is too expensive/power-hungry.
 ### 4.4 Coolant Distribution Units (CDUs)
 The Coolant Distribution Unit (CDU) has emerged as a critical piece of leverage. It is the "heart" of the liquid cooling loop, managing the flow, pressure, and temperature of the coolant.[^36]
-* Market Dynamics: The CDU market is exploding, projected to grow from $887 million in 2024 to $3.6 billion by 2032, a CAGR of 20%.[^37]
+* Market Dynamics: The CDU market is exploding, projected to grow from \$887 million in 2024 to \$3.6 billion by 2032, a CAGR of 20%.[^37]
 * Technology: High-efficiency CDUs allow for "warm water cooling" (using 40°C+ water), which eliminates the need for energy-intensive chillers, allowing heat to be rejected via dry coolers even in hot climates. This significantly lowers the total data center PUE.[^38]
 * Quick Disconnects (UQD): The "USB of liquid cooling." Standardization of leak-proof quick disconnect couplings (like OCP-compliant UQDs from CPC, Danfoss, Stäubli) is vital for operationalizing liquid cooling at scale. Without reliable UQDs, servicing a liquid-cooled rack is a logistical nightmare of draining and refilling fluids. The market for UQDs is surging as they become the critical failure point to avoid.[^39]
 ### 4.5 Data Compaction: The "Dreaming" Leverage

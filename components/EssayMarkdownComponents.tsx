@@ -7,6 +7,47 @@ import { Heading } from './Heading';
 import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
 
+/**
+ * Configuration for Component-based Infographics.
+ * Maps the code block content (e.g., "whitepaper-summary") to a React component.
+ * "Configuration Object Pattern" for O(1) lookup.
+ */
+const INFOGRAPHIC_COMPONENTS: Record<string, React.ComponentType> = {
+  'whitepaper-summary': WhitepaperSummary,
+  'whitepaper-charts': WhitepaperCharts,
+};
+
+/**
+ * Configuration for Iframe-based Infographics heights.
+ * Maps the code block content to a Tailwind height class.
+ */
+const INFOGRAPHIC_HEIGHTS: Record<string, string> = {
+  'collision': "h-[600px] md:h-[300px]",
+  'leverage': "h-[450px]",
+  'strategy': "h-[400px]",
+  'mechanics': "h-[400px]",
+};
+
+/**
+ * @fileoverview Custom Markdown Components Mapping
+ *
+ * This module defines how Markdown elements are rendered in the Essay view.
+ * It implements two critical patterns to support rich, interactive content
+ * within standard Markdown files:
+ *
+ * 1. **Component Hijack Pattern**:
+ *    We use specific code block languages (e.g., `infographic`, `whitepaper-charts`)
+ *    as "triggers" to render complex React components instead of raw code.
+ *    This allows authors to embed interactive charts and iframes by simply writing
+ *    a code block in the Markdown source.
+ *
+ * 2. **Unwrap Pattern**:
+ *    Standard Markdown parsers wrap code blocks in `<pre><code>...</code></pre>`.
+ *    When we hijack the `code` element to render a `div` (like a chart),
+ *    this results in invalid HTML (`<pre><div>...</div></pre>`).
+ *    We intercept the `pre` element to "unwrap" these hijacked components,
+ *    rendering them directly without the parent `<pre>`.
+ */
 export const ESSAY_MARKDOWN_COMPONENTS: Components = {
   // Custom Anchor to handle footnotes and external links
   a: ({ node, href, children, ...props }: any) => {
@@ -46,16 +87,23 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     );
   },
   // Apply context-aware highlighter to text blocks and auto-generated IDs
-  h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-white mt-12 mb-6" {...props} />,
-  h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4" {...props} />,
-  h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3" {...props} />,
-  p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6" {...props}>{children}</SearchHighlighter>,
-  li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300" {...props}>{children}</SearchHighlighter>,
+  h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-white mt-12 mb-6 print:text-black" {...props} />,
+  h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4 print:text-black" {...props} />,
+  h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3 print:text-black" {...props} />,
+  p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6 print:text-black" {...props}>{children}</SearchHighlighter>,
+  li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300 print:text-black" {...props}>{children}</SearchHighlighter>,
   blockquote: ({ node, children, ...props }: any) => (
-    <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8">
+    <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8 print:text-slate-700 print:border-slate-400">
       <SearchHighlighter>{children}</SearchHighlighter>
     </blockquote>
   ),
+  /**
+   * Unwrap Pattern:
+   * Intercepts the `<pre>` tag. If the child `<code>` block is flagged as an
+   * infographic (hijacked component), we return the children directly (Fragment).
+   * This removes the `<pre>` wrapper, preventing invalid HTML (`<pre><div>...`)
+   * and allowing the component to render with full block-level styling.
+   */
   pre: ({ node, children, ...props }: any) => {
     // Check for infographic in children
     const codeChild = node.children && node.children.length > 0 ? node.children[0] : null;
@@ -69,6 +117,17 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
 
     return <CodeBlock node={node} {...props}>{children}</CodeBlock>;
   },
+  /**
+   * Component Hijack Pattern:
+   * Intercepts `<code>` blocks with specific language tags (e.g. `language-infographic`).
+   * Instead of rendering code, it renders specific interactive components or iframes.
+   *
+   * @example
+   * ```infographic
+   * whitepaper-charts
+   * ```
+   * Renders the <WhitepaperCharts /> component.
+   */
   code: ({ node, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const isInfographic = match && match[1] === 'infographic';
@@ -76,31 +135,15 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     if (isInfographic) {
       const type = String(children).replace(/\n$/, '').trim();
 
-      // Handle Whitepaper Summary
-      if (type === 'whitepaper-summary') {
-        return <WhitepaperSummary />;
-      }
-
-      // Handle Whitepaper Charts
-      if (type === 'whitepaper-charts') {
-        return <WhitepaperCharts />;
+      // Check for Custom Component
+      const Component = INFOGRAPHIC_COMPONENTS[type];
+      if (Component) {
+        return <Component />;
       }
 
       // Standard Iframe Infographics
       const src = `/infographics/thermodynamic-wall/${type}.html`;
-
-      // Define heights based on type
-      let heightClass = "h-[400px]"; // Default
-
-      if (type === 'collision') {
-        heightClass = "h-[600px] md:h-[300px]";
-      } else if (type === 'leverage') {
-        heightClass = "h-[450px]";
-      } else if (type === 'strategy') {
-        heightClass = "h-[400px]";
-      } else if (type === 'mechanics') {
-        heightClass = "h-[400px]";
-      }
+      const heightClass = INFOGRAPHIC_HEIGHTS[type] || "h-[400px]"; // Default height
 
       return (
         <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">

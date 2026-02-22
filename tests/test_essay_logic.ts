@@ -4,6 +4,8 @@ import * as assert from 'node:assert';
 import { filterAndSortEssays } from '../lib/essay_logic';
 import { BlogPost } from '../lib/knowledge';
 
+import { Language } from '../types';
+
 // Helper to create mock blog posts
 const createMockPost = (id: string, title: string, readTime: number, date: string): BlogPost => ({
   slug: id,
@@ -15,7 +17,8 @@ const createMockPost = (id: string, title: string, readTime: number, date: strin
   },
   body: `Body content for ${title}`,
   readTime,
-  searchContent: `${title} description body content for ${title}`.toLowerCase()
+  dateTimestamp: new Date(date).getTime(),
+  language: Language.EN,
 });
 
 test('filterAndSortEssays', async (t) => {

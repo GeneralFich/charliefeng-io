@@ -1,6 +1,7 @@
 
 import { test, mock, describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
+import { Language } from '../types';
 
 // Mock dependencies BEFORE importing the service
 const generateContentMock = mock.fn(async () => ({
@@ -23,21 +24,12 @@ const getRelevantContextMock = mock.fn(async () => {
 });
 
 // We need to mock the modules.
-// Note: specifiers must match what the service uses or be absolute.
-// Since services/geminiService.ts imports from "@google/genai" and "../lib/rag"
-// We try to mock those specific strings.
-
 mock.module('@google/genai', {
   namedExports: {
     GoogleGenAI: MockGoogleGenAI
   }
 });
 
-// We need to resolve the path to lib/rag relative to the test file -> ../lib/rag
-// But the service imports it as ../lib/rag from services/ -> which is lib/rag.
-// Node's mock.module usually mocks by specifier.
-// Let's try mocking the resolved URL if possible, or just the specifier.
-// The service imports `../lib/rag`.
 mock.module('../lib/rag', {
   namedExports: {
     getRelevantContext: getRelevantContextMock
@@ -47,7 +39,8 @@ mock.module('../lib/rag', {
 // Mock knowledge to avoid loading Markdown files which Node/tsx doesn't support
 mock.module('../lib/knowledge', {
   namedExports: {
-    FULL_CONTEXT: "System Prompt"
+    FULL_CONTEXT: "System Prompt",
+    getFullContext: (lang: any) => "System Prompt for " + lang
   }
 });
 
@@ -70,10 +63,10 @@ describe('Gemini Service', () => {
   });
 
   it('should send a message and return response', async () => {
-    const history = [{ role: 'user', text: 'Hello' }];
+    const history = [{ role: 'user' as const, text: 'Hello' }];
     const newMessage = 'How are you?';
 
-    const response = await sendMessageToGemini(history, newMessage);
+    const response = await sendMessageToGemini(history, newMessage, Language.EN);
 
     assert.strictEqual(response, "Mocked AI response");
 
@@ -86,19 +79,11 @@ describe('Gemini Service', () => {
 
   it('should handle missing API key', async () => {
     // We can't easily "unset" the const ai inside the module since it's already evaluated.
-    // So this test case is hard to do without reloading the module.
-    // We'll skip this specific edge case for this run or try to re-import?
-    // Modules are cached.
-
-    // Alternative: We can mock the environment variable BEFORE import.
-    // Since we already imported it, we can't test the "missing key" initialization path
-    // unless we use isolation (e.g. separate test files or loader hooks).
-    // So we will focus on the logic available.
   });
 
   it('should validate max input length', async () => {
     const longMessage = 'a'.repeat(10001);
-    const response = await sendMessageToGemini([], longMessage);
+    const response = await sendMessageToGemini([], longMessage, Language.EN);
     assert.match(response, /Message is too long/);
 
     // Should not call API
@@ -111,12 +96,43 @@ describe('Gemini Service', () => {
       throw new Error("RAG Failed");
     });
 
-    const response = await sendMessageToGemini([], "Query");
+    const response = await sendMessageToGemini([], "Query", Language.EN);
 
     // Should still return response
     assert.strictEqual(response, "Mocked AI response");
 
     // API should still be called (RAG failure shouldn't block)
     assert.strictEqual(generateContentMock.mock.callCount(), 1);
+  });
+
+  it('should propagate AbortError when signal is aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort(); // Abort immediately
+
+    // Mock API to throw an error (simulating cancellation or network error during abort)
+    generateContentMock.mock.mockImplementationOnce(async () => {
+      throw new Error("Request Aborted");
+    });
+
+    try {
+      await sendMessageToGemini([], "Query", Language.EN, abortController.signal);
+      assert.fail("Should have thrown error");
+    } catch (err: any) {
+      assert.ok(err);
+      // Ensure the error was propagated, not swallowed
+      assert.strictEqual(err.message, "Request Aborted");
+    }
+  });
+
+  it('should catch generic API errors and return friendly message', async () => {
+    // Mock API to throw a generic error
+    generateContentMock.mock.mockImplementationOnce(async () => {
+      throw new Error("Service Unavailable");
+    });
+
+    const response = await sendMessageToGemini([], "Query", Language.EN);
+
+    // Should return the user-facing error message
+    assert.match(response, /Error: Connection to the neural link failed/);
   });
 });

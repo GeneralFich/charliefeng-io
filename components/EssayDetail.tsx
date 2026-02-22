@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import rehypeSanitize from 'rehype-sanitize';
+import remarkMath from 'remark-math';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import rehypeKatex from 'rehype-katex';
 import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes, HighlightContext } from './SearchHighlighter';
@@ -9,6 +11,7 @@ import { TableOfContents } from './TableOfContents';
 import { View } from '../types';
 import { useArticleSearch } from '../hooks/useArticleSearch';
 import { ESSAY_MARKDOWN_COMPONENTS } from './EssayMarkdownComponents';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssayDetailProps {
   post: BlogPost;
@@ -19,8 +22,25 @@ interface EssayDetailProps {
 }
 
 // Define plugins outside component to maintain reference stability
-const MARKDOWN_PLUGINS = [remarkGfm];
-const REHYPE_PLUGINS = [rehypeSanitize];
+const MARKDOWN_PLUGINS = [remarkGfm, remarkMath];
+const REHYPE_PLUGINS = [
+  [rehypeSanitize, {
+    ...defaultSchema,
+    attributes: {
+      ...defaultSchema.attributes,
+      // Allow className on spans and divs so KaTeX can find them
+      span: [
+        ...(defaultSchema.attributes?.span || []),
+        ['className', 'math-inline', 'math-display', 'katex']
+      ],
+      div: [
+        ...(defaultSchema.attributes?.div || []),
+        ['className', 'math-inline', 'math-display', 'katex']
+      ]
+    }
+  }],
+  rehypeKatex
+];
 
 export const EssayDetail: React.FC<EssayDetailProps> = ({
   post,
@@ -29,6 +49,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   onNavigate,
   isInsideSplitView
 }) => {
+  const { t } = useLanguage();
   const [isCopied, setIsCopied] = useState(false);
 
   const {
@@ -123,7 +144,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors w-fit"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-medium">Back to Essays</span>
+            <span className="text-sm font-medium">{t.essays.back}</span>
           </button>
         </div>
 
@@ -132,8 +153,8 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           <button
             onClick={() => window.print()}
             className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm hidden sm:flex"
-            title="Print or Save as PDF"
-            aria-label="Print or Save as PDF"
+            title={t.actions.downloadPdf}
+            aria-label={t.actions.downloadPdf}
           >
             <Download size={14} />
             <span>PDF</span>
@@ -143,11 +164,11 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           <button
             onClick={handleShare}
             className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
-            title="Copy link to clipboard"
-            aria-label="Copy link to clipboard"
+            title={t.actions.share}
+            aria-label={isCopied ? t.actions.copied : t.actions.share}
           >
             {isCopied ? <Check size={14} className="text-green-400" /> : <Share2 size={14} />}
-            <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? 'Copied!' : 'Share'}</span>
+            <span className={isCopied ? 'text-green-400' : ''}>{isCopied ? t.actions.copied : t.actions.share}</span>
           </button>
 
           {/* In-Article Search */}
@@ -159,7 +180,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             <input
               ref={articleSearchInputRef}
               type="text"
-              placeholder="Find in essay... (⌘K)"
+              placeholder={`${t.essays.findInEssay} (⌘K)`}
               aria-label="Search within article"
               value={articleSearchQuery}
               onChange={(e) => setArticleSearchQuery(e.target.value)}
@@ -234,7 +255,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <Clock size={16} className="text-blue-400" />
-              <span>{post.readTime} min read</span>
+              <span>{post.readTime} {t.essays.readTime}</span>
             </div>
             <div className="flex items-center gap-2">
               <User size={16} className="text-blue-400" />
@@ -266,7 +287,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
             >
               <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">
                 <ArrowLeft size={14} />
-                <span>Previous</span>
+                <span>{t.actions.previous}</span>
               </div>
               <span className="text-slate-200 font-medium group-hover:text-white transition-colors line-clamp-2">
                 {newerPost.attributes.title}
@@ -285,7 +306,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
               className="group flex flex-col items-end text-right w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
             >
               <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">
-                <span>Next</span>
+                <span>{t.actions.next}</span>
                 <ArrowRight size={14} />
               </div>
               <span className="text-slate-200 font-medium group-hover:text-white transition-colors line-clamp-2">

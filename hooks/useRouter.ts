@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View } from '../types';
+import { parseRoute } from '../lib/route_logic';
 
 /**
  * @fileoverview Custom Router Hook
@@ -27,20 +28,23 @@ import { View } from '../types';
  * @returns An object containing:
  * - `currentView`: The active view enum (HOME, ABOUT, ESSAYS, CONTACT).
  * - `targetEssaySlug`: The specific essay slug to display (if in ESSAYS view).
+ * - `targetHash`: The target hash anchor for deep linking.
  * - `navigateTo`: Function to programmatically change the view.
  */
 export const useRouter = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
   const [targetEssaySlug, setTargetEssaySlug] = useState<string | null>(null);
+  const [targetHash, setTargetHash] = useState<string | null>(null);
 
   /**
-   * Navigates to a specific view and optionally sets a sub-resource (slug).
+   * Navigates to a specific view and optionally sets a sub-resource (slug) and hash.
    * Updates the URL query parameters and pushes a new history entry.
    *
    * @param view - The target View.
    * @param slug - Optional slug (e.g., for a specific blog post).
+   * @param hash - Optional hash anchor (e.g., #section-id).
    */
-  const navigateTo = useCallback((view: View, slug?: string) => {
+  const navigateTo = useCallback((view: View, slug?: string, hash?: string) => {
     setCurrentView(view);
     if (view === View.ESSAYS && slug) {
       setTargetEssaySlug(slug);
@@ -48,14 +52,22 @@ export const useRouter = () => {
       setTargetEssaySlug(null);
     }
 
+    setTargetHash(hash || null);
+
     // Update URL
     const params = new URLSearchParams();
     params.set('view', view);
     if (slug) {
       params.set('essay', slug);
     }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({ view, slug }, '', newUrl);
+    let newUrl = `${window.location.pathname}?${params.toString()}`;
+    if (hash) {
+      // Ensure hash has # prefix
+      const cleanHash = hash.startsWith('#') ? hash : `#${hash}`;
+      newUrl += cleanHash;
+    }
+
+    window.history.pushState({ view, slug, hash }, '', newUrl);
   }, []);
 
   // Initialize from URL on mount and handle back/forward navigation
@@ -64,6 +76,7 @@ export const useRouter = () => {
       const params = new URLSearchParams(window.location.search);
       const viewParam = params.get('view');
       const essayParam = params.get('essay');
+      const hash = window.location.hash;
 
       if (viewParam && Object.values(View).includes(viewParam as View)) {
         setCurrentView(viewParam as View);
@@ -77,6 +90,8 @@ export const useRouter = () => {
         setCurrentView(View.HOME);
         setTargetEssaySlug(null);
       }
+
+      setTargetHash(hash || null);
     };
 
     // Initial check
@@ -89,6 +104,7 @@ export const useRouter = () => {
   return {
     currentView,
     targetEssaySlug,
+    targetHash,
     navigateTo
   };
 };

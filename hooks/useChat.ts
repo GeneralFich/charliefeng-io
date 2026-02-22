@@ -2,26 +2,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message } from '../types';
 import { streamMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
-import { checkRateLimit } from '../lib/security';
+import { checkRateLimit, validateChatInput } from '../lib/security';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 import { saveChatState, loadChatState, clearChatState } from '../lib/chatStorage';
-
-/**
- * Curated list of initial prompts to guide the user towards the persona's core competencies.
- *
- * Why: Users often don't know what to ask a "Digital Twin". These specific questions
- * act as signposts to the high-value content (Resume, Projects, Contact info)
- * and help establish the professional, "Strategic Thought Partner" persona immediately.
- */
-const INITIAL_SUGGESTED_PROMPTS = [
-  "Who is Charlie?",
-  "What is his work experience?",
-  "Show me his resume.",
-  "What are his core skills?",
-  "What projects has he worked on?",
-  "How can I contact him?",
-];
-
-const INITIAL_MESSAGE_TEXT = "Hello! I can answer questions about Charlie's work, writing, and research. What would you like to know?";
 
 // Rate Limit Configuration
 // Why: 10 requests per minute is a balanced threshold that allows for natural
@@ -47,14 +30,15 @@ const MAX_REQUESTS = 10;
  * - `clearChat`: Function to reset the chat history.
  */
 export const useChat = () => {
+  const { t, language } = useLanguage();
   const stored = loadChatState();
   const [messages, setMessages] = useState<Message[]>(
-    stored?.messages ?? [{ role: 'model', text: INITIAL_MESSAGE_TEXT }]
+    stored?.messages ?? [{ role: 'model', text: t.chat.greeting }]
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(
-    stored?.suggestedPrompts.length ? stored.suggestedPrompts : INITIAL_SUGGESTED_PROMPTS
+    stored?.suggestedPrompts.length ? stored.suggestedPrompts : t.chat.suggestions
   );
 
   // Use refs to keep track of latest state without causing re-renders in callbacks
@@ -71,6 +55,14 @@ export const useChat = () => {
   useEffect(() => {
     isLoadingRef.current = isLoading;
   }, [isLoading]);
+
+  // Handle language switch: Update greeting and prompts if chat is in initial state
+  useEffect(() => {
+    if (messagesRef.current.length <= 1 && messagesRef.current[0].role === 'model') {
+       setMessages([{ role: 'model', text: t.chat.greeting }]);
+       setSuggestedPrompts(t.chat.suggestions);
+    }
+  }, [language, t]);
 
   // Persist chat state to localStorage (skip during streaming to avoid saving partial messages)
   useEffect(() => {
@@ -89,11 +81,11 @@ export const useChat = () => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
-    setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
+    setMessages([{ role: 'model', text: t.chat.greeting }]);
+    setSuggestedPrompts(t.chat.suggestions);
     setIsLoading(false);
     clearChatState();
-  }, []);
+  }, [t]);
 
   /**
    * Sends a message to the AI model.
@@ -111,16 +103,43 @@ export const useChat = () => {
   const handleSend = useCallback(async (text: string) => {
     if (!text.trim() || isLoadingRef.current) return;
 
-    // Security: Input length validation
-    if (text.length > 2000) {
-      const errorMsg: Message = { role: 'model', text: "Error: Message exceeds 2000 character limit." };
+    // Security: Input validation (length, content safety, spam)
+    // We validate against the *current* history (messagesRef.current) which is the state before this new message
+    const validation = validateChatInput(messagesRef.current, text);
+    if (!validation.valid) {
+      const errorMsg: Message = { role: 'model', text: `Error: ${validation.error || "Invalid input."}` };
       setMessages(prev => [...prev, errorMsg]);
       return;
     }
 
     // Security: Rate limiting
-    const { allowed, newTimestamps } = checkRateLimit(requestTimestampsRef.current, RATE_LIMIT_WINDOW, MAX_REQUESTS);
+    // Load latest timestamps from storage to handle multi-tab synchronization
+    let currentTimestamps = requestTimestampsRef.current;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('chat_rate_limit_timestamps');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            currentTimestamps = parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load rate limit timestamps:', e);
+      }
+    }
+
+    const { allowed, newTimestamps } = checkRateLimit(currentTimestamps, RATE_LIMIT_WINDOW, MAX_REQUESTS);
     requestTimestampsRef.current = newTimestamps;
+
+    // Persist to local storage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('chat_rate_limit_timestamps', JSON.stringify(newTimestamps));
+      } catch (e) {
+        console.warn('Failed to save rate limit timestamps:', e);
+      }
+    }
 
     if (!allowed) {
       const errorMsg: Message = { role: 'model', text: "System: Rate limit exceeded. Please wait a moment before sending more messages." };
@@ -151,6 +170,7 @@ export const useChat = () => {
       const rawResponse = await streamMessageToGemini(
         apiHistory,
         text,
+        language,
         (chunk: string) => {
           if (controller.signal.aborted) return;
           if (firstChunk) {
@@ -191,12 +211,14 @@ export const useChat = () => {
         return;
       }
       console.error("Chat error:", error);
+      const errorMsg: Message = { role: 'model', text: "Error: Failed to connect to the model. Please try again." };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
       setIsStreaming(false);
       abortControllerRef.current = null;
     }
-  }, []); // Stable dependency
+  }, [language]); // Depends on language
 
   return {
     messages,

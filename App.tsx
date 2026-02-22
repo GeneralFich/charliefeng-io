@@ -29,14 +29,14 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 
 const App: React.FC = () => {
-  const { currentView, targetEssaySlug, navigateTo } = useRouter();
+  const { currentView, targetEssaySlug, targetHash, navigateTo } = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Optimization: Memoize navigation handlers to prevent unnecessary re-renders of
   // ChatInterface (and all ChatMessages) when other state changes (e.g. menus).
-  const handleNavigate = React.useCallback((view: View, slug?: string) => {
-    navigateTo(view, slug);
+  const handleNavigate = React.useCallback((view: View, slug?: string, hash?: string) => {
+    navigateTo(view, slug, hash);
     setMobileMenuOpen(false);
   }, [navigateTo]);
 
@@ -67,8 +67,13 @@ const App: React.FC = () => {
            </div>
         </div>
 
-        {currentView === View.ABOUT && <Resume />}
-        {currentView === View.ESSAYS && <Essays initialSlug={targetEssaySlug} />}
+        {currentView === View.ABOUT && <Resume initialHash={targetHash} />}
+        {currentView === View.ESSAYS && (
+          <Essays
+            slug={targetEssaySlug}
+            onNavigate={handleNavigate}
+          />
+        )}
       </>
     );
   };

@@ -1,9 +1,9 @@
-import { GoogleGenAI } from "@google/genai";
-import { FULL_CONTEXT } from "../lib/knowledge";
-import { Message } from "../types";
+import { GoogleGenAI, Content } from "@google/genai";
+import { getFullContext } from "../lib/knowledge";
+import { Message, Language } from "../types";
 import { getRelevantContext, RelevantChunk } from "../lib/rag";
 import { redactSensitiveInfo } from "../lib/utils";
-import { validateChatInput } from "../lib/security";
+import { validateChatInput, sanitizeInput } from "../lib/security";
 
 /**
  * @fileoverview Gemini AI Service
@@ -23,7 +23,7 @@ import { validateChatInput } from "../lib/security";
 const apiKey = process.env.API_KEY;
 
 // Initialize the client.
-// Note: In a real production app, we might want to handle this initialization 
+// Note: In a real production app, we might want to handle this initialization
 // in a hook or context to handle missing keys more gracefully in the UI.
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
@@ -37,56 +37,31 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
  *
  * @param history - The conversation history so far (excluding the new message).
  * @param newMessage - The user's current question/input.
+ * @param language - The language of the interaction (used for RAG and System Prompt).
  * @returns A Promise resolving to the model's text response (markdown formatted).
  */
 export const sendMessageToGemini = async (
   history: Message[],
   newMessage: string,
+  language: Language,
   abortSignal?: AbortSignal
 ): Promise<string> => {
-  // Security: Input validation to prevent large payloads (DoS/Cost)
-  const validation = validateChatInput(history, newMessage);
-  if (!validation.valid) {
-    return validation.error || "Invalid input.";
-  }
-
-  if (!ai || !apiKey) {
-    return "API Key is missing. Please configure the environment variable.";
-  }
+  // 1. Validation & Guard Clauses
+  const { isValid, error, sanitizedMessage } = validateRequest(history, newMessage);
+  if (!isValid) return error!;
 
   try {
-    // RAG: Retrieve relevant context from blog
-    const additionalContext = await retrieveAugmentedContext(newMessage, apiKey);
+    // 2. Retrieval Augmented Generation (RAG)
+    const additionalContext = await retrieveAugmentedContext(sanitizedMessage!, apiKey!, language);
 
-    // Prepare the conversation for the API
-    const contents = buildGeminiMessages(history, newMessage, additionalContext);
+    // 3. Prompt Construction
+    const contents = buildGeminiMessages(history, sanitizedMessage!, additionalContext);
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: contents,
-      config: {
-        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
-        temperature: 0.7,
-        maxOutputTokens: 4000,
-        abortSignal: abortSignal,
-      },
-    });
-
-    if (response.text) {
-      return response.text;
-    }
-    
-    return "I'm processing that signal, but returned no data.";
+    // 4. API Execution
+    return await generateContent(contents, language, abortSignal);
 
   } catch (error) {
-    if (abortSignal?.aborted) {
-      throw error; // Allow AbortError to propagate
-    }
-    // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
-    const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
-    const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
-    console.error("Gemini API Error:", errorMessage);
-    return "Connection to the neural link failed. Please try again.";
+    return handleServiceError(error, abortSignal);
   }
 };
 
@@ -97,6 +72,7 @@ export const sendMessageToGemini = async (
 export const streamMessageToGemini = async (
   history: Message[],
   newMessage: string,
+  language: Language,
   onChunk: (text: string) => void,
   abortSignal?: AbortSignal
 ): Promise<string> => {
@@ -114,14 +90,14 @@ export const streamMessageToGemini = async (
   }
 
   try {
-    const additionalContext = await retrieveAugmentedContext(newMessage, apiKey);
+    const additionalContext = await retrieveAugmentedContext(newMessage, apiKey, language);
     const contents = buildGeminiMessages(history, newMessage, additionalContext);
 
     const stream = await ai.models.generateContentStream({
       model: "gemini-3-flash-preview",
       contents: contents,
       config: {
-        systemInstruction: { parts: [{ text: FULL_CONTEXT }] },
+        systemInstruction: { parts: [{ text: getFullContext(language) }] },
         temperature: 0.7,
         maxOutputTokens: 4000,
       },
@@ -147,11 +123,73 @@ export const streamMessageToGemini = async (
 };
 
 /**
+ * Validates the request preconditions.
+ */
+function validateRequest(history: Message[], newMessage: string): { isValid: boolean; error?: string; sanitizedMessage?: string } {
+  // Security: Sanitize input to remove control characters
+  const sanitizedMessage = sanitizeInput(newMessage);
+
+  // Security: Input validation to prevent large payloads (DoS/Cost)
+  const validation = validateChatInput(history, sanitizedMessage);
+  if (!validation.valid) {
+    return { isValid: false, error: validation.error || "Invalid input." };
+  }
+
+  if (!ai || !apiKey) {
+    return { isValid: false, error: "API Key is missing. Please configure the environment variable." };
+  }
+
+  return { isValid: true, sanitizedMessage };
+}
+
+/**
+ * Executes the generation request against the Gemini API.
+ */
+async function generateContent(contents: Content[], language: Language, abortSignal?: AbortSignal): Promise<string> {
+  if (!ai) throw new Error("AI Client not initialized");
+
+  const systemInstructionText = getFullContext(language);
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: contents,
+    config: {
+      systemInstruction: { parts: [{ text: systemInstructionText }] },
+      temperature: 0.7,
+      maxOutputTokens: 4000,
+      abortSignal: abortSignal,
+    },
+  });
+
+  if (response.text) {
+    return response.text;
+  }
+
+  return "I'm processing that signal, but returned no data.";
+}
+
+/**
+ * Centralized error handler for the service.
+ */
+function handleServiceError(error: unknown, abortSignal?: AbortSignal): string {
+  if (abortSignal?.aborted) {
+    throw error; // Allow AbortError to propagate
+  }
+
+  // Security: Sanitize error logging to prevent leaking sensitive info (e.g. API keys in stack traces)
+  const rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
+  const errorMessage = redactSensitiveInfo(rawErrorMessage, [apiKey]);
+
+  console.error("Gemini API Error:", errorMessage);
+  return "Error: Connection to the neural link failed. Please try again.";
+}
+
+/**
  * Retrieves and formats relevant context from the blog index.
  */
-async function retrieveAugmentedContext(query: string, key: string): Promise<string> {
+async function retrieveAugmentedContext(query: string, key: string, language: Language): Promise<string> {
   try {
-    const relevantChunks = await getRelevantContext(query, key);
+    const relevantChunks = await getRelevantContext(query, key, language);
     if (relevantChunks.length > 0) {
       return "\n\n[RAG CONTEXT - RELEVANT BLOG POSTS]:\n" +
         relevantChunks.map(chunk => `Title: ${chunk.title}\nURL: ${chunk.url}\nExcerpt: ${chunk.text}`).join("\n---\n");
@@ -170,7 +208,7 @@ async function retrieveAugmentedContext(query: string, key: string): Promise<str
 /**
  * Constructs the message array for the Gemini API.
  */
-function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string) {
+function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string): Content[] {
   // We treat the "history" as the context of conversation so far.
   // The "newMessage" is the latest user input.
   // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
@@ -181,7 +219,7 @@ function buildGeminiMessages(history: Message[], newMessage: string, additionalC
 
   return [
     ...history.map((msg) => ({
-      role: msg.role,
+      role: msg.role as "user" | "model",
       parts: [{ text: msg.text }],
     })),
     {

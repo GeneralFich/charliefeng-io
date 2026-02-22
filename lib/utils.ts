@@ -7,66 +7,88 @@
  *
  * Strategy ("Bracket Balance"):
  * 1. Attempt standard `JSON.parse` first.
- * 2. If that fails, locate the first opening bracket `[`.
- * 3. Walk forward, counting brackets to find the matching closing bracket.
+ * 2. If that fails, locate the first opening bracket `[` or brace `{`.
+ * 3. Walk forward, counting brackets/braces to find the matching closing character.
  * 4. This avoids O(N^2) behavior of trying to parse at every closing bracket.
- *
- * Note: Currently optimized for JSON Arrays (starting with `[`) as that matches our use case.
  *
  * @param text The text containing potential JSON.
  * @returns The parsed object or null if parsing fails.
  */
-function safeJsonParse<T>(text: string): T | null {
+export function safeJsonParse<T>(text: string): T | null {
   try {
     return JSON.parse(text);
   } catch {
-    // Fallback: Locate the start of the JSON array
-    const start = text.indexOf('[');
-    if (start === -1) return null;
+    const startInfo = findJsonStart(text);
+    if (!startInfo) return null;
 
-    let balance = 0;
-    let inString = false;
-    let isEscaped = false;
+    const jsonString = extractBalancedJson(text, startInfo.start, startInfo.openChar, startInfo.closeChar);
+    if (!jsonString) return null;
 
-    for (let i = start; i < text.length; i++) {
-      const char = text[i];
+    try {
+      return JSON.parse(jsonString);
+    } catch {
+      return null;
+    }
+  }
+}
 
-      if (isEscaped) {
-        isEscaped = false;
-        continue;
-      }
+/**
+ * Finds the starting index and delimiter characters for a potential JSON structure.
+ * Prefers whichever structure (array or object) appears first.
+ */
+function findJsonStart(text: string): { start: number; openChar: string; closeChar: string } | null {
+  const firstBracket = text.indexOf('[');
+  const firstBrace = text.indexOf('{');
 
-      if (char === '\\') {
-        isEscaped = true;
-        continue;
-      }
+  if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+    return { start: firstBracket, openChar: '[', closeChar: ']' };
+  } else if (firstBrace !== -1) {
+    return { start: firstBrace, openChar: '{', closeChar: '}' };
+  }
 
-      if (char === '"') {
-        inString = !inString;
-        continue;
-      }
+  return null;
+}
 
-      // Only count brackets outside of strings
-      if (!inString) {
-        if (char === '[') {
-          balance++;
-        } else if (char === ']') {
-          balance--;
-          if (balance === 0) {
-            // Found the matching close bracket
-            try {
-              const jsonSubstring = text.substring(start, i + 1);
-              return JSON.parse(jsonSubstring);
-            } catch {
-              // If the structure is balanced but invalid JSON, stop.
-              return null;
-            }
-          }
+/**
+ * Extracts a balanced JSON substring starting from a given index.
+ * Handles nested structures and ignores brackets inside strings.
+ */
+function extractBalancedJson(text: string, start: number, openChar: string, closeChar: string): string | null {
+  let balance = 0;
+  let inString = false;
+  let isEscaped = false;
+
+  for (let i = start; i < text.length; i++) {
+    const char = text[i];
+
+    if (isEscaped) {
+      isEscaped = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      isEscaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    // Only count brackets outside of strings
+    if (!inString) {
+      if (char === openChar) {
+        balance++;
+      } else if (char === closeChar) {
+        balance--;
+        if (balance === 0) {
+          return text.substring(start, i + 1);
         }
       }
     }
-    return null;
   }
+  return null;
 }
 
 /**
@@ -91,7 +113,7 @@ export function parseFollowUpPrompts(text: string): { cleanText: string; prompts
 
   return {
     cleanText,
-    prompts: prompts || []
+    prompts: Array.isArray(prompts) ? prompts : []
   };
 }
 
@@ -105,9 +127,27 @@ export function parseFollowUpPrompts(text: string): { cleanText: string; prompts
 export function calculateReadTime(text: string): number {
   if (!text) return 1;
   const wordsPerMinute = 200;
-  // Split by whitespace and filter out empty strings to get accurate word count
-  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
-  return Math.max(1, Math.ceil(words / wordsPerMinute));
+
+  // Optimization: Count words in a single pass without allocating arrays/strings.
+  // Replaces: text.trim().split(/\s+/).filter(w => w.length > 0).length
+  // This reduces memory pressure (garbage collection) during large text processing.
+  let wordCount = 0;
+  let inWord = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    // Check for common whitespace: Space(32), Tab(9), LF(10), CR(13), FF(12), NBSP(160)
+    const isWhitespace = code === 32 || code === 9 || code === 10 || code === 13 || code === 12 || code === 160;
+
+    if (isWhitespace) {
+      inWord = false;
+    } else if (!inWord) {
+      inWord = true;
+      wordCount++;
+    }
+  }
+
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
 /**
@@ -231,7 +271,8 @@ export function extractTextFromReactNode(nodes: any): string {
  */
 export function chunkText(text: string, maxChars: number = 1000): string[] {
   const chunks: string[] = [];
-  let currentChunk = "";
+  let currentChunkSentences: string[] = [];
+  let currentChunkLength = 0;
 
   // The previous regex `/[^.!?]+[.!?]+/g` only matched if punctuation was present.
   // This causes data loss for "This is a test" (no dot) or "Sentence 1. Sentence 2" (last one might not have dot if poorly formatted).
@@ -244,32 +285,45 @@ export function chunkText(text: string, maxChars: number = 1000): string[] {
   // ([^.!?]+[.!?]+) matches normal sentences.
   // ([^.!?]+$) matches text at the end without punctuation.
   const sentenceRegex = /([^.!?]+[.!?]+)|([^.!?]+$)/g;
-  const matches = text.match(sentenceRegex) || [];
 
-  // If no matches (empty string), return empty array
-  if (matches.length === 0 && text.trim().length === 0) return [];
-  if (matches.length === 0) return [text]; // Fallback
+  // Use matchAll for lazy evaluation and lower memory footprint
+  const matches = text.matchAll(sentenceRegex);
 
-  for (const rawSentence of matches) {
+  let hasMatches = false;
+
+  for (const match of matches) {
+    hasMatches = true;
+    const rawSentence = match[0];
     const sentence = rawSentence.trim(); // Normalize whitespace
     if (!sentence) continue;
 
-    const potentialLength = currentChunk.length + (currentChunk ? 1 : 0) + sentence.length;
+    // Calculate length to add: sentence length + 1 space if not first sentence
+    const spaceNeeded = currentChunkSentences.length > 0 ? 1 : 0;
+    const potentialLength = currentChunkLength + spaceNeeded + sentence.length;
 
     if (potentialLength > maxChars) {
        // If current chunk is non-empty, push it
-       if (currentChunk.length > 0) {
-           chunks.push(currentChunk);
-           currentChunk = "";
+       if (currentChunkSentences.length > 0) {
+           chunks.push(currentChunkSentences.join(" "));
+           currentChunkSentences = [];
+           currentChunkLength = 0;
        }
     }
 
-    // Append to current chunk (or start new one if we just cleared it)
-    currentChunk += (currentChunk ? " " : "") + sentence;
+    // Append to current chunk
+    // Recalculate space needed because we might have just cleared the chunk
+    const effectiveSpace = currentChunkSentences.length > 0 ? 1 : 0;
+    currentChunkSentences.push(sentence);
+    currentChunkLength += effectiveSpace + sentence.length;
   }
 
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk);
+  if (!hasMatches) {
+    if (text.trim().length === 0) return [];
+    return [text];
+  }
+
+  if (currentChunkSentences.length > 0) {
+    chunks.push(currentChunkSentences.join(" "));
   }
   return chunks;
 }

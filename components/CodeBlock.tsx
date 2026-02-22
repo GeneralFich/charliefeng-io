@@ -26,7 +26,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ node, children, className,
     <div className="relative group my-2">
       <pre
         ref={preRef}
-        className={`bg-slate-800 p-4 rounded-lg overflow-x-auto [&>code]:bg-transparent [&>code]:p-0 pr-12 ${className || ''}`}
+        tabIndex={0}
+        role="region"
+        aria-label="Code snippet"
+        className={`bg-slate-800 p-4 rounded-lg overflow-x-auto [&>code]:bg-transparent [&>code]:p-0 pr-12 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-shadow ${className || ''}`}
         {...props}
       >
         {children}

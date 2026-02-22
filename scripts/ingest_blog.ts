@@ -21,12 +21,13 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
-import { writeFileSync } from 'fs';
 import { join } from 'path';
 import dotenv from 'dotenv';
 import path from 'path';
-import fs from 'fs';
+import { promises as fsPromises } from 'fs';
 import fm from 'front-matter';
+import { chunkText } from '../lib/utils';
+import { magnitude } from '../lib/vector';
 
 // --- Configuration ---
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -56,6 +57,8 @@ interface BlogChunk {
   publishedDate: string;
   text: string;
   embedding?: number[];
+  _magnitude?: number;
+  language?: string;
 }
 
 /**
@@ -81,40 +84,33 @@ async function getEmbeddings(text: string): Promise<number[]> {
 }
 
 /**
- * Splits text into manageable chunks while preserving sentence boundaries.
- *
- * Why: Splitting by sentences rather than arbitrary character counts ensures that
- * semantic meaning is preserved, which significantly improves the quality of vector embeddings
- * and the relevance of RAG retrieval. Truncating a sentence in the middle often results in lost context.
- *
- * Strategy:
- * 1. Split text into sentences using regex `/[^.!?]+[.!?]+/g`.
- * 2. Accumulate sentences into a chunk until `maxChars` is reached.
- * 3. Push the chunk and start a new one.
- *
- * @param text - The raw text content to be chunked.
- * @param maxChars - The target maximum length for each chunk (default 1000).
- *                   1000 chars is roughly 200-250 words, a balanced size for the model's context window.
- * @returns An array of text strings (chunks).
+ * Helper to process items concurrently with a limit.
  */
-function chunkText(text: string, maxChars: number = 1000): string[] {
-  const chunks: string[] = [];
-  let currentChunk = "";
+async function processConcurrently<T, R>(
+  items: T[],
+  concurrency: number,
+  processor: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let index = 0;
 
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-
-  for (const sentence of sentences) {
-    if ((currentChunk + sentence).length > maxChars) {
-      chunks.push(currentChunk.trim());
-      currentChunk = "";
+  const worker = async () => {
+    while (index < items.length) {
+      const i = index++;
+      if (i >= items.length) break;
+      results[i] = await processor(items[i]);
     }
-    currentChunk += sentence + " ";
+  };
+
+  const workers = [];
+  for (let i = 0; i < concurrency; i++) {
+    workers.push(worker());
   }
-  if (currentChunk.trim().length > 0) {
-    chunks.push(currentChunk.trim());
-  }
-  return chunks;
+
+  await Promise.all(workers);
+  return results;
 }
+
 
 /**
  * Main ingestion routine.
@@ -124,51 +120,89 @@ function chunkText(text: string, maxChars: number = 1000): string[] {
 async function ingest() {
   console.log(`Scanning for posts in ${POSTS_DIR}...`);
 
-  if (!fs.existsSync(POSTS_DIR)) {
+  try {
+      await fsPromises.access(POSTS_DIR);
+  } catch {
       console.error(`Directory not found: ${POSTS_DIR}`);
       process.exit(1);
   }
 
-  const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));
-  const chunks: BlogChunk[] = [];
+  const allFiles = await fsPromises.readdir(POSTS_DIR);
+  const mdFiles = allFiles.filter(f => f.endsWith('.md'));
 
-  console.log(`Found ${files.length} posts.`);
+  console.log(`Found ${mdFiles.length} posts.`);
 
-  for (const file of files) {
+  // Phase 1: Parallel Read & Parse
+  // We read and parse all files concurrently to maximize I/O and CPU throughput.
+  const parsedDocs = await Promise.all(mdFiles.map(async (file) => {
     const filePath = join(POSTS_DIR, file);
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = await fsPromises.readFile(filePath, 'utf-8');
     const parsed = fm<PostAttributes>(content);
 
-    console.log(`Processing: ${parsed.attributes.title}`);
+    let language = 'en';
+    let slug = file.replace('.md', '');
 
-    const slug = file.replace('.md', '');
-    // Using a fake URL format that could be useful later, or just informative
+    if (file.endsWith('.zh.md')) {
+        language = 'zh';
+        slug = file.replace('.zh.md', '');
+    } else if (file.endsWith('.es.md')) {
+        language = 'es';
+        slug = file.replace('.es.md', '');
+    }
+
     const url = `/essays/${slug}`;
-
     const textChunks = chunkText(parsed.body);
 
-    for (let i = 0; i < textChunks.length; i++) {
-       const chunk = textChunks[i];
-       if (chunk.length < 50) continue; // Skip tiny chunks
+    return {
+      file,
+      attributes: parsed.attributes,
+      url,
+      language,
+      slug,
+      textChunks
+    };
+  }));
 
-       const embedding = await getEmbeddings(chunk);
+  // Ensure deterministic order
+  parsedDocs.sort((a, b) => a.file.localeCompare(b.file));
 
-       chunks.push({
-           id: `${slug}#chunk${i}`,
-           url: url,
-           title: parsed.attributes.title,
-           publishedDate: parsed.attributes.date,
-           text: chunk,
-           embedding: embedding
-       });
+  // Phase 2: Parallel Embedding
+  // We use a concurrency limit to speed up processing while respecting API rate limits.
+  const CONCURRENCY = 5;
+  console.log(`Generating embeddings with concurrency: ${CONCURRENCY}...`);
 
-       // Rate limiting aid
-       await new Promise(resolve => setTimeout(resolve, 200));
+  // Flatten all chunks into a single list of tasks
+  const tasks: { doc: typeof parsedDocs[0]; text: string; chunkIndex: number }[] = [];
+  for (const doc of parsedDocs) {
+    for (let i = 0; i < doc.textChunks.length; i++) {
+      tasks.push({ doc, text: doc.textChunks[i], chunkIndex: i });
     }
   }
 
-  writeFileSync(OUTPUT_FILE, JSON.stringify(chunks, null, 2));
-  console.log(`Successfully wrote ${chunks.length} chunks to ${OUTPUT_FILE}`);
+  const processedChunks = await processConcurrently(tasks, CONCURRENCY, async (task) => {
+    if (task.text.length < 50) return null; // Skip tiny chunks
+
+    const embedding = await getEmbeddings(task.text);
+
+    if (embedding && embedding.length > 0) {
+      return {
+        id: `${task.doc.slug}#chunk${task.chunkIndex}`,
+        url: task.doc.url,
+        title: task.doc.attributes.title,
+        publishedDate: task.doc.attributes.date,
+        text: task.text,
+        embedding: embedding,
+        _magnitude: magnitude(embedding),
+        language: task.doc.language
+      };
+    }
+    return null;
+  });
+
+  const validChunks = processedChunks.filter((c): c is BlogChunk => c !== null);
+
+  await fsPromises.writeFile(OUTPUT_FILE, JSON.stringify(validChunks, null, 2));
+  console.log(`Successfully wrote ${validChunks.length} chunks to ${OUTPUT_FILE}`);
 }
 
 ingest();

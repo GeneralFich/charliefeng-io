@@ -3,15 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; connect-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com; img-src 'self' data:; font-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; connect-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com; img-src 'self' data:; font-src 'self' data: https://fonts.gstatic.com;">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Charlie Feng | Infrastructure Product Leader</title>
-    <meta name="description" content="Interactive Knowledge Model and portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure." />
+    <meta name="description" content="AI-powered portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure." />
     <meta property="og:title" content="Charlie Feng | Infrastructure Product Leader" />
-    <meta property="og:description" content="Interactive Knowledge Model and portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure." />
+    <meta property="og:description" content="AI-powered portfolio of Charlie Feng, an Infrastructure Product Leader exploring Product Management, AGI, and Infrastructure." />
     <meta property="og:type" content="website" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <style>
+      /* Fallback for Chinese Characters */
+      :lang(zh) {
+        font-family: "Noto Sans SC", sans-serif !important;
+      }
+
+      @media print {
+        body {
+          background-color: white !important;
+          color: black !important;
+        }
+
+        /* Ensure Chinese font is used in print if language is zh */
+        :lang(zh) body {
+            font-family: "Noto Sans SC", sans-serif !important;
+        }
+
+        * {
+          color: black !important;
+          background-color: transparent !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+        }
+      }
+
       /* Custom Scrollbar for the futuristic feel */
       ::-webkit-scrollbar {
         width: 8px;
