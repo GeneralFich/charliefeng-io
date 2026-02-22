@@ -3,6 +3,7 @@ import { Message } from '../types';
 import { streamMessageToGemini } from '../services/geminiService';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { checkRateLimit } from '../lib/security';
+import { saveChatState, loadChatState, clearChatState } from '../lib/chatStorage';
 
 /**
  * Curated list of initial prompts to guide the user towards the persona's core competencies.
@@ -46,12 +47,15 @@ const MAX_REQUESTS = 10;
  * - `clearChat`: Function to reset the chat history.
  */
 export const useChat = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: INITIAL_MESSAGE_TEXT }
-  ]);
+  const stored = loadChatState();
+  const [messages, setMessages] = useState<Message[]>(
+    stored?.messages ?? [{ role: 'model', text: INITIAL_MESSAGE_TEXT }]
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(INITIAL_SUGGESTED_PROMPTS);
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(
+    stored?.suggestedPrompts.length ? stored.suggestedPrompts : INITIAL_SUGGESTED_PROMPTS
+  );
 
   // Use refs to keep track of latest state without causing re-renders in callbacks
   // This allows handleSend to be stable (memoized) while accessing fresh data.
@@ -68,6 +72,12 @@ export const useChat = () => {
     isLoadingRef.current = isLoading;
   }, [isLoading]);
 
+  // Persist chat state to localStorage (skip during streaming to avoid saving partial messages)
+  useEffect(() => {
+    if (isStreaming) return;
+    saveChatState(messages, suggestedPrompts);
+  }, [messages, suggestedPrompts, isStreaming]);
+
   /**
    * Resets the chat to its initial state.
    *
@@ -82,6 +92,7 @@ export const useChat = () => {
     setMessages([{ role: 'model', text: INITIAL_MESSAGE_TEXT }]);
     setSuggestedPrompts(INITIAL_SUGGESTED_PROMPTS);
     setIsLoading(false);
+    clearChatState();
   }, []);
 
   /**
