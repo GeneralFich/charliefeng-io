@@ -49,6 +49,16 @@ export const TRANSLATIONS = {
       noResults: "No essays found matching",
       clearSearch: "Clear search",
       findInEssay: "Find in essay...",
+    },
+    browse: {
+      badge: "Explore",
+      heading: "Browse Charlie's Work",
+      description: "Read essays and view the full resume — while keeping the conversation going.",
+      essaysLabel: "Essays",
+      viewAll: "View all",
+      resumeLabel: "Resume",
+      viewResume: "View Full Resume",
+      resumeSubtitle: "Experience, education, and skills",
     }
   },
   [Language.ZH]: {
@@ -99,6 +109,16 @@ export const TRANSLATIONS = {
       noResults: "未找到匹配的文章",
       clearSearch: "清除搜索",
       findInEssay: "在文章中查找...",
+    },
+    browse: {
+      badge: "探索",
+      heading: "浏览 Charlie 的作品",
+      description: "阅读文章、查看完整简历——同时保持对话。",
+      essaysLabel: "文章",
+      viewAll: "查看全部",
+      resumeLabel: "简历",
+      viewResume: "查看完整简历",
+      resumeSubtitle: "工作经历、教育背景与技能",
     }
   }
 };

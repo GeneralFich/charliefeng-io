@@ -9,7 +9,7 @@ interface BrowsePanelProps {
 }
 
 export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const posts = useMemo(() => getPosts(language), [language]);
 
   return (
@@ -19,13 +19,13 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
       <div className="mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold uppercase tracking-widest mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          Explore
+          {t.browse.badge}
         </div>
         <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
-          Browse Charlie's Work
+          {t.browse.heading}
         </h2>
         <p className="text-sm text-slate-400 leading-relaxed">
-          Read essays and view the full resume — while keeping the conversation going.
+          {t.browse.description}
         </p>
       </div>
 
@@ -34,13 +34,13 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
             <BookOpen size={12} />
-            Essays
+            {t.browse.essaysLabel}
           </h3>
           <button
             onClick={() => onNavigate(View.ESSAYS)}
             className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 uppercase tracking-widest"
           >
-            View all <ArrowRight size={10} />
+            {t.browse.viewAll} <ArrowRight size={10} />
           </button>
         </div>
 
@@ -58,11 +58,11 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
                 <div className="flex items-center gap-3 mt-1">
                   <span className="flex items-center gap-1 text-[10px] text-slate-500">
                     <Calendar size={9} />
-                    {new Date(post.attributes.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    {new Date(post.attributes.date).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', year: 'numeric' })}
                   </span>
                   <span className="flex items-center gap-1 text-[10px] text-slate-500">
                     <Clock size={9} />
-                    {post.readTime} min
+                    {post.readTime} {t.essays.readTime}
                   </span>
                 </div>
               </div>
@@ -82,7 +82,7 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
       <section>
         <h3 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
           <FileText size={12} />
-          Resume
+          {t.browse.resumeLabel}
         </h3>
         <button
           onClick={() => onNavigate(View.ABOUT)}
@@ -90,10 +90,10 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
         >
           <div className="text-left">
             <p className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">
-              View Full Resume
+              {t.browse.viewResume}
             </p>
             <p className="text-xs text-slate-500 mt-0.5">
-              Experience, education, and skills
+              {t.browse.resumeSubtitle}
             </p>
           </div>
           <ArrowRight
