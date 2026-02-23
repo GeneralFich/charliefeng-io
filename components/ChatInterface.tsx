@@ -11,9 +11,10 @@ import { useLanguage } from '../lib/i18n/LanguageContext';
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string, hash?: string) => void;
   className?: string;
+  onFocusRef?: React.MutableRefObject<(() => void) | null>;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className, onFocusRef }) => {
   const { t } = useLanguage();
   const {
     messages,
@@ -36,6 +37,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       clearTimeout(clearTimeoutRef.current);
     };
   }, []);
+
+  // Expose focus method to parent (e.g. App.tsx focuses chat input when "Chat" nav is clicked on desktop)
+  useEffect(() => {
+    if (onFocusRef) {
+      onFocusRef.current = () => inputRef.current?.focus();
+    }
+  }, [onFocusRef]);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -69,7 +77,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   };
 
   return (
-    <div className={`flex flex-col w-full ${className || 'h-[calc(100vh-140px)] max-w-4xl mx-auto'}`}>
+    <div className={`flex flex-col w-full ${className ?? 'h-full'}`}>
       {/* Chat Area */}
       <div
         ref={chatContainerRef}

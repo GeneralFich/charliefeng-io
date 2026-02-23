@@ -3,63 +3,65 @@ import React, { useEffect, useRef } from 'react';
 /**
  * @fileoverview Scroll Progress Bar Component
  *
- * This component displays a horizontal progress bar at the top of the screen (below the navbar)
- * indicating how far the user has scrolled down the page.
+ * Displays a horizontal progress bar below the navbar indicating scroll depth.
  *
- * "Why" / Performance Optimizations:
- * Scroll events fire very frequently (up to hundreds of times per second), and naive implementations
- * that update React state (`useState`) on every event cause massive "Layout Thrashing" and re-renders,
- * leading to janky scrolling on lower-end devices.
+ * Performance optimizations:
+ * 1. Direct DOM manipulation via ref (no React state updates on scroll)
+ * 2. requestAnimationFrame throttling for 60fps
+ * 3. ResizeObserver for efficient height tracking
+ * 4. Passive event listeners
  *
- * To achieve 60fps performance, this component employs several optimizations:
- * 1. **Direct DOM Manipulation**: We use a `ref` to update the `style.width` property directly,
- *    bypassing React's Virtual DOM and render cycle entirely for the progress updates.
- * 2. **`requestAnimationFrame`**: We throttle updates to the screen refresh rate, preventing
- *    calculations from blocking the main thread.
- * 3. **`ResizeObserver`**: We monitor the document height efficiently to handle dynamic content loading
- *    without constantly re-querying `document.scrollHeight` (which causes reflows).
- * 4. **Passive Event Listeners**: We use `{ passive: true }` for the scroll listener, telling the
- *    browser that we won't call `preventDefault()`, which allows the compositor thread to scroll
- *    the page immediately without waiting for our JS to run.
+ * In split-panel layout, an optional `containerRef` tracks a scrollable div
+ * (the right content panel) instead of the window. The bar is then positioned
+ * to span only the right panel width (starting after the chat sidebar).
  */
-export const ScrollProgress: React.FC = () => {
+
+interface ScrollProgressProps {
+  containerRef?: React.RefObject<HTMLDivElement>;
+}
+
+export const ScrollProgress: React.FC<ScrollProgressProps> = ({ containerRef }) => {
+  // progressRef points to the inner bar div that grows in width
   const progressRef = useRef<HTMLDivElement>(null);
-  // Cache the scrollable height to avoid layout thrashing (reading scrollHeight) during scroll events
+  // Cache the scrollable height to avoid layout thrashing during scroll events
   const maxScrollRef = useRef<number>(0);
 
   useEffect(() => {
     let ticking = false;
     let rafId: number;
 
-    // Update dimensions only when necessary (resize/layout change)
+    const getScrollTop = () =>
+      containerRef?.current ? containerRef.current.scrollTop : window.scrollY;
+
     const updateDimensions = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      // Ensure we don't get negative values
-      maxScrollRef.current = Math.max(0, documentHeight - windowHeight);
+      if (containerRef?.current) {
+        const el = containerRef.current;
+        maxScrollRef.current = Math.max(0, el.scrollHeight - el.clientHeight);
+      } else {
+        maxScrollRef.current = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      }
     };
 
-    // Use ResizeObserver to detect content height changes efficiently
     const resizeObserver = new ResizeObserver(() => {
       updateDimensions();
     });
 
-    // Observe both document element (for window resize/zoom) and body (for content changes)
-    resizeObserver.observe(document.documentElement);
-    resizeObserver.observe(document.body);
+    if (containerRef?.current) {
+      resizeObserver.observe(containerRef.current);
+    } else {
+      resizeObserver.observe(document.documentElement);
+      resizeObserver.observe(document.body);
+    }
 
-    // Initial calculation
     updateDimensions();
 
     const handleScroll = () => {
       if (!ticking) {
         rafId = window.requestAnimationFrame(() => {
-          const scrollTop = window.scrollY;
-          // Use cached value
+          const scrollTop = getScrollTop();
           const scrollableHeight = maxScrollRef.current;
 
           if (progressRef.current) {
-            // Optimization: If there is no scrollable area, hide the bar
             if (scrollableHeight <= 0 || scrollTop <= 0) {
               progressRef.current.style.width = '0%';
               progressRef.current.style.opacity = '0';
@@ -78,29 +80,40 @@ export const ScrollProgress: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    const scrollTarget: EventTarget = containerRef?.current ?? window;
+    scrollTarget.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Also listen to window resize as a fallback/redundancy
-    window.addEventListener('resize', updateDimensions, { passive: true });
+    if (!containerRef?.current) {
+      window.addEventListener('resize', updateDimensions, { passive: true });
+    }
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', updateDimensions);
+      scrollTarget.removeEventListener('scroll', handleScroll);
+      if (!containerRef?.current) {
+        window.removeEventListener('resize', updateDimensions);
+      }
       resizeObserver.disconnect();
       if (rafId) {
         window.cancelAnimationFrame(rafId);
       }
     };
-  }, []);
+  }, [containerRef]);
 
   return (
+    // Outer container: spans only the right panel area on desktop (after the 420px/460px chat sidebar)
+    // On mobile it spans the full viewport width
     <div
-      ref={progressRef}
-      className="fixed top-[64px] left-0 h-1 bg-blue-500 z-50 print:hidden shadow-[0_0_10px_#3b82f6] overflow-hidden transition-opacity duration-300 ease-in-out"
-      style={{ width: '0%', opacity: 0 }}
+      className="fixed top-[64px] left-0 lg:left-[420px] xl:left-[460px] right-0 h-1 z-50 print:hidden overflow-hidden"
       aria-hidden="true"
     >
-      <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-blue-300 to-transparent shadow-[0_0_15px_#60a5fa]"></div>
+      {/* Inner bar: width grows from 0% to 100% of the outer container (= right panel width) */}
+      <div
+        ref={progressRef}
+        className="h-full bg-blue-500 shadow-[0_0_10px_#3b82f6] transition-opacity duration-300 ease-in-out overflow-hidden"
+        style={{ width: '0%', opacity: 0 }}
+      >
+        <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-blue-300 to-transparent shadow-[0_0_15px_#60a5fa]"></div>
+      </div>
     </div>
   );
 };
