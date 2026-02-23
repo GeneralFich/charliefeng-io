@@ -16,9 +16,10 @@
  *    - Navigation is full-page.
  *    - Includes a collapsible navigation drawer.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View } from './types';
 import { useRouter } from './hooks/useRouter';
+import { useViewTransition } from './hooks/useViewTransition';
 import { ChatInterface } from './components/ChatInterface';
 import { Resume } from './components/Resume';
 import { Essays } from './components/Essays';
@@ -30,15 +31,28 @@ import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 
 const App: React.FC = () => {
   const { currentView, targetEssaySlug, targetHash, navigateTo } = useRouter();
+  const { displayed: displayedView, isExiting, transitionTo, snapTo } = useViewTransition(View.HOME);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
+  // Sync displayedView with the URL-based initial view without animation.
+  // Why: useRouter reads URL params in a useEffect (async), so currentView starts as
+  // HOME then updates to the URL value. snapTo handles this one-time sync instantly.
+  const isSynced = useRef(false);
+  useEffect(() => {
+    if (!isSynced.current) {
+      isSynced.current = true;
+      if (currentView !== View.HOME) snapTo(currentView);
+    }
+  }, [currentView, snapTo]);
 
   // Optimization: Memoize navigation handlers to prevent unnecessary re-renders of
   // ChatInterface (and all ChatMessages) when other state changes (e.g. menus).
   const handleNavigate = React.useCallback((view: View, slug?: string, hash?: string) => {
-    navigateTo(view, slug, hash);
+    navigateTo(view, slug, hash); // Update URL + router state immediately
+    transitionTo(view);           // Animate the visual transition (150ms fade-out delay)
     setMobileMenuOpen(false);
-  }, [navigateTo]);
+  }, [navigateTo, transitionTo]);
 
   useGlobalShortcuts({
     // Pass the memoized handler directly to avoid creating a new arrow function on every render
@@ -48,31 +62,35 @@ const App: React.FC = () => {
   });
 
   const renderContent = () => {
-    const isChatVisible = currentView === View.HOME;
-
-    // We construct a stable layout where ChatInterface is always in the DOM if isChatVisible is true.
-    // To avoid remounting ChatInterface, we must use the SAME component instance in the SAME position.
+    // Use displayedView (not currentView) for rendering decisions so content only
+    // swaps after the exit animation completes, giving a smooth crossfade effect.
+    const isChatVisible = displayedView === View.HOME;
 
     return (
       <>
-        {/* Chat Container */}
-        {/* We use a flex container that is always present if Chat is visible */}
-        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-all duration-300 ${isChatVisible ? 'opacity-100 pointer-events-auto print:h-auto print:overflow-visible print:block' : 'hidden opacity-0 pointer-events-none'}`}>
-
-           {/* Chat Panel */}
-           <div className="w-full flex flex-col transition-all duration-300 ease-in-out">
-              <ChatInterface
-                  onNavigate={handleNavigate}
-              />
-           </div>
+        {/* Chat Container — always in the DOM to preserve conversation state.
+            Uses absolute positioning (not `hidden`) when invisible so that
+            CSS opacity transitions can animate. The -z-10 keeps it behind
+            other views during the crossfade. */}
+        <div className={`flex flex-row h-[calc(100vh-64px)] overflow-hidden transition-opacity duration-300 print:h-auto print:overflow-visible print:block ${
+          isChatVisible
+            ? 'opacity-100 pointer-events-auto'
+            : 'absolute inset-0 -z-10 opacity-0 pointer-events-none'
+        }`}>
+          <div className="w-full flex flex-col">
+            <ChatInterface onNavigate={handleNavigate} />
+          </div>
         </div>
 
-        {currentView === View.ABOUT && <Resume initialHash={targetHash} />}
-        {currentView === View.ESSAYS && (
-          <Essays
-            slug={targetEssaySlug}
-            onNavigate={handleNavigate}
-          />
+        {/* Non-chat views — the wrapper's opacity handles the exit fade (150ms),
+            and each component's own animate-in classes handle the entry fade. */}
+        {!isChatVisible && (
+          <div className={`transition-opacity duration-150 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+            {displayedView === View.ABOUT && <Resume initialHash={targetHash} />}
+            {displayedView === View.ESSAYS && (
+              <Essays slug={targetEssaySlug} onNavigate={handleNavigate} />
+            )}
+          </div>
         )}
       </>
     );
@@ -90,10 +108,10 @@ const App: React.FC = () => {
       </a>
 
       {/* Scroll Progress Bar */}
-      {currentView !== View.HOME && <ScrollProgress />}
+      {displayedView !== View.HOME && <ScrollProgress />}
 
       {/* Back to Top Button */}
-      {currentView !== View.HOME && <BackToTop />}
+      {displayedView !== View.HOME && <BackToTop />}
 
       <ShortcutsModal
         isOpen={isShortcutsOpen}
