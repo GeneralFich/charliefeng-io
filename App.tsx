@@ -29,6 +29,7 @@ import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { ParticleBackground } from './components/ParticleBackground';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 
 const App: React.FC = () => {
@@ -47,8 +48,6 @@ const App: React.FC = () => {
   const chatFocusRef = useRef<(() => void) | null>(null);
 
   // Sync displayedView with the URL-based initial view without animation.
-  // Why: useRouter reads URL params in a useEffect (async), so currentView starts as
-  // HOME then updates to the URL value. snapTo handles this one-time sync instantly.
   const isSynced = useRef(false);
   useEffect(() => {
     if (!isSynced.current) {
@@ -58,12 +57,8 @@ const App: React.FC = () => {
   }, [currentView, snapTo]);
 
   // Memoized navigation handler — prevents unnecessary re-renders of ChatInterface.
-  // Special case: clicking "Chat" while already on HOME view (desktop split layout)
-  // focuses the chat input instead of re-triggering the transition.
   const handleNavigate = React.useCallback((view: View, slug?: string, hash?: string) => {
     if (view === View.HOME && displayedView === View.HOME && !isExiting) {
-      // Already showing HOME — focus chat input (especially useful on desktop where
-      // chat is always visible and the user may want to quickly refocus it)
       chatFocusRef.current?.();
       setMobileMenuOpen(false);
       return;
@@ -71,7 +66,6 @@ const App: React.FC = () => {
     navigateTo(view, slug, hash);
     transitionTo(view);
     setMobileMenuOpen(false);
-    // Reset right panel scroll on navigation so content always starts from the top
     rightPanelRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [navigateTo, transitionTo, displayedView, isExiting]);
 
@@ -81,8 +75,6 @@ const App: React.FC = () => {
     isModalOpen: isShortcutsOpen,
   });
 
-  // isChatVisible drives mobile panel visibility.
-  // On desktop both panels are always shown regardless of this value.
   const isChatVisible = displayedView === View.HOME;
 
   return (
@@ -95,6 +87,9 @@ const App: React.FC = () => {
       >
         Skip to content
       </a>
+
+      {/* Animated neural-network particle canvas — replaces the static grid */}
+      <ParticleBackground />
 
       {/* Scroll Progress Bar — tracks right panel scroll on desktop */}
       {displayedView !== View.HOME && <ScrollProgress containerRef={rightPanelRef} />}
@@ -120,14 +115,6 @@ const App: React.FC = () => {
         tabIndex={-1}
         className="flex-1 flex flex-row overflow-hidden relative focus:outline-none print:block print:overflow-visible"
       >
-        {/* Subtle Background Grid Effect */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] print:hidden"
-             style={{
-               backgroundImage: 'linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)',
-               backgroundSize: '40px 40px'
-             }}
-        />
-
         {/* ── LEFT PANEL: Chat ──────────────────────────────────────────────────────
             Desktop (lg+): Fixed 420px sidebar, always visible, bordered on the right.
             Mobile:        Full-width, visible only when HOME view is active.
