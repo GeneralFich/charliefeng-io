@@ -3,7 +3,8 @@ import React, { useEffect, useRef } from 'react';
 /**
  * @fileoverview Scroll Progress Bar Component
  *
- * Displays a horizontal progress bar below the navbar indicating scroll depth.
+ * Displays a thin gradient bar below the navbar indicating scroll depth,
+ * with an animated shimmer sweep for extra energy.
  *
  * Performance optimizations:
  * 1. Direct DOM manipulation via ref (no React state updates on scroll)
@@ -58,24 +59,21 @@ export const ScrollProgress: React.FC<ScrollProgressProps> = ({ containerRef }) 
     const handleScroll = () => {
       if (!ticking) {
         rafId = window.requestAnimationFrame(() => {
-          const scrollTop = getScrollTop();
+          const scrollTop       = getScrollTop();
           const scrollableHeight = maxScrollRef.current;
 
           if (progressRef.current) {
             if (scrollableHeight <= 0 || scrollTop <= 0) {
-              progressRef.current.style.width = '0%';
+              progressRef.current.style.width   = '0%';
               progressRef.current.style.opacity = '0';
             } else {
-              const scrolled = (scrollTop / scrollableHeight) * 100;
-              const width = Math.min(100, Math.max(0, scrolled));
-              progressRef.current.style.width = `${width}%`;
+              const pct = Math.min(100, Math.max(0, (scrollTop / scrollableHeight) * 100));
+              progressRef.current.style.width   = `${pct}%`;
               progressRef.current.style.opacity = '1';
             }
           }
-
           ticking = false;
         });
-
         ticking = true;
       }
     };
@@ -93,9 +91,7 @@ export const ScrollProgress: React.FC<ScrollProgressProps> = ({ containerRef }) 
         window.removeEventListener('resize', updateDimensions);
       }
       resizeObserver.disconnect();
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
+      if (rafId) window.cancelAnimationFrame(rafId);
     };
   }, [containerRef]);
 
@@ -103,16 +99,35 @@ export const ScrollProgress: React.FC<ScrollProgressProps> = ({ containerRef }) 
     // Outer container: spans only the right panel area on desktop (after the 420px/460px chat sidebar)
     // On mobile it spans the full viewport width
     <div
-      className="fixed top-[64px] left-0 lg:left-[420px] xl:left-[460px] right-0 h-1 z-50 print:hidden overflow-hidden"
+      className="fixed top-[64px] left-0 lg:left-[420px] xl:left-[460px] right-0 h-[3px] z-50 print:hidden overflow-hidden"
       aria-hidden="true"
     >
-      {/* Inner bar: width grows from 0% to 100% of the outer container (= right panel width) */}
+      {/* Inner bar: width grows from 0% to 100% of the outer container (= right panel width).
+          Styled with the animated blue→indigo→cyan gradient + shimmer sweep. */}
       <div
         ref={progressRef}
-        className="h-full bg-blue-500 shadow-[0_0_10px_#3b82f6] transition-opacity duration-300 ease-in-out overflow-hidden"
-        style={{ width: '0%', opacity: 0 }}
+        className="h-full overflow-hidden transition-opacity duration-300 ease-in-out"
+        style={{
+          width: '0%',
+          opacity: 0,
+          background: 'linear-gradient(90deg, #3b82f6 0%, #818cf8 35%, #22d3ee 65%, #3b82f6 100%)',
+          backgroundSize: '200% 100%',
+          animation: 'grad-shift 4s linear infinite',
+          boxShadow: '0 0 10px rgba(34,211,238,0.4), 0 0 4px rgba(59,130,246,0.6)',
+        }}
       >
-        <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-blue-300 to-transparent shadow-[0_0_15px_#60a5fa]"></div>
+        {/* Shimmer sweep overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '40%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)',
+            animation: 'shimmer-sweep 2.2s linear infinite',
+          }}
+        />
       </div>
     </div>
   );

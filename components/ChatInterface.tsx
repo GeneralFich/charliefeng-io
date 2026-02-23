@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Loader2, RotateCcw, Download, Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { RotateCcw, Download, Trash2 } from 'lucide-react';
 import { View } from '../types';
 import { ChatMessage } from './ChatMessage';
 import { ChatWelcome } from './ChatWelcome';
@@ -14,6 +15,8 @@ interface ChatInterfaceProps {
   onFocusRef?: React.MutableRefObject<(() => void) | null>;
 }
 
+const springSnap = { type: 'spring' as const, stiffness: 500, damping: 28 };
+
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className, onFocusRef }) => {
   const { t } = useLanguage();
   const {
@@ -22,20 +25,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
     isStreaming,
     suggestedPrompts,
     sendMessage,
-    clearChat
+    clearChat,
   } = useChat();
 
-  const isInitialState = messages.length === 1 && messages[0].role === 'model';
+  const isInitialState  = messages.length === 1 && messages[0].role === 'model';
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<ChatInputHandle>(null);
+  const inputRef         = useRef<ChatInputHandle>(null);
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
   const clearTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
-    return () => {
-      clearTimeout(clearTimeoutRef.current);
-    };
+    return () => { clearTimeout(clearTimeoutRef.current); };
   }, []);
 
   // Expose focus method to parent (e.g. App.tsx focuses chat input when "Chat" nav is clicked on desktop)
@@ -46,21 +46,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   }, [onFocusRef]);
 
   const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
+    chatContainerRef.current?.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+  useEffect(() => { scrollToBottom(); }, [messages, isLoading]);
 
-  const handleDownloadChat = () => {
-    downloadChatHistory(messages);
-  };
+  const handleDownloadChat = () => { downloadChatHistory(messages); };
 
   const handleClearChat = () => {
     if (isConfirmingClear) {
@@ -70,9 +64,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       clearTimeout(clearTimeoutRef.current);
     } else {
       setIsConfirmingClear(true);
-      clearTimeoutRef.current = setTimeout(() => {
-        setIsConfirmingClear(false);
-      }, 3000);
+      clearTimeoutRef.current = setTimeout(() => setIsConfirmingClear(false), 3000);
     }
   };
 
@@ -110,69 +102,96 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
                 />
               );
             })}
+
+            {/* ── Bouncing-dot thinking indicator ──────────────────────── */}
             {isLoading && !isStreaming && (
-              <div
-                className="flex items-center gap-3"
-                role="status"
-                aria-live="polite"
-              >
+              <div className="flex items-center gap-3" role="status" aria-live="polite">
                 <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
-                  <Loader2 size={16} className="text-blue-400 animate-spin" />
+                  <span className="flex gap-[5px] items-end h-4">
+                    {[0, 1, 2].map((i) => (
+                      <span
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-blue-400 block"
+                        style={{
+                          animation: `bounce-dot 1.1s ease-in-out ${i * 0.16}s infinite`,
+                        }}
+                      />
+                    ))}
+                  </span>
                 </div>
-                <div className="text-slate-500 text-xs tracking-widest animate-pulse">
-                  {t.chat.thinking}
-                </div>
-                <span className="sr-only">Charlie is thinking...</span>
+                <span className="sr-only">Charlie is thinking…</span>
               </div>
             )}
           </>
         )}
       </div>
 
-      {/* Input Area */}
+      {/* ── Input Area ─────────────────────────────────────────────────── */}
       <div className="px-6 py-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
+
+        {/* Suggested follow-up chips */}
         {!isInitialState && suggestedPrompts.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar" role="region" aria-label="Suggested follow-up questions">
+          <div
+            className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar"
+            role="region"
+            aria-label="Suggested follow-up questions"
+          >
             {suggestedPrompts.map((prompt, idx) => (
-              <button
+              <motion.button
                 key={`${prompt}-${idx}`}
                 onClick={() => sendMessage(prompt)}
+                whileHover={{ scale: 1.07, y: -2 }}
+                whileTap={{ scale: 0.94 }}
+                transition={springSnap}
                 className="whitespace-nowrap px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/50 text-xs text-slate-400 hover:border-blue-500 hover:text-blue-400 transition-colors"
               >
                 {prompt}
-              </button>
+              </motion.button>
             ))}
           </div>
         )}
-        
+
         <div className="flex items-end gap-3">
           {!isInitialState && (
             <>
-              <button
+              {/* Download button */}
+              <motion.button
                 onClick={handleDownloadChat}
+                whileHover={{ scale: 1.1,  y: -2 }}
+                whileTap={{   scale: 0.9,  y: 2  }}
+                transition={springSnap}
                 aria-label={t.chat.download}
-                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all shrink-0 group"
+                className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10 transition-colors shrink-0"
                 title={t.chat.download}
               >
-                <Download size={20} className="group-hover:scale-110 transition-transform duration-300" />
-              </button>
+                <Download size={20} />
+              </motion.button>
 
-              <button
+              {/* Clear / confirm-clear button */}
+              <motion.button
                 onClick={handleClearChat}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={springSnap}
                 aria-label={isConfirmingClear ? t.chat.confirmClear : t.chat.clear}
-                className={`p-3.5 rounded-xl border transition-all shrink-0 group ${
+                className={`p-3.5 rounded-xl border transition-colors shrink-0 ${
                   isConfirmingClear
-                    ? "bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30"
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
+                    ? 'bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30'
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10'
                 }`}
                 title={isConfirmingClear ? t.chat.confirmClear : t.chat.clear}
               >
                 {isConfirmingClear ? (
                   <Trash2 size={20} className="animate-pulse" />
                 ) : (
-                  <RotateCcw size={20} className="group-hover:-rotate-180 transition-transform duration-500" />
+                  <motion.div
+                    whileHover={{ rotate: -180 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 14 }}
+                  >
+                    <RotateCcw size={20} />
+                  </motion.div>
                 )}
-              </button>
+              </motion.button>
             </>
           )}
 

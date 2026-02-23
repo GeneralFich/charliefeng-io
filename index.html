@@ -43,14 +43,44 @@
         height: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #0f172a; 
+        background: #0f172a;
       }
       ::-webkit-scrollbar-thumb {
-        background: #334155; 
+        background: #334155;
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
+        background: #475569;
+      }
+
+      /* ── Animation Keyframes ─────────────────────────────── */
+
+      /* Three-dot bouncing loader — each dot uses a staggered delay */
+      @keyframes bounce-dot {
+        0%, 70%, 100% { transform: translateY(0);   opacity: 0.35; }
+        35%            { transform: translateY(-8px); opacity: 1;    }
+      }
+
+      /* Shimmer sweep for the scroll-progress bar */
+      @keyframes shimmer-sweep {
+        0%   { transform: translateX(-200%); }
+        100% { transform: translateX(400%);  }
+      }
+
+      /* Gradient background-position shift for the progress bar */
+      @keyframes grad-shift {
+        0%   { background-position: 0%   50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0%   50%; }
+      }
+
+      /* Respect user's reduced-motion preference */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
       }
     </style>
   </head>
