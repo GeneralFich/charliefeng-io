@@ -22,7 +22,7 @@ export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
         {message}
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+      <div className="grid grid-cols-1 gap-3 w-full max-w-sm">
         {suggestedPrompts.map((prompt, idx) => (
           <button
             key={`${prompt}-${idx}`}

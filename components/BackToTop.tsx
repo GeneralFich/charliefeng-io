@@ -1,53 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 
-export const BackToTop: React.FC = () => {
+interface BackToTopProps {
+  containerRef?: React.RefObject<HTMLDivElement>;
+}
+
+export const BackToTop: React.FC<BackToTopProps> = ({ containerRef }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     let ticking = false;
     let rafId: number;
 
+    const getScrollTop = () =>
+      containerRef?.current ? containerRef.current.scrollTop : window.scrollY;
+
     const toggleVisibility = () => {
       if (!ticking) {
         rafId = window.requestAnimationFrame(() => {
-          // Show button when page is scrolled down 300px
-          if (window.scrollY > 300) {
-            setIsVisible(true);
-          } else {
-            setIsVisible(false);
-          }
+          setIsVisible(getScrollTop() > 300);
           ticking = false;
         });
         ticking = true;
       }
     };
 
-    window.addEventListener('scroll', toggleVisibility, { passive: true });
-    // Check initial scroll position
+    const scrollTarget: EventTarget = containerRef?.current ?? window;
+    scrollTarget.addEventListener('scroll', toggleVisibility, { passive: true });
     toggleVisibility();
 
     return () => {
-      window.removeEventListener('scroll', toggleVisibility);
+      scrollTarget.removeEventListener('scroll', toggleVisibility);
       if (rafId) {
         window.cancelAnimationFrame(rafId);
       }
     };
-  }, []);
+  }, [containerRef]);
 
   const scrollToTop = () => {
-    // Check for reduced motion preference
     const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    window.scrollTo({
-      top: 0,
-      behavior: isReducedMotion ? 'auto' : 'smooth',
-    });
+    if (containerRef?.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: isReducedMotion ? 'auto' : 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: isReducedMotion ? 'auto' : 'smooth' });
+    }
 
     // Move focus to main content for keyboard users to restore navigation context
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
-      // Use preventScroll: true because we are already scrolling to top via window.scrollTo
       mainContent.focus({ preventScroll: true });
     }
   };

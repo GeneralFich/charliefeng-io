@@ -11,6 +11,7 @@ interface ChatInputProps {
 export interface ChatInputHandle {
   clear: () => void;
   setValue: (value: string) => void;
+  focus: () => void;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
@@ -34,7 +35,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     useImperativeHandle(ref, () => ({
       clear: () => setValue(''),
-      setValue: (val: string) => setValue(val)
+      setValue: (val: string) => setValue(val),
+      focus: () => inputRef.current?.focus(),
     }));
 
     const handleClear = () => {

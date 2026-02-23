@@ -11,9 +11,10 @@ import { useLanguage } from '../lib/i18n/LanguageContext';
 interface ChatInterfaceProps {
   onNavigate?: (view: View, slug?: string, hash?: string) => void;
   className?: string;
+  onFocusRef?: React.MutableRefObject<(() => void) | null>;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className, onFocusRef }) => {
   const { t } = useLanguage();
   const {
     messages,
@@ -36,6 +37,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       clearTimeout(clearTimeoutRef.current);
     };
   }, []);
+
+  // Expose focus method to parent (e.g. App.tsx focuses chat input when "Chat" nav is clicked on desktop)
+  useEffect(() => {
+    if (onFocusRef) {
+      onFocusRef.current = () => inputRef.current?.focus();
+    }
+  }, [onFocusRef]);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -69,11 +77,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
   };
 
   return (
-    <div className={`flex flex-col w-full ${className || 'h-[calc(100vh-140px)] max-w-4xl mx-auto'}`}>
+    <div className={`flex flex-col w-full ${className ?? 'h-full'}`}>
       {/* Chat Area */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6"
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-6"
       >
         {isInitialState ? (
           <ChatWelcome
@@ -83,14 +91,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
           />
         ) : (
           <>
-            {messages.map((msg, idx) => (
-              <ChatMessage
-                key={idx}
-                message={msg}
-                onNavigate={onNavigate}
-                isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'model'}
-              />
-            ))}
+            {messages.map((msg, idx) => {
+              // While loading (before streaming starts), the last message is an empty model
+              // placeholder. Skip it — the thinking indicator below handles this state visually,
+              // preventing two bot avatars from appearing simultaneously.
+              const isEmptyLoadingPlaceholder =
+                isLoading && !isStreaming &&
+                idx === messages.length - 1 &&
+                msg.role === 'model' &&
+                msg.text === '';
+              if (isEmptyLoadingPlaceholder) return null;
+              return (
+                <ChatMessage
+                  key={idx}
+                  message={msg}
+                  onNavigate={onNavigate}
+                  isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'model'}
+                />
+              );
+            })}
             {isLoading && !isStreaming && (
               <div
                 className="flex items-center gap-3"
@@ -111,7 +130,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
+      <div className="px-6 py-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
         {!isInitialState && suggestedPrompts.length > 0 && (
           <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar" role="region" aria-label="Suggested follow-up questions">
             {suggestedPrompts.map((prompt, idx) => (
