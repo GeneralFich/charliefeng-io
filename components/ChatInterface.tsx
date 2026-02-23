@@ -81,7 +81,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       {/* Chat Area */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6"
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-6"
       >
         {isInitialState ? (
           <ChatWelcome
@@ -130,7 +130,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
+      <div className="px-6 py-4 bg-slate-950/50 backdrop-blur-md border-t border-slate-800">
         {!isInitialState && suggestedPrompts.length > 0 && (
           <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar" role="region" aria-label="Suggested follow-up questions">
             {suggestedPrompts.map((prompt, idx) => (
