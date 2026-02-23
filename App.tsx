@@ -136,7 +136,7 @@ const App: React.FC = () => {
         <div className={`
           relative flex-shrink-0 flex flex-col
           w-full lg:w-[420px] xl:w-[460px]
-          h-[calc(100vh-64px)] lg:h-auto
+          h-[calc(100vh-64px)]
           border-r border-slate-800/60
           print:hidden
           ${!isChatVisible ? 'hidden lg:flex' : 'flex'}
