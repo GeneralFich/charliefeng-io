@@ -91,14 +91,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
           />
         ) : (
           <>
-            {messages.map((msg, idx) => (
-              <ChatMessage
-                key={idx}
-                message={msg}
-                onNavigate={onNavigate}
-                isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'model'}
-              />
-            ))}
+            {messages.map((msg, idx) => {
+              // While loading (before streaming starts), the last message is an empty model
+              // placeholder. Skip it — the thinking indicator below handles this state visually,
+              // preventing two bot avatars from appearing simultaneously.
+              const isEmptyLoadingPlaceholder =
+                isLoading && !isStreaming &&
+                idx === messages.length - 1 &&
+                msg.role === 'model' &&
+                msg.text === '';
+              if (isEmptyLoadingPlaceholder) return null;
+              return (
+                <ChatMessage
+                  key={idx}
+                  message={msg}
+                  onNavigate={onNavigate}
+                  isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'model'}
+                />
+              );
+            })}
             {isLoading && !isStreaming && (
               <div
                 className="flex items-center gap-3"
