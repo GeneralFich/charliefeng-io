@@ -96,6 +96,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
   // message.text which is being built up chunk-by-chunk in real time.
   const displayText = message.translations?.[language] ?? message.text;
 
+  // True when the background translation call hasn't returned yet for the
+  // currently selected language.  We know a translation is being tracked
+  // (message.translations is an object, not undefined) but the key for the
+  // active language is missing — meaning the user toggled before the
+  // concurrent background call finished.
+  const isPendingTranslation =
+    message.role === 'model' &&
+    !isStreaming &&
+    message.translations !== undefined &&
+    message.translations[language] === undefined;
+
   const handleCopyMessage = async () => {
     try {
       await navigator.clipboard.writeText(displayText);
@@ -183,13 +194,23 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
           </button>
         )}
 
-        <ReactMarkdown
-          remarkPlugins={MARKDOWN_PLUGINS}
-          rehypePlugins={REHYPE_PLUGINS}
-          components={markdownComponents as any}
-        >
-          {displayText}
-        </ReactMarkdown>
+        {isPendingTranslation ? (
+          /* Show a subtle shimmer while the background translation call is in-flight */
+          <span className="flex items-center gap-1.5 text-slate-500 text-xs italic select-none">
+            <span className="inline-block w-1 h-1 rounded-full bg-slate-500 animate-bounce [animation-delay:0ms]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-slate-500 animate-bounce [animation-delay:150ms]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-slate-500 animate-bounce [animation-delay:300ms]" />
+            <span>Translating…</span>
+          </span>
+        ) : (
+          <ReactMarkdown
+            remarkPlugins={MARKDOWN_PLUGINS}
+            rehypePlugins={REHYPE_PLUGINS}
+            components={markdownComponents as any}
+          >
+            {displayText}
+          </ReactMarkdown>
+        )}
 
         {/* Streaming cursor */}
         {isStreaming && message.role === 'model' && (

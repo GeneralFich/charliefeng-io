@@ -202,8 +202,38 @@ export const useChat = () => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Add an empty model placeholder; streaming chunks will fill it in.
-    setMessages(prev => [...prev, { role: 'model', text: '', id: modelMsgId }]);
+    // Add an empty model placeholder — streaming chunks will fill it in.
+    // We pre-seed translations as an empty object (not undefined) so that
+    // ChatMessage can detect a pending translation vs a message that was
+    // never meant to have one (e.g. error messages without an id).
+    setMessages(prev => [...prev, { role: 'model', text: '', id: modelMsgId, translations: {} }]);
+
+    // ── Background translation call — starts CONCURRENTLY with streaming ─────
+    // Firing here rather than after streaming means the ~2-5s translation call
+    // runs in parallel with the ~5-15s streaming response.  By the time the
+    // user finishes reading and reaches for the language toggle, the translation
+    // is almost always already waiting in message.translations[otherLanguage].
+    // If it fails or the user clears the chat, the stale setMessages update is
+    // harmless — the message won't be found by ID.
+    void (async () => {
+      try {
+        const otherRaw = await sendMessageToGemini(otherApiHistory, text, otherLanguage);
+        const { cleanText: otherClean, prompts: otherPrompts } = parseFollowUpPrompts(otherRaw);
+
+        setMessages(prev => prev.map(msg =>
+          msg.id === modelMsgId
+            ? { ...msg, translations: { ...(msg.translations ?? {}), [otherLanguage]: otherClean } }
+            : msg
+        ));
+
+        suggestedPromptsPerLangRef.current = {
+          ...suggestedPromptsPerLangRef.current,
+          [otherLanguage]: otherPrompts,
+        };
+      } catch (e) {
+        console.warn('Background translation call failed:', e);
+      }
+    })();
 
     let firstChunk = true;
 
@@ -236,8 +266,8 @@ export const useChat = () => {
 
       const { cleanText, prompts } = parseFollowUpPrompts(rawResponse);
 
-      // Finalise the streaming message: store cleanText in both text and
-      // translations[currentLanguage] so ChatMessage can always resolve it.
+      // Finalise: store cleanText in both text and translations[currentLanguage]
+      // so ChatMessage always resolves displayText correctly.
       setMessages(prev => prev.map(msg =>
         msg.id === modelMsgId
           ? { ...msg, text: cleanText, translations: { ...(msg.translations ?? {}), [language]: cleanText } }
@@ -249,36 +279,6 @@ export const useChat = () => {
         ...suggestedPromptsPerLangRef.current,
         [language]: prompts,
       };
-
-      // ── Background call (other language) — fire-and-forget ────────────────
-      // We use the non-streaming sendMessageToGemini so we don't need to manage
-      // a second AbortController; if the user clears the chat while this is
-      // in-flight the stale update is harmless (the message won't be found).
-      ;(async () => {
-        try {
-          const otherRaw = await sendMessageToGemini(otherApiHistory, text, otherLanguage);
-          const { cleanText: otherClean, prompts: otherPrompts } = parseFollowUpPrompts(otherRaw);
-
-          setMessages(prev => prev.map(msg =>
-            msg.id === modelMsgId
-              ? { ...msg, translations: { ...(msg.translations ?? {}), [otherLanguage]: otherClean } }
-              : msg
-          ));
-
-          suggestedPromptsPerLangRef.current = {
-            ...suggestedPromptsPerLangRef.current,
-            [otherLanguage]: otherPrompts,
-          };
-
-          // If the user already switched language by the time this resolves,
-          // surface the freshly-arrived prompts immediately.
-          // We read language from the closure — it's stable for this call.
-        } catch (e) {
-          // Background translation failing is non-fatal; the primary language
-          // response is already displayed.
-          console.warn('Background translation call failed:', e);
-        }
-      })();
 
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
