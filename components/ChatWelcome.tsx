@@ -43,7 +43,7 @@ export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0  }}
         transition={{ ...springBounce, delay: 0.15 }}
-        className="text-2xl font-bold text-slate-200 mb-3 text-center"
+        className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-3 text-center"
       >
         Charlie's Digital Twin
       </motion.h2>
@@ -53,7 +53,7 @@ export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0  }}
         transition={{ ...springBounce, delay: 0.23 }}
-        className="text-slate-400 text-center max-w-md mb-8 leading-relaxed"
+        className="text-slate-500 dark:text-slate-400 text-center max-w-md mb-8 leading-relaxed"
       >
         {message}
       </motion.p>
@@ -74,7 +74,7 @@ export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
               boxShadow: '0 10px 28px rgba(59,130,246,0.18)',
             }}
             whileTap={{ scale: 0.96 }}
-            className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:border-blue-500/30 transition-colors text-left group"
+            className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-blue-500/30 transition-colors text-left group"
           >
             <div className="flex items-center gap-2 mb-1">
               {/* Sparkle icon springs in on hover */}
@@ -87,7 +87,7 @@ export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
                   className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
                 />
               </motion.div>
-              <span className="text-slate-300 text-sm font-medium group-hover:text-blue-400 transition-colors">
+              <span className="text-slate-600 dark:text-slate-300 text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {prompt}
               </span>
             </div>

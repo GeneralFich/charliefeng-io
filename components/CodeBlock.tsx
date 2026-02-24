@@ -29,14 +29,14 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ node, children, className,
         tabIndex={0}
         role="region"
         aria-label="Code snippet"
-        className={`bg-slate-800 p-4 rounded-lg overflow-x-auto [&>code]:bg-transparent [&>code]:p-0 pr-12 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-shadow ${className || ''}`}
+        className={`bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-lg overflow-x-auto [&>code]:bg-transparent [&>code]:p-0 pr-12 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-shadow ${className || ''}`}
         {...props}
       >
         {children}
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700/50 text-slate-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-slate-600 hover:text-white"
+        className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-slate-300 dark:hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white"
         aria-label={isCopied ? "Copied to clipboard" : "Copy code"}
         title={isCopied ? "Copied to clipboard" : "Copy code"}
       >

@@ -57,9 +57,9 @@ const RISK_DATA = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 border border-slate-700 p-3 rounded shadow-xl">
-        <p className="text-slate-200 font-bold mb-1">{label}</p>
-        <p className="text-blue-400 text-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded shadow-xl">
+        <p className="text-slate-800 dark:text-slate-200 font-bold mb-1">{label}</p>
+        <p className="text-blue-600 dark:text-blue-400 text-sm">
           {payload[0].value}% Impact
         </p>
         {payload[0].payload.stage && (
@@ -81,8 +81,8 @@ export const WhitepaperCharts: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-12">
       {/* Chart 1: AGI Timeline */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-        <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
           <TrendingUp size={18} className="text-blue-500" />
           The Consensus Timeline
         </h3>
@@ -122,8 +122,8 @@ export const WhitepaperCharts: React.FC = () => {
       </div>
 
       {/* Chart 2: Job Risk */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-        <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
           <AlertTriangle size={18} className="text-red-500" />
           Sector Vulnerability Index
         </h3>
@@ -149,7 +149,7 @@ export const WhitepaperCharts: React.FC = () => {
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                       <div className="bg-slate-900 border border-slate-700 p-2 rounded text-xs text-white">
+                       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded text-xs text-slate-900 dark:text-white">
                          Risk Score: {payload[0].value}
                        </div>
                     )

@@ -125,14 +125,14 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
   if (tocItems.length < 2) return null;
 
   return (
-    <div className="mb-8 border border-slate-800 rounded-lg bg-slate-900/30 overflow-hidden transition-all duration-300">
+    <div className="mb-8 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900/30 overflow-hidden transition-all duration-300">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors text-left"
+        className="w-full flex items-center justify-between p-4 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-left"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-2 text-slate-200 font-semibold">
-          <List size={18} className="text-blue-400" />
+        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold">
+          <List size={18} className="text-blue-600 dark:text-blue-400" />
           <span>Table of Contents</span>
           <span className="text-xs text-slate-500 font-normal ml-2">
             ({tocItems.length} sections)
@@ -142,7 +142,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
       </button>
 
       {isOpen && (
-        <div className="p-4 pt-0 border-t border-slate-800/50">
+        <div className="p-4 pt-0 border-t border-slate-200 dark:border-slate-800/50">
           <nav className="flex flex-col gap-1 mt-3">
             {tocItems.map((item) => (
               <a
@@ -163,8 +163,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ markdown }) =>
                   ${item.level === 1 ? 'font-semibold' : ''}
                   ${item.level === 3 ? 'ml-4' : ''}
                   ${activeId === item.id
-                    ? 'border-blue-400 text-blue-400 bg-blue-400/5 -ml-[1px]'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'}
+                    ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 bg-blue-400/5 -ml-[1px]'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'}
                 `}
               >
                 {item.text}

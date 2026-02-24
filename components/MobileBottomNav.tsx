@@ -36,7 +36,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentView, o
       aria-label="Mobile navigation"
     >
       {/* Frosted-glass bar */}
-      <div className="bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 flex items-stretch h-14 safe-pb">
+      <div className="bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 flex items-stretch h-14 safe-pb">
         {TABS.map(({ view, icon: Icon, labelKey }) => {
           const isActive = currentView === view;
           return (
@@ -62,13 +62,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentView, o
               >
                 <Icon
                   size={20}
-                  className={isActive ? 'text-blue-400' : 'text-slate-500'}
+                  className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}
                 />
               </motion.div>
 
               <span
                 className={`text-[10px] font-medium tracking-wide transition-colors ${
-                  isActive ? 'text-blue-400' : 'text-slate-500'
+                  isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                 }`}
               >
                 {labels[labelKey]}

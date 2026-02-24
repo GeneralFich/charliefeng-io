@@ -39,7 +39,7 @@ export const Heading: React.FC<HeadingProps> = ({ level, children, className, ..
       <a
         href={`#${id}`}
         onClick={handleCopyLink}
-        className="ml-2 inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 text-slate-500 hover:text-blue-400"
+        className="ml-2 inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400"
         aria-label="Copy link to section"
         title="Copy link to section"
       >

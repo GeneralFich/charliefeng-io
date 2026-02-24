@@ -63,11 +63,11 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
         }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-        className="relative group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-slate-900/30 border border-slate-800/50 hover:bg-slate-800/50 hover:border-blue-500/30 transition-colors duration-300 text-left cursor-pointer"
+        className="relative group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-blue-500/30 transition-colors duration-300 text-left cursor-pointer"
       >
         <div className="flex-1">
           {/* Meta row */}
-          <div className="flex items-center gap-3 text-xs text-blue-400 mb-3 font-medium uppercase tracking-wider">
+          <div className="flex items-center gap-3 text-xs text-blue-600 dark:text-blue-400 mb-3 font-medium uppercase tracking-wider">
             <time dateTime={post.attributes.date}>
               {new Date(post.attributes.date).toLocaleDateString('en-US', {
                 month: 'short',
@@ -80,7 +80,7 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
           </div>
 
           {/* Title */}
-          <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-blue-400 transition-colors pr-12">
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pr-12">
             <button
               onClick={(e) => { e.stopPropagation(); onSelectPost(post); }}
               className="text-left w-full focus:outline-none focus:underline"
@@ -90,7 +90,7 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
           </h3>
 
           {/* Description */}
-          <p className="text-slate-400 leading-relaxed line-clamp-2">
+          <p className="text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
             {highlightNodes(post.attributes.description, searchRegex)}
           </p>
         </div>
@@ -102,7 +102,7 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
           whileHover={{ scale: 1.15 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: 'spring', stiffness: 500, damping: 26 }}
-          className="absolute top-6 right-6 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-colors"
+          className="absolute top-6 right-6 p-2 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-colors"
           title={copiedPostSlug === post.slug ? 'Copied!' : 'Copy link'}
           aria-label={copiedPostSlug === post.slug ? 'Link copied to clipboard' : 'Copy link to clipboard'}
         >

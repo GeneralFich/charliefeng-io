@@ -76,12 +76,12 @@ const App: React.FC = () => {
   const isChatVisible = displayedView === View.HOME;
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black flex flex-col font-sans print:bg-white print:bg-none">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 via-white to-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-slate-950 dark:to-black flex flex-col font-sans print:bg-white print:bg-none">
 
       {/* Accessibility Skip Link */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all"
       >
         Skip to content
       </a>
@@ -120,7 +120,7 @@ const App: React.FC = () => {
           relative flex-shrink-0 flex flex-col
           w-full lg:w-[420px] xl:w-[460px]
           h-[calc(100vh-120px)] md:h-[calc(100vh-64px)]
-          border-r border-slate-800/60
+          border-r border-slate-200 dark:border-slate-800/60
           print:hidden
           ${!isChatVisible ? 'hidden lg:flex' : 'flex'}
         `}>

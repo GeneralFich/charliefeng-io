@@ -53,23 +53,23 @@ const STATIC_MARKDOWN_COMPONENTS = {
   ul:         ({node, ...props}: any) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
   ol:         ({node, ...props}: any) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
   li:         ({node, ...props}: any) => <li className="mb-1" {...props} />,
-  strong:     ({node, ...props}: any) => <strong className="font-bold text-slate-100" {...props} />,
+  strong:     ({node, ...props}: any) => <strong className="font-bold text-slate-800 dark:text-slate-100" {...props} />,
   pre:        CodeBlock,
   code:       ({node, ...props}: any) => (
-    <code className="bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-200" {...props} />
+    <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-xs font-mono text-slate-700 dark:text-slate-200" {...props} />
   ),
   blockquote: ({node, ...props}: any) => (
-    <blockquote className="border-l-4 border-slate-600 pl-4 italic text-slate-400 my-2" {...props} />
+    <blockquote className="border-l-4 border-slate-300 dark:border-slate-600 pl-4 italic text-slate-500 dark:text-slate-400 my-2" {...props} />
   ),
-  h1: ({node, ...props}: any) => <h1 className="text-lg font-bold mb-2 text-slate-100" {...props} />,
-  h2: ({node, ...props}: any) => <h2 className="text-base font-bold mb-2 text-slate-100" {...props} />,
-  h3: ({node, ...props}: any) => <h3 className="text-sm font-bold mb-2 text-slate-100" {...props} />,
-  table:  ({node, ...props}: any) => <div className="overflow-x-auto my-2"><table className="min-w-full divide-y divide-slate-700" {...props} /></div>,
-  thead:  ({node, ...props}: any) => <thead className="bg-slate-800" {...props} />,
-  tbody:  ({node, ...props}: any) => <tbody className="divide-y divide-slate-700" {...props} />,
+  h1: ({node, ...props}: any) => <h1 className="text-lg font-bold mb-2 text-slate-800 dark:text-slate-100" {...props} />,
+  h2: ({node, ...props}: any) => <h2 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-100" {...props} />,
+  h3: ({node, ...props}: any) => <h3 className="text-sm font-bold mb-2 text-slate-800 dark:text-slate-100" {...props} />,
+  table:  ({node, ...props}: any) => <div className="overflow-x-auto my-2"><table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700" {...props} /></div>,
+  thead:  ({node, ...props}: any) => <thead className="bg-slate-100 dark:bg-slate-800" {...props} />,
+  tbody:  ({node, ...props}: any) => <tbody className="divide-y divide-slate-300 dark:divide-slate-700" {...props} />,
   tr:     ({node, ...props}: any) => <tr {...props} />,
-  th:     ({node, ...props}: any) => <th className="px-3 py-2 text-left text-xs font-medium text-slate-300 uppercase tracking-wider" {...props} />,
-  td:     ({node, ...props}: any) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-300" {...props} />,
+  th:     ({node, ...props}: any) => <th className="px-3 py-2 text-left text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wider" {...props} />,
+  td:     ({node, ...props}: any) => <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300" {...props} />,
 };
 
 interface ChatMessageProps {
@@ -130,7 +130,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
 
       return (
         <a
-          className="text-blue-400 hover:underline cursor-pointer"
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
           onClick={handleClick}
           target={isInternal ? undefined : '_blank'}
           rel={isInternal ? undefined : 'noopener noreferrer'}
@@ -160,7 +160,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
             ? 'bg-blue-600'
             : isError
               ? 'bg-red-900/20 border border-red-500/30'
-              : 'bg-slate-700 border border-slate-600'
+              : 'bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600'
         }`}
       >
         {isUser
@@ -173,17 +173,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
       <div
         className={`relative group p-4 rounded-2xl max-w-[80%] text-sm leading-relaxed ${
           isUser
-            ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-sm'
+            ? 'bg-blue-600/10 dark:bg-blue-600/20 border border-blue-500/30 text-blue-800 dark:text-blue-100 rounded-tr-sm'
             : isError
-              ? 'bg-red-900/10 border border-red-500/30 text-red-200 rounded-tl-sm shadow-xl'
-              : 'bg-slate-900/80 border border-slate-800 text-slate-300 rounded-tl-sm shadow-xl'
+              ? 'bg-red-50 dark:bg-red-900/10 border border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-200 rounded-tl-sm shadow-xl'
+              : 'bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-tl-sm shadow-xl'
         }`}
       >
         {/* Copy Button for model messages */}
         {message.role === 'model' && (
           <button
             onClick={handleCopyMessage}
-            className="absolute top-2 right-2 p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-700 hover:text-white focus:opacity-100 bg-slate-800/50 backdrop-blur-sm z-10"
+            className="absolute top-2 right-2 p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white focus:opacity-100 bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-sm z-10"
             aria-label={isCopied ? 'Copied to clipboard' : 'Copy message'}
             title={isCopied ? 'Copied to clipboard' : 'Copy message'}
           >
