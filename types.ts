@@ -14,6 +14,16 @@ export interface Message {
   role: 'user' | 'model';
   text: string;
   isError?: boolean;
+  /** Stable ID used to target background translation updates without ambiguity. */
+  id?: string;
+  /**
+   * Keyed by Language enum value (e.g. 'en', 'zh').
+   * Model messages get the primary-language response stored here after streaming,
+   * and the alternate language filled in by a silent background API call so that
+   * toggling the language switcher immediately shows the correct response.
+   * User messages are never translated — they stay in the language they were typed.
+   */
+  translations?: Partial<Record<string, string>>;
 }
 
 export interface ChartDataPoint {

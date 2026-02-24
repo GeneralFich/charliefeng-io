@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef, useCallback, useEffect } from 'react';
 import { Send, Loader2, X } from 'lucide-react';
 
 interface ChatInputProps {
@@ -11,21 +11,41 @@ interface ChatInputProps {
 export interface ChatInputHandle {
   clear: () => void;
   setValue: (value: string) => void;
+  focus: () => void;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
   ({ onSend, isLoading, placeholder = "Ask anything...", maxLength = 2000 }, ref) => {
     const [value, setValue] = useState('');
-    const inputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const maxRows = 6;
+
+    const resizeTextarea = useCallback(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.style.height = 'auto';
+      const lineHeight = parseInt(getComputedStyle(el).lineHeight) || 24;
+      const maxHeight = lineHeight * maxRows;
+      el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+      // Only show a scrollbar when text overflows the max-height cap;
+      // hiding it at single-row height prevents the scrollbar from stealing
+      // width and causing the placeholder text to wrap prematurely.
+      el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }, []);
+
+    useEffect(() => {
+      resizeTextarea();
+    }, [value, resizeTextarea]);
 
     useImperativeHandle(ref, () => ({
       clear: () => setValue(''),
-      setValue: (val: string) => setValue(val)
+      setValue: (val: string) => setValue(val),
+      focus: () => textareaRef.current?.focus(),
     }));
 
     const handleClear = () => {
       setValue('');
-      inputRef.current?.focus();
+      textareaRef.current?.focus();
     };
 
     const handleSend = () => {
@@ -42,18 +62,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     };
 
     return (
-      <div className="flex items-center gap-2 flex-1 min-w-0">
+      <div className="flex items-end gap-2 flex-1 min-w-0">
         <div className="relative flex-1 min-w-0">
-          <input
-            ref={inputRef}
-            type="text"
+          <textarea
+            ref={textareaRef}
             aria-label="Chat message"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isLoading ? "Thinking..." : placeholder}
             maxLength={maxLength}
-            className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-base rounded-xl py-3.5 pl-4 pr-10 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+            rows={1}
+            className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-base rounded-xl py-3.5 pl-4 pr-10 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600 resize-none overflow-y-hidden"
             disabled={isLoading}
           />
 
@@ -62,7 +82,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               onClick={handleClear}
               aria-label="Clear input"
               title="Clear input"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="absolute right-2 bottom-2.5 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
               <X size={14} />
             </button>
@@ -71,7 +91,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
         {value.length > 0 && (
           <span
-            className={`text-xs font-mono tabular-nums pointer-events-none transition-colors shrink-0 ${
+            className={`text-xs font-mono tabular-nums pointer-events-none transition-colors shrink-0 mb-3.5 ${
               value.length >= maxLength ? 'text-red-500 font-bold' :
               value.length > (maxLength * 0.9) ? 'text-amber-500' :
               'text-slate-500'
@@ -87,7 +107,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           disabled={!value.trim() || isLoading}
           aria-label={isLoading ? "Sending message..." : "Send message"}
           title={isLoading ? "Sending message..." : "Send message"}
-          className="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+          className="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all mb-1"
         >
           {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
         </button>

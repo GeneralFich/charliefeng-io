@@ -7,9 +7,10 @@ import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface ResumeProps {
   initialHash?: string | null;
+  isInsideSplitView?: boolean;
 }
 
-export const Resume: React.FC<ResumeProps> = ({ initialHash }) => {
+export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: _isInsideSplitView }) => {
   const { t, language } = useLanguage();
   const { name, location, summary, experience, education, leadership, skills } = getResumeAttributes(language);
   const [isCopied, setIsCopied] = useState(false);
