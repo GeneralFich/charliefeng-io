@@ -2,50 +2,50 @@
 title: "Your AI Strategy Is Already Wrong"
 date: 2026-02-23
 author: Charlie Feng
-description: "Most AI strategy writing fails the people who actually have to implement it. Here's what the consulting frameworks miss—and what actually compounds."
+description: "Most AI strategy writing fails the people who actually have to implement it. Here's what the consulting frameworks miss - and what actually compounds."
 ---
 
-Most AI strategy writing fails the people who actually have to implement it. That's the core problem, and almost nobody producing this content seems to notice.
+Most AI strategy writing fails the people who actually have to implement it. Nobody writing it seems to notice.
 
-I work on AI infrastructure at Google — document management systems, knowledge agents, program management tooling. I watch organizations adopt AI strategies written by McKinsey and Gartner, lock into platforms, then spend the next twelve months working around the tools they just deployed. The strategy documents collecting dust on SharePoint are artifacts of a world that moved on while the ink was drying.
+I work on AI infrastructure at Google - document management systems, knowledge agents, program management tooling. I watch organizations adopt McKinsey and Gartner AI strategies, lock into platforms, then spend twelve months working around the tools they just deployed. The strategy documents collecting dust on SharePoint are artifacts of a world that moved on while the ink was drying.
 
-Here's what I mean by "already wrong": In January 2025, two models — Claude Sonnet and GPT-4o — held 91.5% of enterprise AI queries. By December, no single model held more than 23%. The entire competitive landscape restructured in a calendar year. Meanwhile, 78% of employees were using AI tools their employer hadn't sanctioned — not because they're rebels, but because the sanctioned tools weren't keeping up.
+In January 2025, two models - Claude Sonnet and GPT-4o - held 91.5% of enterprise AI queries. By December, no single model held more than 23%. One calendar year. Meanwhile, 78% of employees were using AI tools their employer hadn't sanctioned - not because they're rebels, but because the sanctioned tools couldn't keep up.
 
-The consulting frameworks are converging on the same diagnosis. McKinsey finds only 6% of organizations qualify as AI high performers. BCG says 5% are "future-built." MIT's NANDA report puts it starkly: 95% of enterprise AI pilots deliver zero measurable P&L impact. Everyone agrees the patient is sick. But the prescription — maturity models, readiness assessments, phased roadmaps — is part of the disease.
+McKinsey finds only 6% of organizations qualify as AI high performers. BCG says 5% are "future-built." MIT's NANDA puts it starkly: 95% of enterprise AI pilots deliver zero measurable P&L impact. Everyone agrees the patient is sick. But the prescription - maturity models, readiness assessments, phased roadmaps - is part of the disease.
 
 ## The frameworks prescribe certainty in a system that punishes it
 
-Pick up any major AI strategy document from the last year. You'll find a maturity model with five levels. A prioritization matrix. A recommendation to establish C-suite governance. What you won't find is an honest reckoning with the fact that the technology it describes will be substantially different by the time the strategy gets implemented.
+Pick up any major AI strategy document from the last year. You'll find a maturity model with five levels. A prioritization matrix. A recommendation to establish C-suite governance. What you won't find: any acknowledgment that the technology will be fundamentally different by the time the strategy gets implemented.
 
-GPT-4's input token cost was $30 per million in March 2023. By mid-2025, equivalent capability cost under $2 — a 93% decline in roughly two years. Context windows expanded from 4,000 tokens to 2 million in the same period. These aren't incremental improvements. They're phase changes. When Epoch AI tracks inference costs declining at a median of 50x per year, your 18-month AI roadmap is planning for a world that won't exist by the time you execute quarter two.
+GPT-4's input token cost was $30 per million in March 2023. By mid-2025, equivalent capability cost under $2. A 93% decline in two years. Context windows expanded from 4,000 tokens to 2 million in the same period. These aren't incremental improvements. They're phase changes. When Epoch AI tracks inference costs declining 50x per year, your 18-month AI roadmap is planning for a world that won't exist by the time you execute quarter two.
 
-The organizations that locked in early are learning this. Klarna replaced 700 customer service agents with an OpenAI chatbot in 2023. It handled 2.3 million conversations a month. By early 2025, customer satisfaction had dropped 22%, and the company was rehiring humans. McDonald's spent three years building AI drive-thru ordering with IBM, then killed the partnership after the system kept adding bacon to ice cream sundaes. S&P Global found that 42% of companies abandoned most of their AI initiatives in 2025 — up from 17% the year before. These aren't execution failures. They're failures of strategy that assumed the current tool was the right tool.
+Klarna replaced 700 customer service agents with an OpenAI chatbot in 2023. Handled 2.3 million conversations a month. By early 2025, customer satisfaction had dropped 22%, and the company was rehiring humans. McDonald's spent three years building AI drive-thru ordering with IBM, then killed the partnership after the system kept adding bacon to ice cream sundaes. S&P Global found that 42% of companies abandoned most of their AI initiatives in 2025 - up from 17% the year before. These aren't execution failures. They're strategy failures. Each one assumed the current tool was the right tool.
 
 ## The real advantage is switching cost, not tool choice
 
-If your AI tooling will be wrong in 12 months — and the data overwhelmingly says it will — then the strategic question isn't "which AI tool should we adopt?" It's "how cheaply can we switch when the better option arrives?"
+If your AI tooling will be wrong in 12 months - and the data overwhelmingly says it will - then the strategic question isn't "which AI tool should we adopt?" It's "how cheaply can we switch when the better option arrives?"
 
 This is an infrastructure problem, not a vision problem. It means building abstraction layers between your workflows and your models. It means favoring prompt-based approaches over fine-tuning, because fine-tuned models create lock-in that prompt-engineered workflows don't. It means treating vendor contracts like short-term leases, not long-term mortgages.
 
-The enterprises already doing this are moving fast: 92% of Fortune 500 companies now use multi-model platforms, with top accounts running 30 different AI models on average. The a16z enterprise survey confirms the posture shift — innovation budgets dropped from 25% of LLM spend to just 7% in a single year, not because companies stopped innovating, but because they stopped treating AI as an experiment and started treating it as fungible infrastructure. The winning posture is architectural flexibility, not tool loyalty.
+92% of Fortune 500 companies now use multi-model platforms, with top accounts running 30 different AI models on average. The a16z enterprise survey confirms the shift. Innovation budgets dropped from 25% of LLM spend to just 7% in a single year. Not because companies stopped innovating. Because they stopped treating AI as an experiment and started treating it as fungible infrastructure. The winning posture is architectural flexibility, not tool loyalty.
 
 ## Context integration is the durable advantage
 
-Here's what doesn't depreciate when you switch models: how well your organization encodes and retrieves its institutional knowledge.
+Institutional knowledge doesn't depreciate when you switch models. That's the whole point.
 
-Ethan Mollick — the most practitioner-cited voice in AI strategy — puts it directly: "If you built a 'talk-to-our-documents' chatbot when I was warning you not to do that a year and a half ago, you now have a mediocre chatbot easily beaten by an off-the-shelf model." The chatbot was the wrong investment. The knowledge infrastructure underneath it was the right one.
+Ethan Mollick - the most practitioner-cited voice in AI strategy - puts it directly: "If you built a 'talk-to-our-documents' chatbot when I was warning you not to do that a year and a half ago, you now have a mediocre chatbot easily beaten by an off-the-shelf model." The chatbot was the wrong investment. The knowledge infrastructure underneath it was the right one.
 
-42% of institutional knowledge resides solely with individual employees. When they leave, nearly half of what the organization knows walks out the door. AI makes this acute — because a system with access to well-structured institutional context dramatically outperforms one running on generic training data, regardless of which model powers it. The context layer is model-agnostic. It compounds over time. And it's the one piece of your AI stack that gets more valuable as models get cheaper and more capable.
+42% of institutional knowledge resides solely with individual employees. When they leave, nearly half of what the organization knows walks out the door. AI makes this acute - because a system with access to well-structured institutional context dramatically outperforms one running on generic training data, regardless of which model powers it. The context layer is model-agnostic. It compounds over time. And it's the one piece of your AI stack that gets more valuable as models get cheaper and more capable.
 
-The practical work isn't glamorous. It's unifying scattered data assets into searchable, machine-readable formats. It's capturing decision rationale from Slack threads and meeting transcripts. It's building knowledge graphs that preserve relationships between projects, people, and outcomes. This is what I spend my days doing — and it's the investment that survives every model transition.
+The practical work isn't glamorous. It's unifying scattered data assets into searchable, machine-readable formats. It's capturing decision rationale from Slack threads and meeting transcripts. It's building knowledge graphs that preserve relationships between projects, people, and outcomes. This is what I spend my days doing - and it's the investment that survives every model transition.
 
 ## Shadow AI is your best strategy signal
 
 When 78% of your employees use AI tools you didn't approve, that isn't a governance crisis. It's a market signal. Your workforce is telling you, directly, that your sanctioned tools aren't solving their actual problems.
 
-The MIT NANDA study found that workers at over 90% of surveyed organizations use personal AI tools regularly, even though only 40% of those companies provide an official LLM subscription. One corporate lawyer in the study worked at a firm that invested $50,000 in a specialized contract analysis tool — and she consistently used ChatGPT instead. Not out of defiance. Out of pragmatism.
+MIT NANDA found that workers at over 90% of surveyed organizations use personal AI tools regularly, even though only 40% of those companies give them an official LLM subscription. One corporate lawyer in the study worked at a firm that invested $50,000 in a specialized contract analysis tool - and she consistently used ChatGPT instead. Not out of defiance. Out of pragmatism.
 
-The useful response isn't to ban shadow AI or double down on the enterprise tool employees are already routing around. It's to study the shadow. What tools are people choosing? For which tasks? What does that reveal about where your official tooling fails? Mollick calls these users "secret cyborgs" — people who've figured out how AI fits their workflow through daily experimentation. They're your best strategists. Build a path for their insights to reach the people setting direction, and you've created something no consulting framework can sell you: a feedback loop between the work and the strategy that runs in real time.
+The useful response isn't to ban shadow AI or double down on the enterprise tool employees are already routing around. Study the shadow. What tools are people choosing? For which tasks? What does that reveal about where your official tooling fails? Mollick calls these users "secret cyborgs" - people who've figured out how AI fits their workflow through daily experimentation. They're your best strategists. Build a path for their insights to reach the people setting direction, and you've created something no consulting framework can sell you: a real-time feedback loop between the work and the strategy.
 
 ---
 
