@@ -27,6 +27,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       const lineHeight = parseInt(getComputedStyle(el).lineHeight) || 24;
       const maxHeight = lineHeight * maxRows;
       el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+      // Only show a scrollbar when text overflows the max-height cap;
+      // hiding it at single-row height prevents the scrollbar from stealing
+      // width and causing the placeholder text to wrap prematurely.
+      el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     }, []);
 
     useEffect(() => {
@@ -68,7 +72,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           placeholder={isLoading ? "Thinking..." : placeholder}
           maxLength={maxLength}
           rows={1}
-          className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600 resize-none overflow-y-auto"
+          className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600 resize-none overflow-y-hidden"
           disabled={isLoading}
         />
 
