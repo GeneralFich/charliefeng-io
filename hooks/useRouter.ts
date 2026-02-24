@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View } from '../types';
-import { parseRoute } from '../lib/route_logic';
+import { parseRoute, buildNavigationUrl } from '../lib/route_logic';
 
 /**
  * @fileoverview Custom Router Hook
@@ -55,18 +55,7 @@ export const useRouter = () => {
     setTargetHash(hash || null);
 
     // Update URL
-    const params = new URLSearchParams();
-    params.set('view', view);
-    if (slug) {
-      params.set('essay', slug);
-    }
-    let newUrl = `${window.location.pathname}?${params.toString()}`;
-    if (hash) {
-      // Ensure hash has # prefix
-      const cleanHash = hash.startsWith('#') ? hash : `#${hash}`;
-      newUrl += cleanHash;
-    }
-
+    const newUrl = buildNavigationUrl(window.location.pathname, view, slug, hash);
     window.history.pushState({ view, slug, hash }, '', newUrl);
   }, []);
 

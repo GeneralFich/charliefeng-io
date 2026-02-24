@@ -18,7 +18,7 @@ const MAX_REQUESTS = 10;
  * Builds the initial greeting message with translations pre-populated for both
  * languages so the greeting always renders correctly without an API call.
  */
-function makeGreeting(currentLang: Language): Message {
+export function makeGreeting(currentLang: Language): Message {
   return {
     role: 'model',
     id: 'greeting',
@@ -304,3 +304,34 @@ export const useChat = () => {
     clearChat
   };
 };
+
+/**
+ * Builds the two API history arrays (primary and other-language) from a raw
+ * message array.  Extracted from handleSend so the mapping logic is testable
+ * without a React harness.
+ *
+ * @param messages - Full message array (including greeting at index 0).
+ * @param currentLanguage - The language of the primary streaming call.
+ * @returns primaryApiHistory and otherApiHistory arrays.
+ */
+export function buildApiHistories(
+  messages: Message[],
+  currentLanguage: Language,
+): { primaryApiHistory: Message[]; otherApiHistory: Message[] } {
+  const apiHistorySnapshot = messages.slice(1); // exclude greeting
+
+  const primaryApiHistory: Message[] = apiHistorySnapshot.map(msg =>
+    msg.role === 'model'
+      ? { ...msg, text: msg.translations?.[currentLanguage] ?? msg.text }
+      : msg
+  );
+
+  const otherLanguage: Language = currentLanguage === Language.EN ? Language.ZH : Language.EN;
+  const otherApiHistory: Message[] = apiHistorySnapshot.map(msg =>
+    msg.role === 'model'
+      ? { ...msg, text: msg.translations?.[otherLanguage] ?? msg.translations?.[currentLanguage] ?? msg.text }
+      : msg
+  );
+
+  return { primaryApiHistory, otherApiHistory };
+}
