@@ -1,24 +1,25 @@
 import { Message } from '../types';
 
 const STORAGE_KEY = 'charliefeng-chat-history';
-// Version 2 adds `language` field so chats from a different language are
-// automatically discarded rather than displayed in the wrong language.
-const STORAGE_VERSION = 2;
+// Version 3: messages now carry per-language translations; suggestedPrompts
+// is replaced with suggestedPromptsPerLang so both EN and ZH chips are persisted.
+const STORAGE_VERSION = 3;
 
 interface StoredChatState {
   version: number;
-  language: string;
   messages: Message[];
-  suggestedPrompts: string[];
+  suggestedPromptsPerLang: Partial<Record<string, string[]>>;
 }
 
-export function saveChatState(messages: Message[], suggestedPrompts: string[], language: string): void {
+export function saveChatState(
+  messages: Message[],
+  suggestedPromptsPerLang: Partial<Record<string, string[]>>,
+): void {
   try {
     const state: StoredChatState = {
       version: STORAGE_VERSION,
-      language,
       messages,
-      suggestedPrompts,
+      suggestedPromptsPerLang,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
@@ -26,7 +27,10 @@ export function saveChatState(messages: Message[], suggestedPrompts: string[], l
   }
 }
 
-export function loadChatState(): { messages: Message[]; suggestedPrompts: string[]; language: string } | null {
+export function loadChatState(): {
+  messages: Message[];
+  suggestedPromptsPerLang: Partial<Record<string, string[]>>;
+} | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -56,11 +60,12 @@ export function loadChatState(): { messages: Message[]; suggestedPrompts: string
     }
 
     return {
-      language: typeof parsed.language === 'string' ? parsed.language : 'en',
       messages: parsed.messages,
-      suggestedPrompts: Array.isArray(parsed.suggestedPrompts)
-        ? parsed.suggestedPrompts.filter((p) => typeof p === 'string')
-        : [],
+      suggestedPromptsPerLang:
+        parsed.suggestedPromptsPerLang &&
+        typeof parsed.suggestedPromptsPerLang === 'object'
+          ? parsed.suggestedPromptsPerLang
+          : {},
     };
   } catch {
     clearChatState();

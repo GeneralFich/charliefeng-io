@@ -7,6 +7,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Message, View } from '../types';
 import { isSafeLink } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
+import { useLanguage } from '../lib/i18n/LanguageContext';
 
 const MARKDOWN_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS   = [rehypeSanitize];
@@ -86,11 +87,18 @@ const messageSpring = {
 
 
 export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, onNavigate, isStreaming }) => {
+  const { language } = useLanguage();
   const [isCopied, setIsCopied] = React.useState(false);
+
+  // Resolve the text to display: prefer the translation for the current UI
+  // language so toggling EN↔ZH immediately shows the alternate response.
+  // During streaming the translation isn't stored yet, so we fall back to
+  // message.text which is being built up chunk-by-chunk in real time.
+  const displayText = message.translations?.[language] ?? message.text;
 
   const handleCopyMessage = async () => {
     try {
-      await navigator.clipboard.writeText(message.text);
+      await navigator.clipboard.writeText(displayText);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
@@ -122,7 +130,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
   }), [onNavigate]);
 
   const isError = message.role === 'model' &&
-    (message.text.startsWith('Error:') || message.text.startsWith('System:'));
+    (displayText.startsWith('Error:') || displayText.startsWith('System:'));
 
   const isUser = message.role === 'user';
 
@@ -180,7 +188,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message, on
           rehypePlugins={REHYPE_PLUGINS}
           components={markdownComponents as any}
         >
-          {message.text}
+          {displayText}
         </ReactMarkdown>
 
         {/* Streaming cursor */}
