@@ -28,6 +28,7 @@ import { BrowsePanel } from './components/BrowsePanel';
 import { ScrollProgress } from './components/ScrollProgress';
 import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { ParticleBackground } from './components/ParticleBackground';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
@@ -35,7 +36,6 @@ import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 const App: React.FC = () => {
   const { currentView, targetEssaySlug, targetHash, navigateTo } = useRouter();
   const { displayed: displayedView, isExiting, transitionTo, snapTo } = useViewTransition(View.HOME);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Ref to the right content panel — passed to scroll-dependent components so they
@@ -60,12 +60,10 @@ const App: React.FC = () => {
   const handleNavigate = React.useCallback((view: View, slug?: string, hash?: string) => {
     if (view === View.HOME && displayedView === View.HOME && !isExiting) {
       chatFocusRef.current?.();
-      setMobileMenuOpen(false);
       return;
     }
     navigateTo(view, slug, hash);
     transitionTo(view);
-    setMobileMenuOpen(false);
     rightPanelRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [navigateTo, transitionTo, displayedView, isExiting]);
 
@@ -105,8 +103,6 @@ const App: React.FC = () => {
       <Navbar
         currentView={currentView}
         onNavigate={handleNavigate}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
       />
 
       {/* Main Content — flex row creates the split panel on lg+ screens */}
@@ -123,7 +119,7 @@ const App: React.FC = () => {
         <div className={`
           relative flex-shrink-0 flex flex-col
           w-full lg:w-[420px] xl:w-[460px]
-          h-[calc(100vh-64px)]
+          h-[calc(100vh-120px)] md:h-[calc(100vh-64px)]
           border-r border-slate-800/60
           print:hidden
           ${!isChatVisible ? 'hidden lg:flex' : 'flex'}
@@ -142,7 +138,7 @@ const App: React.FC = () => {
           ref={rightPanelRef}
           className={`
             flex-1 overflow-y-auto
-            h-[calc(100vh-64px)]
+            h-[calc(100vh-120px)] md:h-[calc(100vh-64px)]
             print:overflow-visible print:h-auto
             ${isChatVisible ? 'hidden lg:block' : 'block'}
           `}
@@ -157,6 +153,9 @@ const App: React.FC = () => {
         </div>
 
       </main>
+
+      {/* Mobile bottom tab bar — replaces the hamburger menu on small screens */}
+      <MobileBottomNav currentView={currentView} onNavigate={handleNavigate} />
 
     </div>
   );

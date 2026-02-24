@@ -3,18 +3,16 @@ import { motion } from 'framer-motion';
 import { View } from '../types';
 import { Logo } from './Logo';
 import { NavItem } from './NavItem';
-import { MessageSquare, FileText, Menu, X, BookOpen } from 'lucide-react';
+import { MessageSquare, FileText, BookOpen } from 'lucide-react';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface NavbarProps {
   currentView: View;
   onNavigate: (view: View, slug?: string, hash?: string) => void;
-  mobileMenuOpen: boolean;
-  setMobileMenuOpen: (open: boolean) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileMenuOpen, setMobileMenuOpen }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
   const { t } = useLanguage();
 
   return (
@@ -55,33 +53,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, mobileM
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center gap-2">
+          {/* Mobile: language switcher only — navigation handled by bottom tab bar */}
+          <div className="md:hidden flex items-center">
             <LanguageSwitcher />
-            <motion.button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              whileTap={{ scale: 0.88, rotate: mobileMenuOpen ? -10 : 10 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-              className="text-slate-400 hover:text-white p-2"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              title={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </motion.button>
           </div>
         </div>
       </div>
-
-      {/* Mobile Nav Drawer */}
-      {mobileMenuOpen && (
-        <div id="mobile-menu" className="md:hidden bg-slate-950 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
-          <NavItem view={View.HOME}   label={t.nav.chat}   icon={MessageSquare} currentView={currentView} onNavigate={onNavigate} />
-          <NavItem view={View.ABOUT}  label={t.nav.about}  icon={FileText}      currentView={currentView} onNavigate={onNavigate} />
-          <NavItem view={View.ESSAYS} label={t.nav.essays} icon={BookOpen}      currentView={currentView} onNavigate={onNavigate} />
-        </div>
-      )}
     </nav>
   );
 };
