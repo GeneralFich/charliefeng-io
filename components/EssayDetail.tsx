@@ -21,8 +21,10 @@ interface EssayDetailProps {
   isInsideSplitView?: boolean;
 }
 
-// Define plugins outside component to maintain reference stability
-const MARKDOWN_PLUGINS = [remarkGfm, remarkMath];
+// Define plugins outside component to maintain reference stability.
+// singleDollarTextMath: false — only $$...$$ triggers math rendering,
+// so bare currency like "$30" or "$2" is treated as plain text.
+const MARKDOWN_PLUGINS = [remarkGfm, [remarkMath, { singleDollarTextMath: false }]];
 const REHYPE_PLUGINS = [
   [rehypeSanitize, {
     ...defaultSchema,

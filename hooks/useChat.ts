@@ -31,14 +31,22 @@ const MAX_REQUESTS = 10;
  */
 export const useChat = () => {
   const { t, language } = useLanguage();
+
+  // Only restore a persisted session if it was saved in the same language.
+  // If the language doesn't match (e.g. user previously chatted in EN and just
+  // switched to ZH), discard the old session so the greeting appears in the
+  // correct language and the AI context is consistent.
   const stored = loadChatState();
+  const storedLanguageMatches = stored?.language === language;
+  if (stored && !storedLanguageMatches) clearChatState();
+
   const [messages, setMessages] = useState<Message[]>(
-    stored?.messages ?? [{ role: 'model', text: t.chat.greeting }]
+    (storedLanguageMatches ? stored?.messages : null) ?? [{ role: 'model', text: t.chat.greeting }]
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(
-    stored?.suggestedPrompts.length ? stored.suggestedPrompts : t.chat.suggestions
+    (storedLanguageMatches && stored?.suggestedPrompts.length) ? stored.suggestedPrompts : t.chat.suggestions
   );
 
   // Use refs to keep track of latest state without causing re-renders in callbacks
@@ -47,6 +55,9 @@ export const useChat = () => {
   const isLoadingRef = useRef(isLoading);
   const requestTimestampsRef = useRef<number[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Skip the language effect on the very first render — messages are already
+  // initialised correctly above. Only act when the user actively switches language.
+  const isFirstLanguageEffect = useRef(true);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -56,19 +67,30 @@ export const useChat = () => {
     isLoadingRef.current = isLoading;
   }, [isLoading]);
 
-  // Handle language switch: Update greeting and prompts if chat is in initial state
+  // Handle language switch: always reset chat to the new language's greeting.
+  // This ensures existing responses (in the old language) are never mixed with
+  // new responses in the new language. The skip-on-first-render guard prevents
+  // wiping the correctly-loaded initial state.
   useEffect(() => {
-    if (messagesRef.current.length <= 1 && messagesRef.current[0].role === 'model') {
-       setMessages([{ role: 'model', text: t.chat.greeting }]);
-       setSuggestedPrompts(t.chat.suggestions);
+    if (isFirstLanguageEffect.current) {
+      isFirstLanguageEffect.current = false;
+      return;
     }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setMessages([{ role: 'model', text: t.chat.greeting }]);
+    setSuggestedPrompts(t.chat.suggestions);
+    setIsLoading(false);
+    clearChatState();
   }, [language, t]);
 
   // Persist chat state to localStorage (skip during streaming to avoid saving partial messages)
   useEffect(() => {
     if (isStreaming) return;
-    saveChatState(messages, suggestedPrompts);
-  }, [messages, suggestedPrompts, isStreaming]);
+    saveChatState(messages, suggestedPrompts, language);
+  }, [messages, suggestedPrompts, isStreaming, language]);
 
   /**
    * Resets the chat to its initial state.

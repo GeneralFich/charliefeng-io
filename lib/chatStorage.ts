@@ -1,18 +1,22 @@
 import { Message } from '../types';
 
 const STORAGE_KEY = 'charliefeng-chat-history';
-const STORAGE_VERSION = 1;
+// Version 2 adds `language` field so chats from a different language are
+// automatically discarded rather than displayed in the wrong language.
+const STORAGE_VERSION = 2;
 
 interface StoredChatState {
   version: number;
+  language: string;
   messages: Message[];
   suggestedPrompts: string[];
 }
 
-export function saveChatState(messages: Message[], suggestedPrompts: string[]): void {
+export function saveChatState(messages: Message[], suggestedPrompts: string[], language: string): void {
   try {
     const state: StoredChatState = {
       version: STORAGE_VERSION,
+      language,
       messages,
       suggestedPrompts,
     };
@@ -22,7 +26,7 @@ export function saveChatState(messages: Message[], suggestedPrompts: string[]): 
   }
 }
 
-export function loadChatState(): { messages: Message[]; suggestedPrompts: string[] } | null {
+export function loadChatState(): { messages: Message[]; suggestedPrompts: string[]; language: string } | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -52,6 +56,7 @@ export function loadChatState(): { messages: Message[]; suggestedPrompts: string
     }
 
     return {
+      language: typeof parsed.language === 'string' ? parsed.language : 'en',
       messages: parsed.messages,
       suggestedPrompts: Array.isArray(parsed.suggestedPrompts)
         ? parsed.suggestedPrompts.filter((p) => typeof p === 'string')
