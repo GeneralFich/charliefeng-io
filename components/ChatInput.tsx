@@ -42,44 +42,44 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     };
 
     return (
-      <div className="relative flex-1">
-        <input
-          ref={inputRef}
-          type="text"
-          aria-label="Chat message"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={isLoading ? "Thinking..." : placeholder}
-          maxLength={maxLength}
-          className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-xl py-3.5 pl-4 pr-32 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
-          disabled={isLoading}
-        />
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="relative flex-1 min-w-0">
+          <input
+            ref={inputRef}
+            type="text"
+            aria-label="Chat message"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={isLoading ? "Thinking..." : placeholder}
+            maxLength={maxLength}
+            className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-base rounded-xl py-3.5 pl-4 pr-10 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600"
+            disabled={isLoading}
+          />
+
+          {value.length > 0 && !isLoading && (
+            <button
+              onClick={handleClear}
+              aria-label="Clear input"
+              title="Clear input"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
 
         {value.length > 0 && (
-          <>
-            <span
-              className={`absolute right-24 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums pointer-events-none transition-colors ${
-                value.length >= maxLength ? 'text-red-500 font-bold' :
-                value.length > (maxLength * 0.9) ? 'text-amber-500' :
-                'text-slate-400'
-              }`}
-              aria-hidden="true"
-            >
-              {value.length}/{maxLength}
-            </span>
-
-            {!isLoading && (
-              <button
-                onClick={handleClear}
-                aria-label="Clear input"
-                title="Clear input"
-                className="absolute right-14 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </>
+          <span
+            className={`text-xs font-mono tabular-nums pointer-events-none transition-colors shrink-0 ${
+              value.length >= maxLength ? 'text-red-500 font-bold' :
+              value.length > (maxLength * 0.9) ? 'text-amber-500' :
+              'text-slate-500'
+            }`}
+            aria-hidden="true"
+          >
+            {value.length}/{maxLength}
+          </span>
         )}
 
         <button
@@ -87,7 +87,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
           disabled={!value.trim() || isLoading}
           aria-label={isLoading ? "Sending message..." : "Send message"}
           title={isLoading ? "Sending message..." : "Send message"}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+          className="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
         >
           {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
         </button>
