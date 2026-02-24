@@ -125,7 +125,7 @@ export const streamMessageToGemini = async (
 /**
  * Validates the request preconditions.
  */
-function validateRequest(history: Message[], newMessage: string): { isValid: boolean; error?: string; sanitizedMessage?: string } {
+export function validateRequest(history: Message[], newMessage: string): { isValid: boolean; error?: string; sanitizedMessage?: string } {
   // Security: Sanitize input to remove control characters
   const sanitizedMessage = sanitizeInput(newMessage);
 
@@ -171,7 +171,7 @@ async function generateContent(contents: Content[], language: Language, abortSig
 /**
  * Centralized error handler for the service.
  */
-function handleServiceError(error: unknown, abortSignal?: AbortSignal): string {
+export function handleServiceError(error: unknown, abortSignal?: AbortSignal): string {
   if (abortSignal?.aborted) {
     throw error; // Allow AbortError to propagate
   }
@@ -208,7 +208,7 @@ async function retrieveAugmentedContext(query: string, key: string, language: La
 /**
  * Constructs the message array for the Gemini API.
  */
-function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string): Content[] {
+export function buildGeminiMessages(history: Message[], newMessage: string, additionalContext: string): Content[] {
   // We treat the "history" as the context of conversation so far.
   // The "newMessage" is the latest user input.
   // "additionalContext" is injected into the user's message to give the model context for *this specific turn*.
