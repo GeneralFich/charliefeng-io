@@ -41,7 +41,7 @@ export const highlightNodes = (nodes: React.ReactNode, regex: RegExp | null): Re
     // With `split(/(group)/)`, odd indices are matches.
     return parts.map((part, i) =>
       (i % 2 === 1)
-        ? <mark key={i} className="bg-yellow-500/50 text-white rounded-sm px-0.5">{part}</mark>
+        ? <mark key={i} className="bg-yellow-300/60 dark:bg-yellow-500/50 text-slate-900 dark:text-white rounded-sm px-0.5">{part}</mark>
         : part
     );
   }

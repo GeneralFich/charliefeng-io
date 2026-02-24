@@ -59,13 +59,13 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-12 animate-fade-in text-slate-300 print:text-black print:p-0 print:max-w-none">
+    <div className="max-w-4xl mx-auto p-6 md:p-12 animate-fade-in text-slate-600 dark:text-slate-300 print:text-black print:p-0 print:max-w-none">
       
       {/* Header */}
-      <div className="border-b border-slate-800 pb-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:border-slate-300 print:mb-4 print:pb-4">
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:border-slate-300 print:mb-4 print:pb-4">
         <div>
-          <h1 className="text-4xl font-bold text-white tracking-tight mb-2 !print:text-black">{name}</h1>
-          <div className="flex flex-wrap gap-4 text-sm text-slate-400 print:text-slate-600">
+          <h1 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-2 !print:text-black">{name}</h1>
+          <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 print:text-slate-600">
              <span className="flex items-center gap-1 cursor-default"><MapPin size={14} /> {location}</span>
           </div>
         </div>
@@ -75,7 +75,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
             href={LINKEDIN_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 text-slate-500 dark:text-slate-400 rounded-lg transition-all text-sm"
             title={t.actions.viewLinkedin}
             aria-label={t.actions.viewLinkedin}
           >
@@ -85,7 +85,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
+            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 text-slate-500 dark:text-slate-400 rounded-lg transition-all text-sm group"
             title={t.actions.share}
             aria-label={isCopied ? t.actions.copied : t.actions.share}
           >
@@ -97,7 +97,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
             onClick={() => window.print()}
             title={t.actions.downloadPdf}
             aria-label={t.actions.downloadPdf}
-            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 text-slate-500 dark:text-slate-400 rounded-lg transition-all text-sm"
           >
             <Download size={16} />
             <span>{t.actions.downloadPdf}</span>
@@ -107,34 +107,34 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
 
       {/* Summary */}
       <section className="mb-12 print:mb-6" id="summary">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4 !print:text-blue-700 print:mb-2">{t.sections.summary}</h2>
-        <p className="leading-relaxed text-slate-300 max-w-3xl !print:text-slate-800 whitespace-pre-wrap">
+        <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-4 !print:text-blue-700 print:mb-2">{t.sections.summary}</h2>
+        <p className="leading-relaxed text-slate-600 dark:text-slate-300 max-w-3xl !print:text-slate-800 whitespace-pre-wrap">
           {summary}
         </p>
       </section>
 
       {/* Experience */}
       <section className="mb-12 print:mb-6" id="experience">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 !print:text-blue-700 print:mb-4">
+        <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 !print:text-blue-700 print:mb-4">
            <Briefcase size={18} /> {t.sections.experience}
         </h2>
 
-        <div className="space-y-10 border-l border-slate-800 ml-2 pl-8 relative print:border-slate-300 print:space-y-6">
+        <div className="space-y-10 border-l border-slate-200 dark:border-slate-800 ml-2 pl-8 relative print:border-slate-300 print:space-y-6">
           
           {experience.map((exp, index) => (
             <div key={index} className="relative scroll-mt-24" id={`experience-${slugify(exp.company)}`}>
-              <div className={`absolute -left-[38px] top-1 w-5 h-5 bg-slate-950 border-2 rounded-full print:bg-white print:w-4 print:h-4 print:-left-[37px] ${index === 0 ? 'border-blue-500 print:border-blue-700' : 'border-slate-700 print:border-slate-400'}`}></div>
+              <div className={`absolute -left-[38px] top-1 w-5 h-5 bg-white dark:bg-slate-950 border-2 rounded-full print:bg-white print:w-4 print:h-4 print:-left-[37px] ${index === 0 ? 'border-blue-500 print:border-blue-700' : 'border-slate-300 dark:border-slate-700 print:border-slate-400'}`}></div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-2">
-                <h3 className="text-xl font-semibold text-white !print:text-black">{exp.company}</h3>
-                <span className="text-slate-400 text-sm print:text-slate-600">{exp.dates}</span>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white !print:text-black">{exp.company}</h3>
+                <span className="text-slate-500 dark:text-slate-400 text-sm print:text-slate-600">{exp.dates}</span>
               </div>
-              <div className="text-blue-300 mb-4 text-sm font-medium !print:text-slate-700 print:mb-2">{exp.role}</div>
-              <ul className="space-y-3 text-sm list-disc list-outside ml-4 text-slate-400 !print:text-slate-800 print:space-y-1">
+              <div className="text-blue-600 dark:text-blue-300 mb-4 text-sm font-medium !print:text-slate-700 print:mb-2">{exp.role}</div>
+              <ul className="space-y-3 text-sm list-disc list-outside ml-4 text-slate-500 dark:text-slate-400 !print:text-slate-800 print:space-y-1">
                 {exp.bullets.map((bullet, bIndex) => (
                   <li key={bIndex}>
                     {bullet.split(/(\*\*.*?\*\*)/g).map((part, i) => {
                       if (part.startsWith('**') && part.endsWith('**')) {
-                        return <strong key={i} className="text-white !print:text-black">{part.slice(2, -2)}</strong>;
+                        return <strong key={i} className="text-slate-900 dark:text-white !print:text-black">{part.slice(2, -2)}</strong>;
                       }
                       return part;
                     })}
@@ -149,15 +149,15 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
 
       {/* Education */}
       <section className="mb-12 print:mb-6" id="education">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 !print:text-blue-700 print:mb-4">
+        <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 !print:text-blue-700 print:mb-4">
            <GraduationCap size={18} /> {t.sections.education}
         </h2>
         <div className="grid md:grid-cols-2 gap-6 print:gap-4">
           {education.map((edu, index) => (
-            <div key={index} className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 print:bg-transparent print:border-slate-200 print:p-4">
-              <h3 className="text-white font-semibold !print:text-black">{edu.school}</h3>
-              <p className="text-sm text-blue-300 mb-2 !print:text-slate-700">{edu.degree}</p>
-              <p className="text-xs text-slate-400 !print:text-slate-600">{edu.details}</p>
+            <div key={index} className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800 print:bg-transparent print:border-slate-200 print:p-4">
+              <h3 className="text-slate-900 dark:text-white font-semibold !print:text-black">{edu.school}</h3>
+              <p className="text-sm text-blue-600 dark:text-blue-300 mb-2 !print:text-slate-700">{edu.degree}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 !print:text-slate-600">{edu.details}</p>
             </div>
           ))}
         </div>
@@ -166,18 +166,18 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
       {/* Leadership */}
       {leadership && leadership.length > 0 && (
         <section className="mb-12 print:mb-6" id="leadership">
-          <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 !print:text-blue-700 print:mb-4">
+          <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2 !print:text-blue-700 print:mb-4">
             <Users size={18} /> {t.sections.leadership}
           </h2>
           <div className="grid gap-6 print:gap-4">
             {leadership.map((item, index) => (
-              <div key={index} className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 print:bg-transparent print:border-slate-200 print:p-4 scroll-mt-24" id={`leadership-${slugify(item.organization)}`}>
+              <div key={index} className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800 print:bg-transparent print:border-slate-200 print:p-4 scroll-mt-24" id={`leadership-${slugify(item.organization)}`}>
                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-2">
-                    <h3 className="text-white font-semibold !print:text-black">{item.organization}</h3>
-                    <span className="text-slate-400 text-sm print:text-slate-600">{item.dates}</span>
+                    <h3 className="text-slate-900 dark:text-white font-semibold !print:text-black">{item.organization}</h3>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm print:text-slate-600">{item.dates}</span>
                   </div>
-                <p className="text-sm text-blue-300 mb-2 !print:text-slate-700">{item.role}</p>
-                <p className="text-xs text-slate-400 !print:text-slate-600">{item.details}</p>
+                <p className="text-sm text-blue-600 dark:text-blue-300 mb-2 !print:text-slate-700">{item.role}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 !print:text-slate-600">{item.details}</p>
               </div>
             ))}
           </div>
@@ -186,12 +186,12 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
 
       {/* Skills */}
       <section className="mb-12 print:mb-6" id="skills">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-6 !print:text-blue-700 print:mb-4">{t.sections.skills}</h2>
+        <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-6 !print:text-blue-700 print:mb-4">{t.sections.skills}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:gap-2">
           {skills.map((skill, index) => (
-            <div key={index} className="p-4 bg-slate-900/30 border border-slate-800 rounded-lg print:bg-transparent print:border-slate-200 print:p-2">
-                <span className="text-xs text-slate-400 uppercase block mb-1 !print:text-slate-600">{skill.category}</span>
-                <p className="text-sm text-slate-200 !print:text-black">{skill.items}</p>
+            <div key={index} className="p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-lg print:bg-transparent print:border-slate-200 print:p-2">
+                <span className="text-xs text-slate-500 dark:text-slate-400 uppercase block mb-1 !print:text-slate-600">{skill.category}</span>
+                <p className="text-sm text-slate-700 dark:text-slate-200 !print:text-black">{skill.items}</p>
             </div>
           ))}
         </div>

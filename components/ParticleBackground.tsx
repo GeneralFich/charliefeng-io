@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from '../lib/ThemeContext';
 
 /**
  * @fileoverview ParticleBackground — Animated Neural-Network Canvas
@@ -27,10 +28,15 @@ const CONNECTION_DIST  = 145;  // px — max distance to draw a line
 const BASE_SPEED       = 0.28; // px per frame
 
 export const ParticleBackground: React.FC = () => {
+  const { resolved } = useTheme();
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const rafRef       = useRef<number>(0);
   const dimsRef      = useRef({ w: 0, h: 0 });
+  const themeRef     = useRef(resolved);
+
+  // Keep ref in sync so the render loop reads the latest theme without re-mounting
+  useEffect(() => { themeRef.current = resolved; }, [resolved]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -93,7 +99,9 @@ export const ParticleBackground: React.FC = () => {
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
         // Alternate between cool blue and cyan-teal for visual variety
         const hue = 200 + pulse * 20;
-        ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${alpha})`;
+        const isDark = themeRef.current === 'dark';
+        const lightness = isDark ? 65 : 45;
+        ctx.fillStyle = `hsla(${hue}, 80%, ${lightness}%, ${alpha})`;
         ctx.fill();
       }
 
@@ -109,7 +117,10 @@ export const ParticleBackground: React.FC = () => {
             ctx.beginPath();
             ctx.moveTo(ps[i].x, ps[i].y);
             ctx.lineTo(ps[j].x, ps[j].y);
-            ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
+            const isDarkLine = themeRef.current === 'dark';
+            ctx.strokeStyle = isDarkLine
+              ? `rgba(59, 130, 246, ${alpha})`
+              : `rgba(59, 130, 246, ${alpha * 1.5})`;
             ctx.lineWidth   = 0.8;
             ctx.stroke();
           }

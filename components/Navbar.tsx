@@ -6,6 +6,7 @@ import { NavItem } from './NavItem';
 import { MessageSquare, FileText, BookOpen } from 'lucide-react';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
   currentView: View;
@@ -16,7 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
   const { t } = useLanguage();
 
   return (
-    <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50 print:hidden">
+    <nav className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl sticky top-0 z-50 print:hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
@@ -31,12 +32,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
           >
             <Logo className="w-8 h-8" />
             <div>
-              <h1 className="text-white font-bold tracking-tight text-lg">Charlie Feng</h1>
+              <h1 className="text-slate-900 dark:text-white font-bold tracking-tight text-lg">Charlie Feng</h1>
               <div className="relative cursor-help w-max">
-                <p className="text-[10px] text-blue-400 uppercase tracking-widest font-semibold border-b border-dashed border-blue-400/50">
+                <p className="text-[10px] text-blue-600 dark:text-blue-400 uppercase tracking-widest font-semibold border-b border-dashed border-blue-600/50 dark:border-blue-400/50">
                   {t.nav.digitalTwin}
                 </p>
-                <div className="absolute top-full left-0 mt-2 hidden group-hover:block group-focus-visible:block w-max bg-slate-900/90 backdrop-blur-md text-xs text-slate-300 px-3 py-1.5 rounded border border-slate-700 shadow-xl z-50">
+                <div className="absolute top-full left-0 mt-2 hidden group-hover:block group-focus-visible:block w-max bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-xs text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700 shadow-xl z-50">
                   {t.nav.digitalTwinDesc}
                 </div>
               </div>
@@ -48,13 +49,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
             <NavItem view={View.HOME}   label={t.nav.chat}   icon={MessageSquare} currentView={currentView} onNavigate={onNavigate} />
             <NavItem view={View.ABOUT}  label={t.nav.about}  icon={FileText}      currentView={currentView} onNavigate={onNavigate} />
             <NavItem view={View.ESSAYS} label={t.nav.essays} icon={BookOpen}      currentView={currentView} onNavigate={onNavigate} />
-            <div className="ml-2 border-l border-slate-700 pl-2">
+            <div className="ml-2 border-l border-slate-200 dark:border-slate-700 pl-2 flex items-center gap-1">
+              <ThemeToggle />
               <LanguageSwitcher />
             </div>
           </div>
 
-          {/* Mobile: language switcher only — navigation handled by bottom tab bar */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile: language + theme switcher — navigation handled by bottom tab bar */}
+          <div className="md:hidden flex items-center gap-1">
+            <ThemeToggle />
             <LanguageSwitcher />
           </div>
         </div>

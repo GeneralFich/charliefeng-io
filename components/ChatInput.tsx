@@ -73,7 +73,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             placeholder={isLoading ? "Thinking..." : placeholder}
             maxLength={maxLength}
             rows={1}
-            className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-base rounded-xl py-3.5 pl-4 pr-10 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600 resize-none overflow-y-hidden"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-base rounded-xl py-3.5 pl-4 pr-10 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 resize-none overflow-y-hidden"
             disabled={isLoading}
           />
 
@@ -82,7 +82,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               onClick={handleClear}
               aria-label="Clear input"
               title="Clear input"
-              className="absolute right-2 bottom-2.5 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="absolute right-2 bottom-2.5 p-1.5 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               <X size={14} />
             </button>

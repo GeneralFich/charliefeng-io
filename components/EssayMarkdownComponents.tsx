@@ -54,7 +54,7 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     // Security: Prevent XSS and open redirects
     const safeHref = href || '';
     if (!isSafeLink(safeHref)) {
-      return <span {...props} className="text-slate-400 cursor-not-allowed" title="Link disabled">{children}</span>;
+      return <span {...props} className="text-slate-500 dark:text-slate-400 cursor-not-allowed" title="Link disabled">{children}</span>;
     }
 
     const isInternal = safeHref.startsWith('#');
@@ -77,7 +77,7 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
       <a
         href={safeHref}
         onClick={handleClick}
-        className={`text-blue-400 hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-400/30 hover:border-blue-300' : ''}`}
+        className={`text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors break-words [overflow-wrap:anywhere] ${!isInternal ? 'no-underline border-b border-blue-600/30 dark:border-blue-400/30 hover:border-blue-500 dark:hover:border-blue-300' : ''}`}
         target={isInternal ? undefined : "_blank"}
         rel={isInternal ? undefined : "noopener noreferrer"}
         {...props}
@@ -87,13 +87,13 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
     );
   },
   // Apply context-aware highlighter to text blocks and auto-generated IDs
-  h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-white mt-12 mb-6 print:text-black" {...props} />,
-  h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-200 mt-10 mb-4 print:text-black" {...props} />,
-  h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-200 mt-8 mb-3 print:text-black" {...props} />,
-  p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-300 leading-relaxed mb-6 print:text-black" {...props}>{children}</SearchHighlighter>,
-  li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-300 print:text-black" {...props}>{children}</SearchHighlighter>,
+  h1: (props: any) => <Heading level="h1" className="text-2xl font-bold text-slate-900 dark:text-white mt-12 mb-6 print:text-black" {...props} />,
+  h2: (props: any) => <Heading level="h2" className="text-xl font-bold text-slate-800 dark:text-slate-200 mt-10 mb-4 print:text-black" {...props} />,
+  h3: (props: any) => <Heading level="h3" className="text-lg font-bold text-slate-800 dark:text-slate-200 mt-8 mb-3 print:text-black" {...props} />,
+  p: ({ node, children, ...props }: any) => <SearchHighlighter as="p" className="text-slate-600 dark:text-slate-300 leading-relaxed mb-6 print:text-black" {...props}>{children}</SearchHighlighter>,
+  li: ({ node, children, ...props }: any) => <SearchHighlighter as="li" className="text-slate-600 dark:text-slate-300 print:text-black" {...props}>{children}</SearchHighlighter>,
   blockquote: ({ node, children, ...props }: any) => (
-    <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-400 my-8 print:text-slate-700 print:border-slate-400">
+    <blockquote {...props} className="border-l-4 border-blue-500/50 pl-4 italic text-slate-500 dark:text-slate-400 my-8 print:text-slate-700 print:border-slate-400">
       <SearchHighlighter>{children}</SearchHighlighter>
     </blockquote>
   ),
@@ -146,7 +146,7 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
       const heightClass = INFOGRAPHIC_HEIGHTS[type] || "h-[400px]"; // Default height
 
       return (
-        <div className="my-8 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+        <div className="my-8 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950">
           <iframe
             src={src}
             className={`w-full ${heightClass}`}

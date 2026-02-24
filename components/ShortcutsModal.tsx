@@ -43,7 +43,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     >
       <div
         ref={modalRef}
-        className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 max-w-md w-full m-4 relative animate-in zoom-in-95 duration-200 outline-none ring-1 ring-slate-700"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-6 max-w-md w-full m-4 relative animate-in zoom-in-95 duration-200 outline-none ring-1 ring-slate-200 dark:ring-slate-700"
         onClick={(e) => e.stopPropagation()}
         tabIndex={-1}
         role="dialog"
@@ -51,7 +51,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-800 rounded-full"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
           aria-label="Close"
         >
           <X size={20} />
@@ -59,24 +59,24 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2 bg-blue-500/10 rounded-lg">
-            <Keyboard className="text-blue-400" size={24} />
+            <Keyboard className="text-blue-600 dark:text-blue-400" size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Keyboard Shortcuts</h2>
-            <p className="text-sm text-slate-400">Navigate quickly with these commands</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Keyboard Shortcuts</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Navigate quickly with these commands</p>
           </div>
         </div>
 
         <div className="space-y-3">
           {shortcuts.map((shortcut, index) => (
-            <div key={index} className="flex items-center justify-between group p-2 hover:bg-slate-800/50 rounded-lg transition-colors">
-              <span className="text-slate-300 font-medium group-hover:text-white transition-colors">
+            <div key={index} className="flex items-center justify-between group p-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+              <span className="text-slate-600 dark:text-slate-300 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                 {shortcut.description}
               </span>
               <div className="flex items-center gap-1.5">
                 {shortcut.keys.map((key, kIndex) => (
                   <React.Fragment key={kIndex}>
-                    <kbd className="min-w-[2rem] h-8 px-2 flex items-center justify-center bg-slate-800 border-b-2 border-slate-700 rounded text-sm text-slate-300 font-mono shadow-sm group-hover:border-slate-600 group-hover:text-white transition-all">
+                    <kbd className="min-w-[2rem] h-8 px-2 flex items-center justify-center bg-slate-100 dark:bg-slate-800 border-b-2 border-slate-300 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-300 font-mono shadow-sm group-hover:border-slate-400 dark:group-hover:border-slate-600 group-hover:text-slate-900 dark:group-hover:text-white transition-all">
                       {key}
                     </kbd>
                     {kIndex < shortcut.keys.length - 1 && (

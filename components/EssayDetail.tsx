@@ -136,14 +136,14 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         }
       `}</style>
 
-      <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden`}>
+      <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 mb-8 border-b border-slate-200 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden`}>
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
               setArticleSearchQuery('');
               onBack();
             }}
-            className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors w-fit"
+            className="group flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors w-fit"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-medium">{t.essays.back}</span>
@@ -154,7 +154,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           {/* Print / Download PDF */}
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm hidden sm:flex"
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 text-slate-500 dark:text-slate-400 rounded-lg transition-all text-sm hidden sm:flex"
             title={t.actions.downloadPdf}
             aria-label={t.actions.downloadPdf}
           >
@@ -165,7 +165,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           {/* Share Button */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400 text-slate-400 rounded-lg transition-all text-sm group"
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 text-slate-500 dark:text-slate-400 rounded-lg transition-all text-sm group"
             title={t.actions.share}
             aria-label={isCopied ? t.actions.copied : t.actions.share}
           >
@@ -187,7 +187,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
               value={articleSearchQuery}
               onChange={(e) => setArticleSearchQuery(e.target.value)}
               // Add right padding to accommodate the controls
-              className={`block w-full pl-9 py-1.5 bg-slate-900/50 border border-slate-700 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all ${
+              className={`block w-full pl-9 py-1.5 bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all ${
                 totalMatches > 0 ? 'pr-32' : 'pr-8'
               }`}
             />
@@ -198,7 +198,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
                   <span className="text-[10px] text-slate-400 mr-1 select-none font-medium tabular-nums">
                     {currentMatchIndex + 1} / {totalMatches}
                   </span>
-                  <div className="flex items-center gap-0.5 bg-slate-800/50 rounded-md border border-slate-700/50">
+                  <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-300 dark:border-slate-700/50">
                     <button
                       onClick={handlePrevMatch}
                       className="p-1 hover:bg-slate-700 hover:text-white text-slate-400 transition-colors rounded-l-sm"
@@ -239,12 +239,12 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
         </div>
       </div>
 
-      <article className="prose prose-invert prose-lg max-w-none">
-        <header className="mb-10 not-prose border-b border-slate-800 pb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
+      <article className="prose dark:prose-invert prose-lg max-w-none">
+        <header className="mb-10 not-prose border-b border-slate-200 dark:border-slate-800 pb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight">
             {highlightNodes(post.attributes.title, articleSearchRegex)}
           </h1>
-          <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-blue-400" />
               <time dateTime={post.attributes.date}>
@@ -277,7 +277,7 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
       </article>
 
       {/* Contextual Navigation Footer */}
-      <div className="mt-16 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
+      <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
         <div>
           {newerPost && (
             <button
@@ -285,13 +285,13 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
                 setArticleSearchQuery('');
                 onNavigate(newerPost);
               }}
-              className="group flex flex-col items-start text-left w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
+              className="group flex flex-col items-start text-left w-full p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all"
             >
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">
+              <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 <ArrowLeft size={14} />
                 <span>{t.actions.previous}</span>
               </div>
-              <span className="text-slate-200 font-medium group-hover:text-white transition-colors line-clamp-2">
+              <span className="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors line-clamp-2">
                 {newerPost.attributes.title}
               </span>
             </button>
@@ -305,13 +305,13 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
                 setArticleSearchQuery('');
                 onNavigate(olderPost);
               }}
-              className="group flex flex-col items-end text-right w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 hover:bg-slate-800 hover:border-blue-500/30 transition-all"
+              className="group flex flex-col items-end text-right w-full p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all"
             >
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">
+              <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 <span>{t.actions.next}</span>
                 <ArrowRight size={14} />
               </div>
-              <span className="text-slate-200 font-medium group-hover:text-white transition-colors line-clamp-2">
+              <span className="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors line-clamp-2">
                 {olderPost.attributes.title}
               </span>
             </button>

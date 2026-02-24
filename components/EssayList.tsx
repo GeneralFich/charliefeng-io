@@ -70,13 +70,13 @@ export const EssayList: React.FC<EssayListProps> = ({
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white mb-4">{t.nav.essays}</h2>
-        <p className="text-slate-400 text-lg max-w-2xl">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">{t.nav.essays}</h2>
+        <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl">
           {t.essays.subtitle}
         </p>
       </div>
 
-      <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-slate-950/80 backdrop-blur-md py-4 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-end gap-4`}>
+      <div className={`sticky ${isInsideSplitView ? 'top-0' : 'top-16'} z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md py-4 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-slate-200 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-end gap-4`}>
         {/* Sort Dropdown */}
         <div className="relative group w-full md:w-48">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -85,7 +85,7 @@ export const EssayList: React.FC<EssayListProps> = ({
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
-            className="block w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer"
+            className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer"
             aria-label="Sort essays"
           >
             <option value="newest">Newest First</option>
@@ -111,7 +111,7 @@ export const EssayList: React.FC<EssayListProps> = ({
             aria-label="Search essays"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="block w-full pl-10 pr-10 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+            className="block w-full pl-10 pr-10 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
           />
           {searchQuery && (
             <button
@@ -145,7 +145,7 @@ export const EssayList: React.FC<EssayListProps> = ({
             <p>{t.essays.noResults} "{searchQuery}"</p>
             <button
               onClick={() => onSearchChange('')}
-              className="text-blue-400 hover:text-blue-300 text-sm mt-2"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm mt-2"
             >
               {t.essays.clearSearch}
             </button>
