@@ -1,0 +1,16 @@
+# Charlie Feng
+
+> Infrastructure Product Leader at Google. This site is Charlie Feng's AI-powered portfolio featuring essays on AGI, AI infrastructure, data centers, and strategic technology leadership.
+
+## About
+- [Resume & Background](https://charliefeng.io/about): 8+ years leading infrastructure product strategy at Google and Amazon. Expert in translating hardware engineering and ML constraints into high-leverage software products.
+
+## Essays
+- [Your AI Strategy Is Already Wrong](https://charliefeng.io/essays/ai-strategy-wrong): Most AI strategy writing fails the people who actually have to implement it. What the consulting frameworks miss — and what actually compounds.
+- [The Thermodynamic Wall](https://charliefeng.io/essays/the-thermodynamic-wall): AI scaling is hitting a physical wall. The bottleneck isn't algorithms or silicon — it's electrons, heat, and the speed at which we can build power infrastructure.
+- [The Asymptotic Trajectory — AGI Whitepaper](https://charliefeng.io/essays/strategic-whitepaper): A comprehensive analysis of the path, timing, and impact of AGI (2025-2030). AGI is no longer a theoretical abstraction — it's an engineering problem with a probable 2027-2031 timeline.
+- [The Evolving Landscape of Data Centers](https://charliefeng.io/essays/evolving-landscape-of-data-centers): AI workloads are forcing data centers to reinvent cooling, networking, and multi-site training. Space-based data centers remain far off.
+- [Making Data Centers Greener with Machine Learning](https://charliefeng.io/essays/making-data-centers-greener): Machine learning can cut data center energy use by 15-27%. Three research results show how.
+
+## Contact
+- [LinkedIn](https://www.linkedin.com/in/fengcharlie)
