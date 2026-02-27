@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    { "source": "/essays/:slug", "destination": "/essays/:slug/index.html" },
+    { "source": "/zh/essays/:slug", "destination": "/zh/essays/:slug/index.html" },
+    { "source": "/about", "destination": "/about/index.html" },
+    { "source": "/zh/about", "destination": "/zh/about/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

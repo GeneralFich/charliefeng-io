@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
           >
             <Logo className="w-8 h-8" />
             <div>
-              <h1 className="text-slate-900 dark:text-white font-bold tracking-tight text-lg">Charlie Feng</h1>
+              <span className="text-slate-900 dark:text-white font-bold tracking-tight text-lg">Charlie Feng</span>
               <div className="relative cursor-help w-max">
                 <p className="text-[10px] text-blue-600 dark:text-blue-400 uppercase tracking-widest font-semibold border-b border-dashed border-blue-600/50 dark:border-blue-400/50">
                   {t.nav.digitalTwin}

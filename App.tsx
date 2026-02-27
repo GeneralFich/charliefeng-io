@@ -32,9 +32,12 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { ParticleBackground } from './components/ParticleBackground';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
+import { useDocumentHead } from './hooks/useDocumentHead';
+import { useLanguage } from './lib/i18n/LanguageContext';
 
 const App: React.FC = () => {
   const { currentView, targetEssaySlug, targetHash, navigateTo } = useRouter();
+  const { language } = useLanguage();
   const { displayed: displayedView, isExiting, transitionTo, snapTo } = useViewTransition(View.HOME);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
@@ -72,6 +75,9 @@ const App: React.FC = () => {
     toggleShortcutsModal: () => setIsShortcutsOpen(prev => !prev),
     isModalOpen: isShortcutsOpen,
   });
+
+  // Update document title, meta tags, and JSON-LD based on current view
+  useDocumentHead(displayedView, targetEssaySlug, language);
 
   const isChatVisible = displayedView === View.HOME;
 
