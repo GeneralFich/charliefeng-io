@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message, Language } from '../types';
 import { streamMessageToGemini, sendMessageToGemini } from '../services/geminiService';
+import { streamMessageToDeepSeek, sendMessageToDeepSeek } from '../services/deepseekService';
+import { detectProvider, AIProvider } from '../lib/providerDetection';
 import { parseFollowUpPrompts } from '../lib/utils';
 import { checkRateLimit, validateChatInput } from '../lib/security';
 import { useLanguage } from '../lib/i18n/LanguageContext';
@@ -69,6 +71,11 @@ export const useChat = () => {
   const isLoadingRef = useRef(isLoading);
   const requestTimestampsRef = useRef<number[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Provider detection: probe Google API connectivity on mount.
+  // Resolves to 'gemini' or 'deepseek'.  A single Promise is shared so that
+  // rapid sends all await the same in-flight probe rather than re-probing.
+  const providerPromiseRef = useRef<Promise<AIProvider>>(detectProvider());
 
   // Per-language prompt chips, kept in a ref to avoid stale closures in the
   // background translation callback without triggering unnecessary re-renders.
@@ -208,6 +215,13 @@ export const useChat = () => {
     // never meant to have one (e.g. error messages without an id).
     setMessages(prev => [...prev, { role: 'model', text: '', id: modelMsgId, translations: {} }]);
 
+    // ── Resolve AI provider (Gemini or DeepSeek fallback) ────────────────────
+    // The probe started on mount; by the time the user has typed and sent a
+    // message it will almost always have already resolved.
+    const provider = await providerPromiseRef.current;
+    const streamFn = provider === 'deepseek' ? streamMessageToDeepSeek : streamMessageToGemini;
+    const sendFn   = provider === 'deepseek' ? sendMessageToDeepSeek   : sendMessageToGemini;
+
     // ── Background translation call — starts CONCURRENTLY with streaming ─────
     // Firing here rather than after streaming means the ~2-5s translation call
     // runs in parallel with the ~5-15s streaming response.  By the time the
@@ -217,7 +231,7 @@ export const useChat = () => {
     // harmless — the message won't be found by ID.
     void (async () => {
       try {
-        const otherRaw = await sendMessageToGemini(otherApiHistory, text, otherLanguage);
+        const otherRaw = await sendFn(otherApiHistory, text, otherLanguage);
         const { cleanText: otherClean, prompts: otherPrompts } = parseFollowUpPrompts(otherRaw);
 
         setMessages(prev => prev.map(msg =>
@@ -239,7 +253,7 @@ export const useChat = () => {
 
     try {
       // ── Primary streaming call (current language) ─────────────────────────
-      const rawResponse = await streamMessageToGemini(
+      const rawResponse = await streamFn(
         primaryApiHistory,
         text,
         language,
