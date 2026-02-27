@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { ThemeProvider } from './lib/ThemeContext';
+import './index.css';
 import 'katex/dist/katex.min.css';
 
 const rootElement = document.getElementById('root');

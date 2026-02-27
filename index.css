@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fallback for Chinese Characters */
+:lang(zh) {
+  font-family: "Noto Sans SC", sans-serif !important;
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Ensure Chinese font is used in print if language is zh */
+  :lang(zh) body {
+      font-family: "Noto Sans SC", sans-serif !important;
+  }
+
+  * {
+    color: black !important;
+    background-color: transparent !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Custom Scrollbar — theme-aware */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dark ::-webkit-scrollbar-track,
+.dark::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.dark ::-webkit-scrollbar-thumb,
+.dark::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb:hover,
+.dark::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Animation Keyframes ─────────────────────────────── */
+
+/* Three-dot bouncing loader — each dot uses a staggered delay */
+@keyframes bounce-dot {
+  0%, 70%, 100% { transform: translateY(0);   opacity: 0.35; }
+  35%            { transform: translateY(-8px); opacity: 1;    }
+}
+
+/* Shimmer sweep for the scroll-progress bar */
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(400%);  }
+}
+
+/* Gradient background-position shift for the progress bar */
+@keyframes grad-shift {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+/* Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
