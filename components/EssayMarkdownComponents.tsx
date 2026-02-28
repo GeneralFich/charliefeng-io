@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import type { Components } from 'react-markdown';
 import { SearchHighlighter } from './SearchHighlighter';
 import { isSafeLink } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 import { Heading } from './Heading';
-import { WhitepaperCharts } from './WhitepaperCharts';
 import { WhitepaperSummary } from './WhitepaperSummary';
+
+const LazyWhitepaperCharts = lazy(() => import('./WhitepaperCharts').then(m => ({ default: m.WhitepaperCharts })));
 
 /**
  * Configuration for Component-based Infographics.
@@ -14,7 +15,7 @@ import { WhitepaperSummary } from './WhitepaperSummary';
  */
 const INFOGRAPHIC_COMPONENTS: Record<string, React.ComponentType> = {
   'whitepaper-summary': WhitepaperSummary,
-  'whitepaper-charts': WhitepaperCharts,
+  'whitepaper-charts': LazyWhitepaperCharts,
 };
 
 /**
@@ -138,7 +139,11 @@ export const ESSAY_MARKDOWN_COMPONENTS: Components = {
       // Check for Custom Component
       const Component = INFOGRAPHIC_COMPONENTS[type];
       if (Component) {
-        return <Component />;
+        return (
+          <Suspense fallback={<div className="p-8 text-slate-400">Loading...</div>}>
+            <Component />
+          </Suspense>
+        );
       }
 
       // Standard Iframe Infographics

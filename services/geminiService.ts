@@ -31,7 +31,7 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
  * Sends a message to the Gemini API with context-awareness.
  *
  * The strategy here is "Retrieval-Augmented Generation" (RAG):
- * 1. We search the local blog index (`lib/blog_data.json`) for chunks relevant to the *new message*.
+ * 1. We search the local blog index (`public/blog_data.json`) for chunks relevant to the *new message*.
  * 2. If found, we inject them into the prompt as "Context for this query".
  * 3. We send the full conversation history (mapped to API format) plus the System Instruction (`FULL_CONTEXT`).
  *

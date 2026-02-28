@@ -13,7 +13,7 @@
  *   npx tsx scripts/ingest_blog.ts
  *
  * Output:
- *   lib/blog_data.json - Contains text chunks and their 768-dimensional embeddings.
+ *   public/blog_data.json - Contains text chunks and their 768-dimensional embeddings.
  *
  * Requirements:
  *   - `GEMINI_API_KEY` must be set in `.env.local` or environment.
@@ -33,7 +33,7 @@ import { magnitude } from '../lib/vector';
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const POSTS_DIR = join(process.cwd(), 'content', 'posts');
-const OUTPUT_FILE = join(process.cwd(), 'lib', 'blog_data.json');
+const OUTPUT_FILE = join(process.cwd(), 'public', 'blog_data.json');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 

@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { BlogPost, getPosts } from '../lib/knowledge';
 import { EssayList } from './EssayList';
 import { SortOption, View } from '../types';
-import { EssayDetail } from './EssayDetail';
 import { useDebounce } from '../hooks/useDebounce';
+
+const EssayDetail = lazy(() => import('./EssayDetail').then(m => ({ default: m.EssayDetail })));
 import { filterAndSortEssays } from '../lib/essay_logic';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
@@ -50,13 +51,15 @@ export const Essays: React.FC<EssaysProps> = ({ slug, onNavigate, isInsideSplitV
 
   if (selectedPost) {
     return (
-      <EssayDetail
-        post={selectedPost}
-        filteredPosts={filteredPosts}
-        onBack={handleBack}
-        onNavigate={handleNavigate}
-        isInsideSplitView={isInsideSplitView}
-      />
+      <Suspense fallback={<div className="p-8 text-slate-400">Loading...</div>}>
+        <EssayDetail
+          post={selectedPost}
+          filteredPosts={filteredPosts}
+          onBack={handleBack}
+          onNavigate={handleNavigate}
+          isInsideSplitView={isInsideSplitView}
+        />
+      </Suspense>
     );
   }
 

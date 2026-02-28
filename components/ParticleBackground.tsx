@@ -23,20 +23,39 @@ interface Particle {
   pulseSpeed: number;   // radians per frame
 }
 
+interface ParticleBackgroundProps {
+  paused?: boolean;
+}
+
 const PARTICLE_COUNT   = 38;
 const CONNECTION_DIST  = 145;  // px — max distance to draw a line
 const BASE_SPEED       = 0.28; // px per frame
 
-export const ParticleBackground: React.FC = () => {
+export const ParticleBackground: React.FC<ParticleBackgroundProps> = ({ paused = false }) => {
   const { resolved } = useTheme();
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const rafRef       = useRef<number>(0);
   const dimsRef      = useRef({ w: 0, h: 0 });
   const themeRef     = useRef(resolved);
+  const pausedRef    = useRef(paused);
+  // Stores the animate function so the paused effect can restart the loop
+  const animateRef   = useRef<(() => void) | null>(null);
 
-  // Keep ref in sync so the render loop reads the latest theme without re-mounting
+  // Keep refs in sync so the render loop reads the latest values without re-mounting
   useEffect(() => { themeRef.current = resolved; }, [resolved]);
+
+  // Respond to paused prop changes: cancel or restart the rAF loop
+  useEffect(() => {
+    pausedRef.current = paused;
+    if (paused) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    } else if (rafRef.current === 0 && animateRef.current) {
+      // Loop was stopped while paused — restart it now
+      animateRef.current();
+    }
+  }, [paused]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -74,6 +93,12 @@ export const ParticleBackground: React.FC = () => {
 
     // ── render loop ──────────────────────────────────────────────────────
     const animate = () => {
+      // Exit the loop cleanly when paused; it will be restarted by the paused effect
+      if (pausedRef.current) {
+        rafRef.current = 0;
+        return;
+      }
+
       const { w, h } = dimsRef.current;
       ctx.clearRect(0, 0, w, h);
 
@@ -130,11 +155,13 @@ export const ParticleBackground: React.FC = () => {
       rafRef.current = requestAnimationFrame(animate);
     };
 
+    animateRef.current = animate;
     animate();
 
     return () => {
       ro.disconnect();
       cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
     };
   }, []);
 

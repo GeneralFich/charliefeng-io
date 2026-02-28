@@ -50,6 +50,13 @@ mock.module('../services/geminiService', {
   },
 });
 
+mock.module('../services/deepseekService', {
+  namedExports: {
+    streamMessageToDeepSeek: async () => '',
+    sendMessageToDeepSeek: async () => '',
+  },
+});
+
 const { makeGreeting, buildApiHistories } = await import('../hooks/useChat');
 
 describe('makeGreeting', () => {
