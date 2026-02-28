@@ -94,8 +94,9 @@ const App: React.FC = () => {
         Skip to content
       </a>
 
-      {/* Animated neural-network particle canvas — replaces the static grid */}
-      <ParticleBackground />
+      {/* Animated neural-network particle canvas — paused on content-heavy views
+          to eliminate the O(n²) particle calculations while the user is reading */}
+      <ParticleBackground paused={displayedView === View.ESSAYS && !!targetEssaySlug} />
 
       {/* Scroll Progress Bar — tracks right panel scroll on desktop */}
       {displayedView !== View.HOME && <ScrollProgress containerRef={rightPanelRef} />}
