@@ -1,9 +1,31 @@
 {
   "rewrites": [
-    { "source": "/essays/:slug", "destination": "/essays/:slug/index.html" },
-    { "source": "/zh/essays/:slug", "destination": "/zh/essays/:slug/index.html" },
-    { "source": "/about", "destination": "/about/index.html" },
-    { "source": "/zh/about", "destination": "/zh/about/index.html" }
+    {
+      "source": "/essays/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/essays/:slug/index.html"
+    },
+    {
+      "source": "/essays",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/essays/index.html"
+    },
+    {
+      "source": "/zh/essays/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/zh/essays/:slug/index.html"
+    },
+    {
+      "source": "/about",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/about/index.html"
+    },
+    {
+      "source": "/zh/about",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/zh/about/index.html"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {

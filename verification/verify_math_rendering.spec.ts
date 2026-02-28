@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Math formulas are rendered correctly using KaTeX', async ({ page }) => {
   // Navigate to the specific essay that contains math formulas
-  await page.goto('/?view=ESSAYS&essay=the-thermodynamic-wall');
+  await page.goto('/essays/the-thermodynamic-wall');
 
   // Wait for the content to load and verify the title is visible
   await expect(page.getByRole('heading', { name: 'The Thermodynamic Wall', level: 1 })).toBeVisible();

@@ -9,7 +9,10 @@
  * - Full content rendered as HTML from markdown
  * - Proper <title>, <meta description>, <link rel="canonical">
  * - JSON-LD structured data (Article / Person / BreadcrumbList)
- * - A <script> redirect so interactive users land in the SPA
+ *
+ * Pages are written to dist/_seo/ so they don't conflict with the SPA's
+ * clean-path routing. Vercel rewrites serve these pages only to crawlers
+ * (via user-agent detection), while human visitors get the SPA.
  *
  * Run after `vite build` so dist/ exists.
  */
@@ -22,6 +25,7 @@ import { marked } from 'marked';
 const SITE_URL = 'https://charliefeng.io';
 const SITE_NAME = 'Charlie Feng';
 const DIST_DIR = path.join(process.cwd(), 'dist');
+const SEO_DIR = path.join(DIST_DIR, '_seo');
 const POSTS_DIR = path.join(process.cwd(), 'content', 'posts');
 const RESUME_EN = path.join(process.cwd(), 'content', 'resume.md');
 const RESUME_ZH = path.join(process.cwd(), 'content', 'resume.zh.md');
@@ -56,18 +60,18 @@ function mkdirp(dir: string) {
 
 /**
  * Generates a complete HTML page with metadata, content, and structured data.
+ * These pages are served only to crawlers — no JS redirect shim is needed.
  */
 function buildHtmlPage(opts: {
   title: string;
   description: string;
   canonicalUrl: string;
-  spaRedirectUrl: string;
   contentHtml: string;
   jsonLd: object[];
   lang?: string;
   hreflangAlternate?: { lang: string; url: string };
 }): string {
-  const { title, description, canonicalUrl, spaRedirectUrl, contentHtml, jsonLd, lang = 'en', hreflangAlternate } = opts;
+  const { title, description, canonicalUrl, contentHtml, jsonLd, lang = 'en', hreflangAlternate } = opts;
 
   const jsonLdScripts = jsonLd
     .map(data => `    <script type="application/ld+json">${JSON.stringify(data)}</script>`)
@@ -116,13 +120,6 @@ ${jsonLdScripts}
       .spa-notice { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.875rem; color: #1e40af; }
       .spa-notice a { color: #1d4ed8; font-weight: 500; }
     </style>
-    <script>
-      // Redirect interactive users to the full SPA experience.
-      // Crawlers ignore JS, so they'll read the static content below.
-      if (typeof window !== 'undefined' && !navigator.userAgent.match(/bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot/i)) {
-        window.location.replace('${spaRedirectUrl}');
-      }
-    </script>
   </head>
   <body>
     <noscript>
@@ -155,7 +152,6 @@ function generateEssayPages() {
     // Determine paths
     const urlPath = isZh ? `/zh/essays/${slug}` : `/essays/${slug}`;
     const canonicalUrl = `${SITE_URL}${urlPath}`;
-    const spaRedirectUrl = `/?view=ESSAYS&essay=${slug}`;
     const title = `${parsed.attributes.title} | ${SITE_NAME}`;
     const description = parsed.attributes.description;
 
@@ -218,15 +214,14 @@ function generateEssayPages() {
       },
     ];
 
-    // Write the file
-    const outDir = path.join(DIST_DIR, ...(isZh ? ['zh', 'essays', slug] : ['essays', slug]));
+    // Write to _seo/ subdirectory to avoid conflicting with SPA routing
+    const outDir = path.join(SEO_DIR, ...(isZh ? ['zh', 'essays', slug] : ['essays', slug]));
     mkdirp(outDir);
 
     const html = buildHtmlPage({
       title,
       description,
       canonicalUrl,
-      spaRedirectUrl,
       contentHtml,
       jsonLd,
       lang,
@@ -280,15 +275,13 @@ ${listHtml}
     ],
   }];
 
-  const outDir = path.join(DIST_DIR, 'essays');
+  const outDir = path.join(SEO_DIR, 'essays');
   mkdirp(outDir);
 
-  // Only write index.html if it doesn't conflict with a slug named 'index'
   const html = buildHtmlPage({
     title: `Essays | ${SITE_NAME}`,
     description: 'Essays on AGI, AI infrastructure, data centers, and strategic technology leadership by Charlie Feng.',
     canonicalUrl: `${SITE_URL}/essays`,
-    spaRedirectUrl: '/?view=ESSAYS',
     contentHtml,
     jsonLd,
   });
@@ -359,14 +352,13 @@ function generateAboutPages() {
     const alternateLang = isZh ? 'en' : 'zh';
     const alternateUrl = isZh ? `${SITE_URL}/about` : `${SITE_URL}/zh/about`;
 
-    const outDir = path.join(DIST_DIR, ...(isZh ? ['zh', 'about'] : ['about']));
+    const outDir = path.join(SEO_DIR, ...(isZh ? ['zh', 'about'] : ['about']));
     mkdirp(outDir);
 
     const html = buildHtmlPage({
       title,
       description,
       canonicalUrl,
-      spaRedirectUrl: '/?view=ABOUT',
       contentHtml,
       jsonLd,
       lang,
