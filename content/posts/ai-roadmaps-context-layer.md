@@ -1,0 +1,41 @@
+---
+title: "Why AI Roadmaps Fail at the Context Layer, Not the Model Layer"
+date: 2026-02-28
+author: Charlie Feng
+description: "The model is fine. Your AI roadmap is stalling because of everything upstream: data ownership, freshness, retrieval quality, and the context layer nobody wants to fix."
+---
+
+I spent most of last week chasing people. Not chasing them about a product decision or a launch date - chasing them to tag their data assets. We had a deadline, a data catalog initiative, and a list of domain owners who each needed to review their tables, confirm ownership, and add enough metadata that a system downstream could actually reason about what it was looking at. Some people responded fast. Most needed two or three nudges. A few required a personal call, where I explained, again, why it mattered that they confirm whether a given table was still the source of truth or had been superseded by something else eighteen months ago.
+
+That is the context layer problem in its purest, most unglamorous form. The model we were building toward is excellent. It will do exactly what we ask it to do. But it cannot tell you who owns a dataset, whether the schema it was trained against last quarter still reflects how the table is actually structured today, or whether the field called "status" means the same thing in the fleet table as it does in the billing table. Nobody can tell it that automatically. Somebody has to know. And knowing turns out to be its own full-time job.
+
+Here is the claim, and I'll put it bluntly: the model is fine. It's been fine for a while. The reason your AI roadmap is stalling - or will stall, if it hasn't already - isn't the model. It's everything upstream of the model. It's the context layer: who owns the data, how fresh it is, how consistently it's structured, what the retrieval pipeline actually surfaces when a query comes in, and whether anyone bothered to document any of this before AI made it urgent.
+
+I know this lands badly. Most of the AI leads and product people I talk to have spent two years agonizing over model selection. Which vendor. Which API tier. Which benchmark matters for their use case. That is an understandable thing to agonize over - it feels like the decision, the one that determines whether the thing works. But BCG surveyed a thousand executives across 59 countries and found that 70% of AI implementation challenges trace back to people and process, 20% to technology infrastructure, and 10% to algorithms (BCG, 2024). Ten percent. The thing you optimized hardest. RAND interviewed 65 experienced data scientists and found that more than 80% of AI projects fail, roughly double the failure rate of non-AI IT projects (RAND, 2024). Four of the five root causes they identified were organizational or data-related. One - just one - was about applying AI to problems too hard for AI to solve.
+
+This isn't an argument about data quality in the abstract. It's an argument about what breaks in practice, specifically.
+
+When I built a natural language interface to operational data - fleet metrics, infrastructure dashboards - the model was never the bottleneck. Not once. What consumed the actual engineering time was data freshness: does the number I'm retrieving reflect what happened an hour ago or three days ago? Access controls: who is allowed to ask which questions, and how do you enforce that at the retrieval layer rather than hoping the model figures it out? And retrieval quality itself - not whether the model could answer the question, but whether the right context was even in the window when it tried. The model sat there, patient and capable, waiting for clean inputs it mostly didn't get. We kept feeding it the wrong things and blaming the outputs.
+
+Anthropic published a piece on Contextual Retrieval that made this concrete in numbers. The core finding: fixing the retrieval step - not the generation model, just what gets handed to it - reduced retrieval failures by 35 to 67 percent depending on the method (Anthropic, 2024). The model didn't change. What changed was how context was constructed before the model ever saw a query. That's a 35 to 67 percent improvement sitting in the layer most roadmaps treat as solved infrastructure.
+
+IBM Watson Health became the canonical example of the same failure at enormous scale. After roughly four billion dollars in investment, Watson's AI wasn't the problem. The problem was that real-world clinical data was messy, unstructured, inconsistently labeled, and far more complex than curated training sets. The capability was there. The context wasn't. Zillow lost over half a billion dollars on a home-pricing algorithm that was technically sound and contextually blind - missing neighborhood dynamics, local demand shifts, the specific texture of a market in a particular moment (Zillow Offers case, 2021). The model did what it was trained to do. What it was trained on didn't reflect reality closely enough to matter.
+
+McKinsey found something that I think deserves more attention than it gets: the organizations actually capturing financial returns from generative AI are twice as likely to have redesigned their workflows before optimizing their models (McKinsey, 2025). Not during. Before. They didn't pick the best model and then figure out what to feed it. They figured out what the model needed to see, built the infrastructure to provide it reliably, and then deployed. That sequencing difference is the whole game.
+
+The reason this error keeps happening isn't stupidity. It's that the model layer is where vendors compete and benchmark results live. It's legible. You can point at a number - accuracy, latency, context window - and make a decision. The context layer doesn't have a clean number. It has a data catalog that's 60% complete, domain owners who respond to Slack in two to five business days, schemas that evolved without documentation, and retrieval pipelines that work great in demos and quietly fall apart at production volume. Nobody writes a press release about fixing their metadata governance. So the roadmap keeps centering the thing that's visible.
+
+What actually needs to happen is a reallocation of attention that most organizations will find uncomfortable. It means auditing what you actually have before committing to what you'll build. It means assigning real ownership to the data your AI will depend on - not nominal ownership, the kind where a name appears in a spreadsheet, but operational ownership, where someone is accountable for freshness, structure, and accuracy. It means treating retrieval quality as a first-class engineering problem, not a configuration detail. It means, in some cases, delaying the AI initiative you announced until the data infrastructure it requires actually exists.
+
+None of that is as exciting as picking the frontier model. But Gartner is predicting that 60% of AI projects without AI-ready data will be abandoned before they reach value (Gartner, 2024). That's not a model problem. That's a context problem. And it's waiting upstream of every roadmap that hasn't dealt with it yet.
+
+---
+
+## Sources
+
+- Anthropic. (2024). Contextual Retrieval. Anthropic Engineering Blog.
+- Boston Consulting Group. (2024). AI at Scale: Moving from Proof of Concept to Value [Survey of 1,000 executives across 59 countries].
+- Gartner. (2024). Predicts 2025: The AI Risks You're Overlooking.
+- McKinsey & Company. (2025). The State of AI: Global Survey [1,491 participants across 101 countries].
+- RAND Corporation. (2024). Why Does AI Fail? Insights from Practitioners [Interviews with 65 data scientists].
+- Zillow. (2021). Zillow Offers wind-down and Q3 2021 earnings disclosure.
