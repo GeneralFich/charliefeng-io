@@ -35,44 +35,57 @@ export interface RelevantChunk {
   score: number;
 }
 
-// Lazy initialization of blog data with magnitudes
+// Lazy initialization of blog data with magnitudes — loaded at runtime from
+// /blog_data.json (public/) so it is never included in the JS bundle.
 let cachedBlogData: Record<Language, BlogChunk[]> | null = null;
+// In-flight fetch promise: prevents duplicate network requests when the
+// function is called concurrently before the first fetch resolves.
+let fetchPromise: Promise<Record<Language, BlogChunk[]>> | null = null;
 
 const getBlogData = async (): Promise<Record<Language, BlogChunk[]>> => {
   if (cachedBlogData) return cachedBlogData;
+  if (fetchPromise) return fetchPromise;
 
-  const { default: blogData } = await import("./blog_data.json");
-
-  // Initialize partitions
-  const partitionedData: Record<Language, BlogChunk[]> = {
-    [Language.EN]: [],
-    [Language.ZH]: []
-  };
-
-  // Optimization: Filter out chunks without embeddings during initialization
-  // and pre-calculate magnitude for valid chunks.
-  // This avoids checking `chunk.embedding` exists in the hot loop.
-  (blogData as BlogChunk[]).forEach((chunk) => {
-    if (chunk.embedding && chunk.embedding.length > 0) {
-      // Optimization: Convert to Float32Array for memory efficiency
-      const embedding = new Float32Array(chunk.embedding);
-      const enrichedChunk = {
-        ...chunk,
-        embedding,
-        _magnitude: chunk._magnitude ?? magnitude(embedding)
+  fetchPromise = fetch('/blog_data.json')
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch blog_data.json: ${res.status}`);
+      return res.json() as Promise<BlogChunk[]>;
+    })
+    .then((blogData) => {
+      // Initialize partitions
+      const partitionedData: Record<Language, BlogChunk[]> = {
+        [Language.EN]: [],
+        [Language.ZH]: []
       };
 
-      const lang = (chunk.language as Language) || Language.EN;
-      if (partitionedData[lang]) {
-        partitionedData[lang].push(enrichedChunk);
-      } else {
-        partitionedData[Language.EN].push(enrichedChunk);
-      }
-    }
-  });
+      // Optimization: Filter out chunks without embeddings during initialization
+      // and pre-calculate magnitude for valid chunks.
+      // This avoids checking `chunk.embedding` exists in the hot loop.
+      blogData.forEach((chunk) => {
+        if (chunk.embedding && chunk.embedding.length > 0) {
+          // Optimization: Convert to Float32Array for memory efficiency
+          const embedding = new Float32Array(chunk.embedding as number[]);
+          const enrichedChunk = {
+            ...chunk,
+            embedding,
+            _magnitude: chunk._magnitude ?? magnitude(embedding)
+          };
 
-  cachedBlogData = partitionedData;
-  return cachedBlogData;
+          const lang = (chunk.language as Language) || Language.EN;
+          if (partitionedData[lang]) {
+            partitionedData[lang].push(enrichedChunk);
+          } else {
+            partitionedData[Language.EN].push(enrichedChunk);
+          }
+        }
+      });
+
+      cachedBlogData = partitionedData;
+      fetchPromise = null;
+      return cachedBlogData;
+    });
+
+  return fetchPromise;
 };
 
 /**
