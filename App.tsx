@@ -17,15 +17,17 @@
  * 4. **Mobile Responsiveness**:
  *    - Below `lg` breakpoint: full-screen single view (chat or content), unchanged from before.
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { View } from './types';
 import { useRouter } from './hooks/useRouter';
 import { useViewTransition } from './hooks/useViewTransition';
-import { ChatInterface } from './components/ChatInterface';
-import { Resume } from './components/Resume';
-import { Essays } from './components/Essays';
-import { BrowsePanel } from './components/BrowsePanel';
 import { ScrollProgress } from './components/ScrollProgress';
+
+// Lazy-loaded route components — keeps initial bundle lean
+const ChatInterface = lazy(() => import('./components/ChatInterface').then(m => ({ default: m.ChatInterface })));
+const Resume       = lazy(() => import('./components/Resume').then(m => ({ default: m.Resume })));
+const Essays       = lazy(() => import('./components/Essays').then(m => ({ default: m.Essays })));
+const BrowsePanel  = lazy(() => import('./components/BrowsePanel').then(m => ({ default: m.BrowsePanel })));
 import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
 import { MobileBottomNav } from './components/MobileBottomNav';
@@ -130,7 +132,9 @@ const App: React.FC = () => {
           print:hidden
           ${!isChatVisible ? 'hidden lg:flex' : 'flex'}
         `}>
-          <ChatInterface onNavigate={handleNavigate} onFocusRef={chatFocusRef} />
+          <Suspense fallback={<div className="flex-1" />}>
+            <ChatInterface onNavigate={handleNavigate} onFocusRef={chatFocusRef} />
+          </Suspense>
         </div>
 
         {/* ── RIGHT PANEL: Content ──────────────────────────────────────────────────
@@ -150,11 +154,13 @@ const App: React.FC = () => {
           `}
         >
           <div className={`transition-opacity duration-150 min-h-full ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
-            {displayedView === View.HOME   && <BrowsePanel onNavigate={handleNavigate} />}
-            {displayedView === View.ABOUT  && <Resume initialHash={targetHash} isInsideSplitView />}
-            {displayedView === View.ESSAYS && (
-              <Essays slug={targetEssaySlug} onNavigate={handleNavigate} isInsideSplitView />
-            )}
+            <Suspense fallback={<div className="p-8 text-slate-400">Loading...</div>}>
+              {displayedView === View.HOME   && <BrowsePanel onNavigate={handleNavigate} />}
+              {displayedView === View.ABOUT  && <Resume initialHash={targetHash} isInsideSplitView />}
+              {displayedView === View.ESSAYS && (
+                <Essays slug={targetEssaySlug} onNavigate={handleNavigate} isInsideSplitView />
+              )}
+            </Suspense>
           </div>
         </div>
 
