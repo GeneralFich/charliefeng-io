@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('verify EssayItem accessibility structure', async ({ page }) => {
   // Navigate to Essays view
-  await page.goto('http://localhost:3000/?view=ESSAYS');
+  await page.goto('http://localhost:3000/essays');
 
   // Wait for the list to load
   await expect(page.getByRole('heading', { name: 'Essays', level: 2 })).toBeVisible();

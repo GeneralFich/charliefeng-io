@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Capture screenshot of math formulas', async ({ page }) => {
-  await page.goto('/?view=ESSAYS&essay=the-thermodynamic-wall');
+  await page.goto('/essays/the-thermodynamic-wall');
   await expect(page.getByRole('heading', { name: 'The Thermodynamic Wall' })).toBeVisible();
 
   // Wait for katex to render

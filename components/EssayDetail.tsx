@@ -8,7 +8,6 @@ import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Downlo
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes, HighlightContext } from './SearchHighlighter';
 import { TableOfContents } from './TableOfContents';
-import { View } from '../types';
 import { useArticleSearch } from '../hooks/useArticleSearch';
 import { ESSAY_MARKDOWN_COMPONENTS } from './EssayMarkdownComponents';
 import { useLanguage } from '../lib/i18n/LanguageContext';
@@ -66,13 +65,9 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
   } = useArticleSearch(post.slug);
 
   const handleShare = async () => {
-    // Use current location origin and pathname to support sub-paths
-    const url = new URL(window.location.href);
-    url.searchParams.set('view', View.ESSAYS);
-    url.searchParams.set('essay', post.slug);
-
     try {
-      await navigator.clipboard.writeText(url.toString());
+      const url = `${window.location.origin}/essays/${post.slug}`;
+      await navigator.clipboard.writeText(url);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {

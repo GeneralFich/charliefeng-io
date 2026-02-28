@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Share2, Check } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes } from './SearchHighlighter';
-import { View } from '../types';
 
 interface EssayItemProps {
   post: BlogPost;
@@ -21,10 +20,8 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set('view', View.ESSAYS);
-      url.searchParams.set('essay', post.slug);
-      await navigator.clipboard.writeText(url.toString());
+      const url = `${window.location.origin}/essays/${post.slug}`;
+      await navigator.clipboard.writeText(url);
       setCopiedPostSlug(post.slug);
       setTimeout(() => setCopiedPostSlug(null), 2000);
     } catch (err) {

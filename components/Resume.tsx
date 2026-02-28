@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, MapPin, Briefcase, GraduationCap, Users, Share2, Check, Linkedin } from 'lucide-react';
 import { getResumeAttributes, LINKEDIN_URL } from '../lib/knowledge';
-import { View } from '../types';
 import { slugify } from '../lib/utils';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
@@ -48,9 +47,7 @@ export const Resume: React.FC<ResumeProps> = ({ initialHash, isInsideSplitView: 
 
   const handleShare = async () => {
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set('view', View.ABOUT);
-      await navigator.clipboard.writeText(url.toString());
+      await navigator.clipboard.writeText(window.location.href);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {

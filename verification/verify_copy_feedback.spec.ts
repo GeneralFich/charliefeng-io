@@ -16,7 +16,7 @@ test('verify copy button feedback', async ({ page }) => {
     };
   });
 
-  await page.goto('/?view=ESSAYS');
+  await page.goto('/essays');
 
   const card = page.locator('.group').filter({ hasText: 'min read' }).first();
   await expect(card).toBeVisible();

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Essays view allows searching and filtering', async ({ page }) => {
   // Navigate directly to essays view
-  await page.goto('/?view=ESSAYS');
+  await page.goto('/essays');
 
   // Verify header is present
   await expect(page.getByRole('heading', { name: 'Essays' })).toBeVisible();
