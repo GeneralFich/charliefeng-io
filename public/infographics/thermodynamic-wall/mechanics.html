@@ -4,31 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Infographic</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: "Inter", sans-serif; background: transparent; }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 400px;
-            max-height: 500px;
-        }
-        @media (max-width: 768px) {
-            .chart-container { height: 300px; }
-        }
-        .gradient-text {
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            background-image: linear-gradient(135deg, #2563EB, #06B6D4);
-        }
-        /* Hide scrollbars if possible */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: "Inter", sans-serif; background: transparent;
+               -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+               overflow: hidden; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .chart-container { position: relative; width: 100%; max-width: 800px;
+                           margin-left: auto; margin-right: auto; height: 400px; max-height: 500px; }
+        @media (max-width: 768px) { .chart-container { height: 300px; } }
+        .bg-slate-900\/50 { background-color: rgba(15, 23, 42, 0.5); }
+        .p-4 { padding: 1rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
+        .border { border-width: 1px; border-style: solid; }
+        .border-slate-800 { border-color: #1e293b; }
+        .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .items-end { align-items: flex-end; }
+        .font-bold { font-weight: 700; }
+        .text-white { color: #ffffff; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-slate-300 { color: #cbd5e1; }
+        .bg-slate-800 { background-color: #1e293b; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .rounded { border-radius: 0.25rem; }
+        .border-slate-700 { border-color: #334155; }
     </style>
 </head>
 <body class="antialiased overflow-hidden">
