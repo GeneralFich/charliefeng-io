@@ -4,16 +4,18 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeKatex from 'rehype-katex';
-import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, User, Search, X, Share2, Download, Check, ChevronUp, ChevronDown, BookOpen } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes, HighlightContext } from './SearchHighlighter';
 import { TableOfContents } from './TableOfContents';
 import { useArticleSearch } from '../hooks/useArticleSearch';
 import { ESSAY_MARKDOWN_COMPONENTS } from './EssayMarkdownComponents';
+import { getRelatedPosts } from '../lib/essay_logic';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 
 interface EssayDetailProps {
   post: BlogPost;
+  allPosts: BlogPost[];
   filteredPosts: BlogPost[];
   onBack: () => void;
   onNavigate: (post: BlogPost) => void;
@@ -45,6 +47,7 @@ const REHYPE_PLUGINS = [
 
 export const EssayDetail: React.FC<EssayDetailProps> = ({
   post,
+  allPosts,
   filteredPosts,
   onBack,
   onNavigate,
@@ -85,6 +88,9 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
       {post.body}
     </ReactMarkdown>
   ), [post]);
+
+  // Related posts
+  const relatedPosts = useMemo(() => getRelatedPosts(post, allPosts), [post, allPosts]);
 
   // Navigation Logic
   const currentIndex = filteredPosts.findIndex(p => p.slug === post.slug);
@@ -259,6 +265,18 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
               <span>{post.attributes.author}</span>
             </div>
           </div>
+          {post.tags.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap mt-4">
+              {post.tags.map(tag => (
+                <span
+                  key={tag}
+                  className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </header>
 
         {/* Table of Contents */}
@@ -270,6 +288,48 @@ export const EssayDetail: React.FC<EssayDetailProps> = ({
           {markdownContent}
         </HighlightContext.Provider>
       </article>
+
+      {/* Related Essays */}
+      {relatedPosts.length > 0 && (
+        <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 print:hidden">
+          <div className="flex items-center gap-2 mb-6">
+            <BookOpen size={18} className="text-blue-400" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{t.essays.relatedEssays}</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {relatedPosts.map(related => (
+              <button
+                key={related.slug}
+                onClick={() => {
+                  setArticleSearchQuery('');
+                  onNavigate(related);
+                }}
+                className="group flex flex-col text-left p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-blue-500/30 transition-all"
+              >
+                {related.tags.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                    {related.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <span className="text-slate-700 dark:text-slate-200 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
+                  {related.attributes.title}
+                </span>
+                <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                  <Clock size={11} />
+                  {related.readTime} {t.essays.readTime}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Contextual Navigation Footer */}
       <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">

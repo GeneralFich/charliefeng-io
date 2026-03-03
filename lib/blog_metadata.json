@@ -1,38 +1,60 @@
 {
   "ai-roadmaps-context-layer.md": {
-    "readTime": 7
+    "readTime": 7,
+    "tags": ["AI Strategy", "Data Infrastructure"],
+    "featured": true,
+    "accentColor": "indigo",
+    "relatedSlugs": ["ai-strategy-wrong", "strategic-whitepaper"]
   },
   "ai-roadmaps-context-layer.zh.md": {
-    "readTime": 1
+    "readTime": 1,
+    "tags": ["AI Strategy", "Data Infrastructure"]
   },
   "ai-strategy-wrong.md": {
-    "readTime": 8
+    "readTime": 8,
+    "tags": ["AI Strategy", "Enterprise AI"],
+    "featured": true,
+    "accentColor": "emerald",
+    "relatedSlugs": ["ai-roadmaps-context-layer", "strategic-whitepaper"]
   },
   "ai-strategy-wrong.zh.md": {
-    "readTime": 1
+    "readTime": 1,
+    "tags": ["AI Strategy", "Enterprise AI"]
   },
   "evolving-landscape-of-data-centers.md": {
-    "readTime": 3
+    "readTime": 3,
+    "tags": ["Data Centers", "Infrastructure"],
+    "relatedSlugs": ["the-thermodynamic-wall", "making-data-centers-greener"]
   },
   "evolving-landscape-of-data-centers.zh.md": {
-    "readTime": 1
+    "readTime": 1,
+    "tags": ["Data Centers", "Infrastructure"]
   },
   "making-data-centers-greener.md": {
-    "readTime": 2
+    "readTime": 2,
+    "tags": ["Data Centers", "Sustainability"],
+    "relatedSlugs": ["evolving-landscape-of-data-centers", "the-thermodynamic-wall"]
   },
   "making-data-centers-greener.zh.md": {
-    "readTime": 1
+    "readTime": 1,
+    "tags": ["Data Centers", "Sustainability"]
   },
   "strategic-whitepaper.md": {
-    "readTime": 17
+    "readTime": 17,
+    "tags": ["AGI", "AI Strategy"],
+    "relatedSlugs": ["ai-strategy-wrong", "the-thermodynamic-wall"]
   },
   "strategic-whitepaper.zh.md": {
-    "readTime": 7
+    "readTime": 7,
+    "tags": ["AGI", "AI Strategy"]
   },
   "the-thermodynamic-wall.md": {
-    "readTime": 22
+    "readTime": 22,
+    "tags": ["Infrastructure", "Data Centers"],
+    "relatedSlugs": ["evolving-landscape-of-data-centers", "strategic-whitepaper"]
   },
   "the-thermodynamic-wall.zh.md": {
-    "readTime": 6
+    "readTime": 6,
+    "tags": ["Infrastructure", "Data Centers"]
   }
 }

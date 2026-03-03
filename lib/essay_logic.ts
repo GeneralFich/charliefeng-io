@@ -2,21 +2,31 @@ import { BlogPost } from './knowledge';
 import { SortOption } from '../types';
 
 /**
- * Filters and sorts a list of blog posts based on a search query and sort option.
+ * Filters and sorts a list of blog posts based on a search query, active tags, and sort option.
  *
  * @param posts - The list of blog posts to filter and sort.
  * @param searchQuery - The search query string.
  * @param sortBy - The sort option ('newest', 'oldest', 'shortest', 'longest').
+ * @param activeTags - Optional set of active tag filters.
  * @returns The filtered and sorted list of blog posts.
  */
 export function filterAndSortEssays(
   posts: BlogPost[],
   searchQuery: string,
-  sortBy: SortOption
+  sortBy: SortOption,
+  activeTags?: Set<string>
 ): BlogPost[] {
   let filteredPosts = posts;
   // Track if we have created a new array (via filter) that we can safely mutate
   let isMutable = false;
+
+  // Tag filtering
+  if (activeTags && activeTags.size > 0) {
+    filteredPosts = filteredPosts.filter(post =>
+      post.tags.some(tag => activeTags.has(tag))
+    );
+    isMutable = true;
+  }
 
   if (searchQuery) {
     // Optimization: Use RegExp with 'i' flag to avoid creating lowercased copies of content
@@ -52,4 +62,27 @@ export function filterAndSortEssays(
     default:
       return filteredPosts;
   }
+}
+
+/**
+ * Extracts all unique tags from a list of blog posts.
+ */
+export function getAllTags(posts: BlogPost[]): string[] {
+  const tagSet = new Set<string>();
+  for (const post of posts) {
+    for (const tag of post.tags) {
+      tagSet.add(tag);
+    }
+  }
+  return Array.from(tagSet).sort();
+}
+
+/**
+ * Gets related posts for a given post, based on relatedSlugs metadata.
+ */
+export function getRelatedPosts(post: BlogPost, allPosts: BlogPost[]): BlogPost[] {
+  if (post.relatedSlugs.length === 0) return [];
+  return post.relatedSlugs
+    .map(slug => allPosts.find(p => p.slug === slug))
+    .filter((p): p is BlogPost => p !== undefined);
 }

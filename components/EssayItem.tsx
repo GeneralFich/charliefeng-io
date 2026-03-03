@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Check } from 'lucide-react';
+import { Share2, Check, Clock } from 'lucide-react';
 import { BlogPost } from '../lib/knowledge';
 import { highlightNodes } from './SearchHighlighter';
 
@@ -60,24 +60,25 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
         }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-        className="relative group flex flex-col md:flex-row gap-6 p-6 rounded-xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-blue-500/30 transition-colors duration-300 text-left cursor-pointer"
+        className="relative group flex flex-col h-full p-6 rounded-xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-blue-500/30 transition-colors duration-300 text-left cursor-pointer"
       >
         <div className="flex-1">
-          {/* Meta row */}
-          <div className="flex items-center gap-3 text-xs text-blue-600 dark:text-blue-400 mb-3 font-medium uppercase tracking-wider">
-            <time dateTime={post.attributes.date}>
-              {new Date(post.attributes.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </time>
-            <span>•</span>
-            <span>{post.readTime} min read</span>
-          </div>
+          {/* Tags */}
+          {post.tags.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap mb-3">
+              {post.tags.map(tag => (
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Title */}
-          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pr-12">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pr-10 leading-snug">
             <button
               onClick={(e) => { e.stopPropagation(); onSelectPost(post); }}
               className="text-left w-full focus:outline-none focus:underline"
@@ -87,9 +88,25 @@ export const EssayItem: React.FC<EssayItemProps> = React.memo(({ post, searchReg
           </h3>
 
           {/* Description */}
-          <p className="text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 mb-4">
             {highlightNodes(post.attributes.description, searchRegex)}
           </p>
+        </div>
+
+        {/* Meta row pinned to bottom */}
+        <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500 mt-auto pt-3 border-t border-slate-100 dark:border-slate-800/50">
+          <time dateTime={post.attributes.date}>
+            {new Date(post.attributes.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </time>
+          <span className="text-slate-300 dark:text-slate-700">&middot;</span>
+          <span className="flex items-center gap-1">
+            <Clock size={11} />
+            {post.readTime} min read
+          </span>
         </div>
 
         {/* Share button */}
