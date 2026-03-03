@@ -126,7 +126,7 @@ The project employs a dual testing strategy:
 
 The project uses a flat structure to minimize nesting:
 
-- `components/`: React components (`ChatInterface`, `Essays`, `Resume`, `BrowsePanel`, `MobileBottomNav`, `ThemeToggle`, `ParticleBackground`, etc.)
+- `components/`: React components (`ChatInterface`, `Essays`, `Resume`, `BrowsePanel`, `MobileBottomNav`, `ThemeToggle`, etc.)
 - `lib/`: Utility libraries and static data (knowledge base, RAG logic, theme context, i18n translations)
 - `lib/i18n/`: Language context and English/Chinese translation maps
 - `services/`: AI provider services (`geminiService.ts`, `deepseekService.ts`)

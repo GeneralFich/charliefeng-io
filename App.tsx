@@ -32,7 +32,6 @@ import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { ShortcutsModal } from './components/ShortcutsModal';
-import { ParticleBackground } from './components/ParticleBackground';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { useDocumentHead } from './hooks/useDocumentHead';
 import { useLanguage } from './lib/i18n/LanguageContext';
@@ -94,9 +93,8 @@ const App: React.FC = () => {
         Skip to content
       </a>
 
-      {/* Animated neural-network particle canvas — paused on content-heavy views
-          to eliminate the O(n²) particle calculations while the user is reading */}
-      <ParticleBackground paused={displayedView === View.ESSAYS && !!targetEssaySlug} />
+      {/* Ambient gradient mesh — pure CSS animation, no JS overhead */}
+      <div className="fixed inset-0 pointer-events-none print:hidden gradient-mesh" aria-hidden="true" />
 
       {/* Scroll Progress Bar — tracks right panel scroll on desktop */}
       {displayedView !== View.HOME && <ScrollProgress containerRef={rightPanelRef} />}
