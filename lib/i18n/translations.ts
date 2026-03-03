@@ -27,8 +27,8 @@ export const TRANSLATIONS = {
       next: 'Next',
     },
     chat: {
-      greeting: "Hello! I'm Charlie's AI Digital Twin. Ask me anything about his work, background, or ideas.",
-      inputPlaceholder: "Ask me a question...",
+      greeting: "I'm Charlie's digital twin \u2014 an AI trained on my essays and experience in AI infrastructure at Google. Describe a challenge you're facing with AI strategy, and I'll give you my honest take.",
+      inputPlaceholder: "Describe your AI challenge...",
       send: "Send",
       clear: "Clear Chat",
       confirmClear: "Confirm Clear",
@@ -36,9 +36,9 @@ export const TRANSLATIONS = {
       thinking: "THINKING...",
       download: "Download Chat",
       suggestions: [
-        "Tell me about your background",
-        "What is the Strategic Whitepaper?",
-        "What are your thoughts on AGI?"
+        "We're building an AI roadmap \u2014 where do we actually start?",
+        "Our AI pilots work in demos but stall in production",
+        "Should we fine-tune a model or build a RAG pipeline?"
       ]
     },
     essays: {
@@ -87,8 +87,8 @@ export const TRANSLATIONS = {
       next: '下一篇',
     },
     chat: {
-      greeting: "你好！我是Charlie的AI数字孪生。你可以问我关于他的工作、背景或想法的任何问题。",
-      inputPlaceholder: "输入你的问题...",
+      greeting: "我是Charlie的数字孪生——基于我在Google AI基础设施领域的文章和经验训练的AI。描述你在AI战略方面遇到的挑战，我会给你我的真实看法。",
+      inputPlaceholder: "描述你的AI挑战...",
       send: "发送",
       clear: "清空对话",
       confirmClear: "确认清空",
@@ -96,9 +96,9 @@ export const TRANSLATIONS = {
       thinking: "思考中...",
       download: "下载对话",
       suggestions: [
-        "介绍一下你的背景",
-        "什么是战略白皮书？",
-        "你怎么看AGI？"
+        "我们正在制定AI路线图——到底应该从哪里开始？",
+        "我们的AI试点在演示中可行，但在生产环境中停滞了",
+        "我们应该微调模型还是构建RAG管道？"
       ]
     },
     essays: {
