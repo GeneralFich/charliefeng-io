@@ -63,4 +63,22 @@ test('parseRoute', async (t) => {
     assert.strictEqual(result.view, View.ESSAYS);
     assert.strictEqual(result.slug, null);
   });
+
+  await t.test('strips /zh prefix for essays', () => {
+    const result = parseRoute('/zh/essays/my-slug');
+    assert.strictEqual(result.view, View.ESSAYS);
+    assert.strictEqual(result.slug, 'my-slug');
+  });
+
+  await t.test('strips /zh prefix for about', () => {
+    const result = parseRoute('/zh/about');
+    assert.strictEqual(result.view, View.ABOUT);
+    assert.strictEqual(result.slug, null);
+  });
+
+  await t.test('strips /zh prefix for essays list', () => {
+    const result = parseRoute('/zh/essays');
+    assert.strictEqual(result.view, View.ESSAYS);
+    assert.strictEqual(result.slug, null);
+  });
 });

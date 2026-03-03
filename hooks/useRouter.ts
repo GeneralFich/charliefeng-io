@@ -33,9 +33,14 @@ import { parseRoute, buildNavigationUrl } from '../lib/route_logic';
  * - `navigateTo`: Function to programmatically change the view.
  */
 export const useRouter = () => {
-  const [currentView, setCurrentView] = useState<View>(View.HOME);
-  const [targetEssaySlug, setTargetEssaySlug] = useState<string | null>(null);
-  const [targetHash, setTargetHash] = useState<string | null>(null);
+  // Initialize state synchronously from the URL so the very first render
+  // reflects the correct view.  Deferring this to a useEffect caused a race
+  // condition: the App's sync effect would run before the router's effect had
+  // a chance to update state, leaving displayedView stuck on HOME.
+  const initialRoute = parseRoute(window.location.pathname);
+  const [currentView, setCurrentView] = useState<View>(initialRoute.view);
+  const [targetEssaySlug, setTargetEssaySlug] = useState<string | null>(initialRoute.slug);
+  const [targetHash, setTargetHash] = useState<string | null>(window.location.hash || null);
 
   /**
    * Navigates to a specific view and optionally sets a sub-resource (slug) and hash.

@@ -7,8 +7,8 @@ import { View } from '../types';
  * @returns An object containing the resolved View and optional essay slug.
  */
 export function parseRoute(pathname: string): { view: View; slug: string | null } {
-  // Normalize: strip trailing slashes
-  const path = pathname.replace(/\/+$/, '') || '/';
+  // Normalize: strip trailing slashes and optional /zh language prefix
+  const path = (pathname.replace(/\/+$/, '') || '/').replace(/^\/zh/, '') || '/';
 
   if (path === '/') return { view: View.HOME, slug: null };
   if (path === '/about') return { view: View.ABOUT, slug: null };
