@@ -47,6 +47,8 @@ export const ForceGraph: React.FC<ForceGraphProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<ReturnType<typeof forceSimulation<SimNode>> | null>(null);
+  const selectedNodeIdRef = useRef<string | null>(null);
+  const applyHighlightRef = useRef<((focusId: string | null) => void) | null>(null);
   const { resolved: theme } = useTheme();
 
   const getNodeColor = useCallback(
@@ -131,38 +133,44 @@ export const ForceGraph: React.FC<ForceGraphProps> = ({
       .attr('font-weight', (d) => (d.type === 'hub' ? '600' : '400'))
       .text((d) => (d.label.length > 18 ? d.label.slice(0, 16) + '…' : d.label));
 
-    // Interactions
-    nodeElements
-      .on('mouseenter', function (_event, d) {
-        // Highlight connected edges
+    // Highlight helper: dims non-connected nodes & edges for a focus node
+    function applyHighlight(focusId: string | null) {
+      if (focusId) {
         linkElements
           .attr('stroke-opacity', (l) => {
             const src = typeof l.source === 'object' ? l.source.id : l.source;
             const tgt = typeof l.target === 'object' ? l.target.id : l.target;
-            return src === d.id || tgt === d.id ? 0.8 : 0.1;
+            return src === focusId || tgt === focusId ? 0.8 : 0.1;
           })
           .attr('stroke-width', (l) => {
             const src = typeof l.source === 'object' ? l.source.id : l.source;
             const tgt = typeof l.target === 'object' ? l.target.id : l.target;
-            return src === d.id || tgt === d.id ? 2 : 1;
+            return src === focusId || tgt === focusId ? 2 : 1;
           });
-
-        // Dim non-connected nodes
         nodeElements.style('opacity', (n) => {
-          if (n.id === d.id) return 1;
+          if (n.id === focusId) return 1;
           const isConnected = simLinks.some((l) => {
             const src = typeof l.source === 'object' ? l.source.id : l.source;
             const tgt = typeof l.target === 'object' ? l.target.id : l.target;
-            return (src === d.id && tgt === n.id) || (tgt === d.id && src === n.id);
+            return (src === focusId && tgt === n.id) || (tgt === focusId && src === n.id);
           });
           return isConnected ? 1 : 0.25;
         });
+      } else {
+        linkElements.attr('stroke-opacity', 0.4).attr('stroke-width', 1);
+        nodeElements.style('opacity', 1);
+      }
+    }
+    applyHighlightRef.current = applyHighlight;
 
+    // Interactions
+    nodeElements
+      .on('mouseenter', function (_event, d) {
+        applyHighlight(d.id);
         onHoverNode?.(d.id);
       })
       .on('mouseleave', function () {
-        linkElements.attr('stroke-opacity', 0.4).attr('stroke-width', 1);
-        nodeElements.style('opacity', 1);
+        applyHighlight(selectedNodeIdRef.current);
         onHoverNode?.(null);
       })
       .on('click', (_event, d) => {
@@ -274,8 +282,9 @@ export const ForceGraph: React.FC<ForceGraphProps> = ({
       .attr('stroke', theme === 'dark' ? '#334155' : '#cbd5e1');
   }, [theme, getNodeColor]);
 
-  // Highlight selected node
+  // Highlight selected node and dim non-connected nodes
   useEffect(() => {
+    selectedNodeIdRef.current = selectedNodeId;
     const svg = svgRef.current;
     if (!svg) return;
     const svgSel = select(svg);
@@ -290,6 +299,8 @@ export const ForceGraph: React.FC<ForceGraphProps> = ({
           .attr('stroke-width', 2);
       }
     });
+
+    applyHighlightRef.current?.(selectedNodeId);
   }, [selectedNodeId, theme]);
 
   return (
