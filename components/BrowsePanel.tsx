@@ -3,6 +3,7 @@ import { BookOpen, FileText, ArrowRight, Calendar, Clock } from 'lucide-react';
 import { View } from '../types';
 import { getPosts } from '../lib/knowledge';
 import { useLanguage } from '../lib/i18n/LanguageContext';
+import { NowSection } from './NowSection';
 
 interface BrowsePanelProps {
   onNavigate: (view: View, slug?: string, hash?: string) => void;
@@ -28,6 +29,12 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
           {t.browse.description}
         </p>
       </div>
+
+      {/* Now — what Charlie is currently working on */}
+      <NowSection />
+
+      {/* Divider */}
+      <div className="border-t border-slate-200 dark:border-slate-800/60 my-6" />
 
       {/* Essays */}
       <section className="mb-8">
