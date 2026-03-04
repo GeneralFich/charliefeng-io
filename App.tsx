@@ -152,7 +152,7 @@ const App: React.FC = () => {
             ${isChatVisible ? 'hidden lg:block' : 'block'}
           `}
         >
-          <div className={`transition-opacity duration-150 min-h-full ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`transition-opacity duration-150 ${displayedView === View.ABOUT ? 'h-full' : 'min-h-full'} ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
             <Suspense fallback={<div className="p-8 text-slate-400">Loading...</div>}>
               {displayedView === View.HOME   && <BrowsePanel onNavigate={handleNavigate} />}
               {displayedView === View.ABOUT  && <KnowledgeGraphView initialHash={targetHash} isInsideSplitView onNavigate={handleNavigate} />}
