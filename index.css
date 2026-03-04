@@ -108,6 +108,20 @@
   50%      { opacity: 0.4; transform: scale(0.75); }
 }
 
+/* Knowledge Graph — force graph styles */
+.graph-node { cursor: pointer; }
+.graph-node:hover circle { filter: brightness(1.15); }
+.graph-edge { transition: stroke-opacity 0.2s ease; }
+.graph-label { pointer-events: none; user-select: none; }
+
+@keyframes graph-pulse {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.35; }
+}
+.graph-skeleton-dot {
+  animation: graph-pulse 1.5s ease-in-out infinite;
+}
+
 /* Respect user's reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -66,7 +66,22 @@ export const TRANSLATIONS = {
       statusActive: "Active",
       statusShipped: "Shipped",
       statusExploring: "Exploring",
-    }
+    },
+    graph: {
+      viewGraph: 'Knowledge Graph',
+      viewList: 'List View',
+      roles: 'Roles',
+      skills: 'Skills',
+      projects: 'Projects',
+      education: 'Education',
+      essays: 'Essays',
+      topics: 'Topics',
+      connectedTo: 'Connected to',
+      readEssay: 'Read Essay',
+      zoomIn: 'Zoom in',
+      zoomOut: 'Zoom out',
+      resetView: 'Reset view',
+    },
   },
   [Language.ZH]: {
     nav: {
@@ -133,7 +148,22 @@ export const TRANSLATIONS = {
       statusActive: "进行中",
       statusShipped: "已上线",
       statusExploring: "探索中",
-    }
+    },
+    graph: {
+      viewGraph: '知识图谱',
+      viewList: '列表视图',
+      roles: '职位',
+      skills: '技能',
+      projects: '项目',
+      education: '教育',
+      essays: '文章',
+      topics: '主题',
+      connectedTo: '关联',
+      readEssay: '阅读文章',
+      zoomIn: '放大',
+      zoomOut: '缩小',
+      resetView: '重置视图',
+    },
   }
 };
 
