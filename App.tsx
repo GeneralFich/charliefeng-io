@@ -25,7 +25,7 @@ import { ScrollProgress } from './components/ScrollProgress';
 
 // Lazy-loaded route components — keeps initial bundle lean
 const ChatInterface = lazy(() => import('./components/ChatInterface').then(m => ({ default: m.ChatInterface })));
-const Resume       = lazy(() => import('./components/Resume').then(m => ({ default: m.Resume })));
+const KnowledgeGraphView = lazy(() => import('./components/KnowledgeGraphView').then(m => ({ default: m.KnowledgeGraphView })));
 const Essays       = lazy(() => import('./components/Essays').then(m => ({ default: m.Essays })));
 const BrowsePanel  = lazy(() => import('./components/BrowsePanel').then(m => ({ default: m.BrowsePanel })));
 import { BackToTop } from './components/BackToTop';
@@ -152,10 +152,10 @@ const App: React.FC = () => {
             ${isChatVisible ? 'hidden lg:block' : 'block'}
           `}
         >
-          <div className={`transition-opacity duration-150 min-h-full ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`transition-opacity duration-150 ${displayedView === View.ABOUT ? 'h-full' : 'min-h-full'} ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
             <Suspense fallback={<div className="p-8 text-slate-400">Loading...</div>}>
               {displayedView === View.HOME   && <BrowsePanel onNavigate={handleNavigate} />}
-              {displayedView === View.ABOUT  && <Resume initialHash={targetHash} isInsideSplitView />}
+              {displayedView === View.ABOUT  && <KnowledgeGraphView initialHash={targetHash} isInsideSplitView onNavigate={handleNavigate} />}
               {displayedView === View.ESSAYS && (
                 <Essays slug={targetEssaySlug} onNavigate={handleNavigate} isInsideSplitView />
               )}

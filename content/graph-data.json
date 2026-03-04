@@ -1,0 +1,355 @@
+{
+  "nodes": [
+    {
+      "id": "hub-charlie",
+      "type": "hub",
+      "label": "Charlie Feng",
+      "labelZh": "冯查理",
+      "radius": 28,
+      "meta": {
+        "subtitle": "Infrastructure Product Leader",
+        "subtitleZh": "基础设施产品负责人"
+      }
+    },
+    {
+      "id": "role-google",
+      "type": "role",
+      "label": "Google",
+      "labelZh": "谷歌",
+      "radius": 20,
+      "meta": {
+        "subtitle": "TPM, Data Centers",
+        "subtitleZh": "技术项目经理，数据中心",
+        "dates": "Jul 2022 – Present"
+      }
+    },
+    {
+      "id": "role-amazon",
+      "type": "role",
+      "label": "Amazon",
+      "labelZh": "亚马逊",
+      "radius": 20,
+      "meta": {
+        "subtitle": "Sr PM, Ops Tech",
+        "subtitleZh": "高级项目经理，运营技术",
+        "dates": "Sep 2021 – Jul 2022"
+      }
+    },
+    {
+      "id": "role-ey",
+      "type": "role",
+      "label": "Ernst & Young",
+      "labelZh": "安永",
+      "radius": 18,
+      "meta": {
+        "subtitle": "Consultant / Senior Consultant",
+        "subtitleZh": "顾问 / 高级顾问",
+        "dates": "Aug 2015 – Jul 2019"
+      }
+    },
+    {
+      "id": "edu-yale",
+      "type": "education",
+      "label": "Yale SOM",
+      "labelZh": "耶鲁管理学院",
+      "radius": 16,
+      "meta": {
+        "subtitle": "MBA",
+        "details": "President, Data Analytics Club. Led a 200-member organization."
+      }
+    },
+    {
+      "id": "edu-nyu",
+      "type": "education",
+      "label": "NYU Stern",
+      "labelZh": "纽约大学斯特恩商学院",
+      "radius": 16,
+      "meta": {
+        "subtitle": "BS Finance, CS & Math",
+        "subtitleZh": "金融、计算机科学与数学学士",
+        "details": "Algorithms, Data Structures, Linear Algebra, Game Theory."
+      }
+    },
+    {
+      "id": "skill-product-strategy",
+      "type": "skill",
+      "label": "Product Strategy",
+      "labelZh": "产品战略",
+      "radius": 13,
+      "meta": {
+        "items": "Infrastructure Roadmapping, Build-vs-Buy Analysis, Technical Stakeholder Management, GTM Strategy, User Research, API Definition."
+      }
+    },
+    {
+      "id": "skill-ai-infra",
+      "type": "skill",
+      "label": "AI & Compute Infra",
+      "labelZh": "AI与计算基础设施",
+      "radius": 13,
+      "meta": {
+        "items": "Agentic AI Frameworks (LangChain, MCP), GPU/TPU Architecture, Data Center Capacity Planning, Thermal & Power Constraints, Kubernetes."
+      }
+    },
+    {
+      "id": "skill-data-stack",
+      "type": "skill",
+      "label": "Data & Tech Stack",
+      "labelZh": "数据与技术栈",
+      "radius": 12,
+      "meta": {
+        "items": "Python, SQL, BigQuery, Tableau, Looker, TensorFlow, Vertex AI."
+      }
+    },
+    {
+      "id": "project-climate",
+      "type": "project",
+      "label": "Climate Intelligence",
+      "labelZh": "气候智能平台",
+      "radius": 14,
+      "meta": {
+        "subtitle": "$50M annual efficiency opportunity",
+        "subtitleZh": "$5000万年度效率提升",
+        "bullets": ["Translated meteorological data into predictive load adjustments", "Reduced critical thermal throttling events by 70%"]
+      }
+    },
+    {
+      "id": "project-agentic",
+      "type": "project",
+      "label": "Agentic AI Platform",
+      "labelZh": "AI智能体平台",
+      "radius": 14,
+      "meta": {
+        "subtitle": "Information retrieval for 500+ leads",
+        "subtitleZh": "为500+负责人提供信息检索",
+        "bullets": ["Ingests 150k+ assets", "90%+ retrieval accuracy", "Three AI agents automating workflow triage, decision governance, and fleet alarm standardization"]
+      }
+    },
+    {
+      "id": "project-data-ml-ops",
+      "type": "project",
+      "label": "Data & ML Ops Suite",
+      "labelZh": "数据与ML运维套件",
+      "radius": 13,
+      "meta": {
+        "subtitle": "Lead PM for 3+ infrastructure pillars",
+        "subtitleZh": "3+基础设施支柱的首席PM",
+        "bullets": ["Build-vs-buy analysis for double-digit YoY TPU fleet growth"]
+      }
+    },
+    {
+      "id": "project-rivian",
+      "type": "project",
+      "label": "Rivian Fleet",
+      "labelZh": "Rivian车队整合",
+      "radius": 13,
+      "meta": {
+        "subtitle": "Amazon's custom electric fleet",
+        "subtitleZh": "亚马逊定制电动车队",
+        "bullets": ["Defined API requirements and acceptance criteria", "Scaled pilot from 4 to 100+ vehicles across North America"]
+      }
+    },
+    {
+      "id": "project-observability",
+      "type": "project",
+      "label": "Observability Platform",
+      "labelZh": "可观测性平台",
+      "radius": 13,
+      "meta": {
+        "subtitle": "Real-time telemetry for 36 programs",
+        "subtitleZh": "36个项目的实时遥测",
+        "bullets": ["Slashed anomaly detection time from days to seconds", "Triggered remediation for 100+ operational bottlenecks"]
+      }
+    },
+    {
+      "id": "project-da-app",
+      "type": "project",
+      "label": "DA Application",
+      "labelZh": "配送员应用",
+      "radius": 12,
+      "meta": {
+        "subtitle": "100,000+ users",
+        "subtitleZh": "10万+用户",
+        "bullets": ["Shipped 10+ core capabilities", "18% increase in First Time Delivery Success"]
+      }
+    },
+    {
+      "id": "project-innovation",
+      "type": "project",
+      "label": "Innovation Hub",
+      "labelZh": "创新中心",
+      "radius": 12,
+      "meta": {
+        "subtitle": "Crowdsourcing platform for field engineers",
+        "subtitleZh": "现场工程师众包平台",
+        "bullets": ["Submit, evaluate, and scale technical innovations across a global operations fleet"]
+      }
+    },
+    {
+      "id": "project-ai-champions",
+      "type": "project",
+      "label": "AI Champions",
+      "labelZh": "AI推广大使",
+      "radius": 12,
+      "meta": {
+        "subtitle": "225+ trained champions",
+        "subtitleZh": "225+训练有素的推广大使",
+        "bullets": ["Scaling AI tool adoption across 18,000+ employees", "Live demos in team meetings"]
+      }
+    },
+    {
+      "id": "leadership-yale",
+      "type": "leadership",
+      "label": "Yale Alumni Co-Chair",
+      "labelZh": "耶鲁校友联席主席",
+      "radius": 12,
+      "meta": {
+        "subtitle": "Seattle Chapter, 2023–2025",
+        "subtitleZh": "西雅图分会，2023–2025",
+        "details": "Drove 285% increase in active participation, engaging 1,000+ attendees over two years."
+      }
+    },
+    {
+      "id": "essay-ai-strategy-wrong",
+      "type": "essay",
+      "label": "AI Strategy Wrong",
+      "labelZh": "AI战略误区",
+      "radius": 12,
+      "meta": {
+        "slug": "ai-strategy-wrong",
+        "tags": ["AI Strategy", "Enterprise AI"]
+      }
+    },
+    {
+      "id": "essay-context-layer",
+      "type": "essay",
+      "label": "AI Context Layer",
+      "labelZh": "AI上下文层",
+      "radius": 12,
+      "meta": {
+        "slug": "ai-roadmaps-context-layer",
+        "tags": ["AI Strategy", "Data Infrastructure"]
+      }
+    },
+    {
+      "id": "essay-evolving-dc",
+      "type": "essay",
+      "label": "Evolving Data Centers",
+      "labelZh": "数据中心演进",
+      "radius": 12,
+      "meta": {
+        "slug": "evolving-landscape-of-data-centers",
+        "tags": ["Data Centers", "Infrastructure"]
+      }
+    },
+    {
+      "id": "essay-greener-dc",
+      "type": "essay",
+      "label": "Greener Data Centers",
+      "labelZh": "更绿色的数据中心",
+      "radius": 12,
+      "meta": {
+        "slug": "making-data-centers-greener",
+        "tags": ["Data Centers", "Sustainability"]
+      }
+    },
+    {
+      "id": "essay-whitepaper",
+      "type": "essay",
+      "label": "Strategic Whitepaper",
+      "labelZh": "战略白皮书",
+      "radius": 12,
+      "meta": {
+        "slug": "strategic-whitepaper",
+        "tags": ["AGI", "AI Strategy"]
+      }
+    },
+    {
+      "id": "essay-thermo-wall",
+      "type": "essay",
+      "label": "Thermodynamic Wall",
+      "labelZh": "热力学之墙",
+      "radius": 12,
+      "meta": {
+        "slug": "the-thermodynamic-wall",
+        "tags": ["Infrastructure", "Data Centers"]
+      }
+    },
+    {
+      "id": "topic-data-centers",
+      "type": "topic",
+      "label": "Data Centers",
+      "labelZh": "数据中心",
+      "radius": 10
+    },
+    {
+      "id": "topic-ai-strategy",
+      "type": "topic",
+      "label": "AI Strategy",
+      "labelZh": "AI战略",
+      "radius": 10
+    },
+    {
+      "id": "topic-sustainability",
+      "type": "topic",
+      "label": "Sustainability",
+      "labelZh": "可持续发展",
+      "radius": 10
+    },
+    {
+      "id": "topic-enterprise-ai",
+      "type": "topic",
+      "label": "Enterprise AI",
+      "labelZh": "企业AI",
+      "radius": 10
+    }
+  ],
+  "edges": [
+    { "source": "hub-charlie", "target": "role-google", "strength": 0.6 },
+    { "source": "hub-charlie", "target": "role-amazon", "strength": 0.5 },
+    { "source": "hub-charlie", "target": "role-ey", "strength": 0.4 },
+    { "source": "hub-charlie", "target": "edu-yale", "strength": 0.5 },
+    { "source": "hub-charlie", "target": "edu-nyu", "strength": 0.5 },
+
+    { "source": "role-google", "target": "skill-ai-infra", "strength": 0.5 },
+    { "source": "role-google", "target": "skill-product-strategy", "strength": 0.4 },
+    { "source": "role-google", "target": "skill-data-stack", "strength": 0.3 },
+    { "source": "role-amazon", "target": "skill-product-strategy", "strength": 0.4 },
+    { "source": "role-amazon", "target": "skill-data-stack", "strength": 0.3 },
+    { "source": "role-ey", "target": "skill-product-strategy", "strength": 0.3 },
+
+    { "source": "role-google", "target": "project-climate", "strength": 0.5 },
+    { "source": "role-google", "target": "project-agentic", "strength": 0.5 },
+    { "source": "role-google", "target": "project-data-ml-ops", "strength": 0.4 },
+    { "source": "role-google", "target": "project-innovation", "strength": 0.3 },
+    { "source": "role-google", "target": "project-ai-champions", "strength": 0.3 },
+    { "source": "role-amazon", "target": "project-rivian", "strength": 0.5 },
+    { "source": "role-amazon", "target": "project-observability", "strength": 0.4 },
+    { "source": "role-amazon", "target": "project-da-app", "strength": 0.4 },
+
+    { "source": "project-climate", "target": "skill-ai-infra", "strength": 0.3 },
+    { "source": "project-climate", "target": "topic-sustainability", "strength": 0.4 },
+    { "source": "project-climate", "target": "topic-data-centers", "strength": 0.4 },
+    { "source": "project-agentic", "target": "skill-ai-infra", "strength": 0.4 },
+    { "source": "project-agentic", "target": "topic-enterprise-ai", "strength": 0.3 },
+    { "source": "project-data-ml-ops", "target": "skill-data-stack", "strength": 0.3 },
+    { "source": "project-data-ml-ops", "target": "topic-data-centers", "strength": 0.3 },
+    { "source": "project-observability", "target": "skill-data-stack", "strength": 0.3 },
+
+    { "source": "edu-yale", "target": "skill-product-strategy", "strength": 0.3 },
+    { "source": "edu-nyu", "target": "skill-data-stack", "strength": 0.3 },
+    { "source": "edu-yale", "target": "leadership-yale", "strength": 0.4 },
+
+    { "source": "topic-ai-strategy", "target": "essay-ai-strategy-wrong", "strength": 0.5 },
+    { "source": "topic-ai-strategy", "target": "essay-context-layer", "strength": 0.5 },
+    { "source": "topic-ai-strategy", "target": "essay-whitepaper", "strength": 0.4 },
+    { "source": "topic-enterprise-ai", "target": "essay-ai-strategy-wrong", "strength": 0.4 },
+    { "source": "topic-data-centers", "target": "essay-evolving-dc", "strength": 0.5 },
+    { "source": "topic-data-centers", "target": "essay-greener-dc", "strength": 0.4 },
+    { "source": "topic-data-centers", "target": "essay-thermo-wall", "strength": 0.5 },
+    { "source": "topic-sustainability", "target": "essay-greener-dc", "strength": 0.5 },
+
+    { "source": "skill-ai-infra", "target": "topic-data-centers", "strength": 0.3 },
+    { "source": "skill-ai-infra", "target": "topic-ai-strategy", "strength": 0.3 },
+    { "source": "skill-product-strategy", "target": "topic-enterprise-ai", "strength": 0.2 }
+  ]
+}
