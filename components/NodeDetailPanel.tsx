@@ -11,6 +11,7 @@ interface NodeDetailPanelProps {
   edges: GraphEdge[];
   allNodes: GraphNode[];
   onClose: () => void;
+  onSelectNode?: (nodeId: string) => void;
   onNavigate?: (view: View, slug?: string) => void;
   isMobile?: boolean;
 }
@@ -20,6 +21,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
   edges,
   allNodes,
   onClose,
+  onSelectNode,
   onNavigate,
   isMobile,
 }) => {
@@ -174,16 +176,17 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {connectedNodes.map((cn) => (
-                    <span
+                    <button
                       key={cn.id}
-                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md"
+                      onClick={() => onSelectNode?.(cn.id)}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     >
                       <span
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: NODE_COLOR_MAP[cn.type]?.[theme] }}
                       />
                       {cn.label}
-                    </span>
+                    </button>
                   ))}
                 </div>
               </div>

@@ -238,6 +238,7 @@ export const KnowledgeGraphView: React.FC<KnowledgeGraphViewProps> = ({
             edges={graphData.edges}
             allNodes={graphData.nodes}
             onClose={() => setSelectedNodeId(null)}
+            onSelectNode={setSelectedNodeId}
             onNavigate={handleNavigate}
             isMobile={!isDesktop}
           />
