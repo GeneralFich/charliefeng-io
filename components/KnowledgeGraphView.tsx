@@ -7,6 +7,7 @@ import { getGraphData, HASH_TO_NODE, NODE_COLOR_MAP, NodeType } from '../lib/gra
 import { LINKEDIN_URL } from '../lib/knowledge';
 import { useLanguage } from '../lib/i18n/LanguageContext';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useTheme } from '../lib/ThemeContext';
 import { View } from '../types';
 
 const ForceGraph = lazy(() =>
@@ -72,6 +73,7 @@ export const KnowledgeGraphView: React.FC<KnowledgeGraphViewProps> = ({
   onNavigate,
 }) => {
   const { t, language } = useLanguage();
+  const { resolved: theme } = useTheme();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -201,7 +203,7 @@ export const KnowledgeGraphView: React.FC<KnowledgeGraphViewProps> = ({
             <span key={type} className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
               <span
                 className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: NODE_COLOR_MAP[type]?.light }}
+                style={{ backgroundColor: NODE_COLOR_MAP[type]?.[theme] }}
               />
               {(t.graph as Record<string, string>)[key]}
             </span>
