@@ -60,6 +60,12 @@ export const TRANSLATIONS = {
       resumeLabel: "Resume",
       viewResume: "View Full Resume",
       resumeSubtitle: "Experience, education, and skills",
+    },
+    now: {
+      heading: "What I'm Working On",
+      statusActive: "Active",
+      statusShipped: "Shipped",
+      statusExploring: "Exploring",
     }
   },
   [Language.ZH]: {
@@ -121,6 +127,12 @@ export const TRANSLATIONS = {
       resumeLabel: "简历",
       viewResume: "查看完整简历",
       resumeSubtitle: "工作经历、教育背景与技能",
+    },
+    now: {
+      heading: "正在进行的项目",
+      statusActive: "进行中",
+      statusShipped: "已上线",
+      statusExploring: "探索中",
     }
   }
 };

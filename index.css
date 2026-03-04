@@ -102,6 +102,12 @@
   100% { background-position: 0%   50%; }
 }
 
+/* Pulse animation for "live" indicator dot */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.75); }
+}
+
 /* Respect user's reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
