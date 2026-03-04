@@ -90,7 +90,7 @@ export const GraphListFallback: React.FC<GraphListFallbackProps> = ({
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   {groupLabel(key)}
                 </span>
-                <span className="text-xs text-slate-400 dark:text-slate-500">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
                   {groupNodes.length}
                 </span>
               </div>
@@ -121,13 +121,13 @@ export const GraphListFallback: React.FC<GraphListFallbackProps> = ({
                           {node.label}
                         </span>
                         {node.meta?.subtitle && (
-                          <span className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
                             — {node.meta.subtitle}
                           </span>
                         )}
                       </div>
                       {connected.length > 0 && (
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                           {t.graph.connectedTo}: {connected.slice(0, 4).join(', ')}
                           {connected.length > 4 && ` +${connected.length - 4}`}
                         </p>

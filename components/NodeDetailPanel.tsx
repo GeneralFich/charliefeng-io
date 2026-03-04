@@ -121,7 +121,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
                     key={i}
                     className="text-sm text-slate-500 dark:text-slate-400 flex gap-2"
                   >
-                    <span className="text-slate-300 dark:text-slate-600 mt-1.5 flex-shrink-0">•</span>
+                    <span className="text-slate-400 dark:text-slate-500 mt-1.5 flex-shrink-0">•</span>
                     <span>{bullet}</span>
                   </li>
                 ))}
@@ -169,7 +169,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
             {/* Connected nodes */}
             {connectedNodes.length > 0 && (
               <div className="border-t border-slate-200 dark:border-slate-700 pt-3 mt-1">
-                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                   {t.graph.connectedTo}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
