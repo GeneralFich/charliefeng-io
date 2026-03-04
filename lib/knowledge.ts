@@ -78,6 +78,8 @@ export interface PostAttributes {
   description: string;
 }
 
+export type AccentColor = 'indigo' | 'emerald' | 'amber' | 'rose' | 'cyan' | 'violet';
+
 export interface BlogPost {
   slug: string;
   attributes: PostAttributes;
@@ -85,6 +87,10 @@ export interface BlogPost {
   readTime: number;
   dateTimestamp: number;
   language: Language;
+  tags: string[];
+  featured: boolean;
+  accentColor?: AccentColor;
+  relatedSlugs: string[];
 }
 
 // --- Parsing Helper ---
@@ -109,7 +115,13 @@ const ALL_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) =>
     slug = filename.replace('.zh.md', '');
   }
 
-  const metadata = (blogMetadata as Record<string, { readTime: number }>)[filename];
+  const metadata = (blogMetadata as Record<string, {
+    readTime: number;
+    tags?: string[];
+    featured?: boolean;
+    accentColor?: AccentColor;
+    relatedSlugs?: string[];
+  }>)[filename];
   const readTime = metadata?.readTime || calculateReadTime(parsed.body);
 
   return {
@@ -119,6 +131,10 @@ const ALL_POSTS: BlogPost[] = Object.entries(postFiles).map(([path, content]) =>
     readTime,
     dateTimestamp: new Date(parsed.attributes.date).getTime(),
     language,
+    tags: metadata?.tags || [],
+    featured: metadata?.featured || false,
+    accentColor: metadata?.accentColor,
+    relatedSlugs: metadata?.relatedSlugs || [],
   };
 }).sort((a, b) => b.dateTimestamp - a.dateTimestamp);
 

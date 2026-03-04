@@ -49,6 +49,7 @@ export const TRANSLATIONS = {
       noResults: "No essays found matching",
       clearSearch: "Clear search",
       findInEssay: "Find in essay...",
+      relatedEssays: "Related Essays",
     },
     browse: {
       badge: "Explore",
@@ -109,6 +110,7 @@ export const TRANSLATIONS = {
       noResults: "未找到匹配的文章",
       clearSearch: "清除搜索",
       findInEssay: "在文章中查找...",
+      relatedEssays: "相关文章",
     },
     browse: {
       badge: "探索",
