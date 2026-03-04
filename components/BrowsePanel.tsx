@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
-import { BookOpen, FileText, ArrowRight, Calendar, Clock } from 'lucide-react';
+import { BookOpen, Share2, MessageSquare, ArrowRight, Calendar, Clock } from 'lucide-react';
 import { View } from '../types';
 import { getPosts } from '../lib/knowledge';
 import { useLanguage } from '../lib/i18n/LanguageContext';
-import { NowSection } from './NowSection';
 
 interface BrowsePanelProps {
   onNavigate: (view: View, slug?: string, hash?: string) => void;
@@ -30,14 +29,53 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
         </p>
       </div>
 
-      {/* Now — what Charlie is currently working on */}
-      <NowSection />
+      {/* Site overview — navigational cards */}
+      <div className="space-y-3 mb-8">
+        {/* Interactive Resume / Knowledge Graph */}
+        <button
+          onClick={() => onNavigate(View.ABOUT)}
+          className="w-full group flex items-center gap-4 px-4 py-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:border-blue-500/30 transition-all duration-200"
+        >
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <Share2 size={16} className="text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+              {t.browse.graphTitle}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+              {t.browse.graphDescription}
+            </p>
+          </div>
+          <ArrowRight
+            size={15}
+            className="text-slate-400 dark:text-slate-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all flex-shrink-0"
+          />
+        </button>
+
+        {/* AI Digital Twin */}
+        <div
+          className="w-full flex items-center gap-4 px-4 py-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40"
+        >
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+            <MessageSquare size={16} className="text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {t.browse.twinTitle}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+              {t.browse.twinDescription}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Divider */}
       <div className="border-t border-slate-200 dark:border-slate-800/60 my-6" />
 
       {/* Essays */}
-      <section className="mb-8">
+      <section>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
             <BookOpen size={12} />
@@ -80,34 +118,6 @@ export const BrowsePanel: React.FC<BrowsePanelProps> = ({ onNavigate }) => {
             </button>
           ))}
         </div>
-      </section>
-
-      {/* Divider */}
-      <div className="border-t border-slate-200 dark:border-slate-800/60 my-6" />
-
-      {/* Resume CTA */}
-      <section>
-        <h3 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
-          <FileText size={12} />
-          {t.browse.resumeLabel}
-        </h3>
-        <button
-          onClick={() => onNavigate(View.ABOUT)}
-          className="w-full group flex items-center justify-between px-4 py-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:border-blue-500/30 transition-all duration-200"
-        >
-          <div className="text-left">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-              {t.browse.viewResume}
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {t.browse.resumeSubtitle}
-            </p>
-          </div>
-          <ArrowRight
-            size={15}
-            className="text-slate-400 dark:text-slate-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all flex-shrink-0"
-          />
-        </button>
       </section>
 
     </div>
