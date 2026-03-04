@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { GraphNode, GraphEdge, NODE_COLOR_MAP, NodeType } from '../lib/graph-data';
 import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTheme } from '../lib/ThemeContext';
 
 interface GraphListFallbackProps {
   nodes: GraphNode[];
@@ -27,6 +28,7 @@ export const GraphListFallback: React.FC<GraphListFallbackProps> = ({
   selectedNodeId,
 }) => {
   const { t } = useLanguage();
+  const { resolved: theme } = useTheme();
   const [openSections, setOpenSections] = useState<Set<NodeType>>(
     new Set(['role', 'project', 'skill', 'essay'])
   );
@@ -83,7 +85,7 @@ export const GraphListFallback: React.FC<GraphListFallbackProps> = ({
               <div className="flex items-center gap-3">
                 <span
                   className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: NODE_COLOR_MAP[type]?.light }}
+                  style={{ backgroundColor: NODE_COLOR_MAP[type]?.[theme] }}
                 />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   {groupLabel(key)}

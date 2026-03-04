@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, BookOpen } from 'lucide-react';
 import { GraphNode, NODE_COLOR_MAP, GraphEdge } from '../lib/graph-data';
 import { useLanguage } from '../lib/i18n/LanguageContext';
+import { useTheme } from '../lib/ThemeContext';
 import { View } from '../types';
 
 interface NodeDetailPanelProps {
@@ -23,6 +24,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
   isMobile,
 }) => {
   const { t } = useLanguage();
+  const { resolved: theme } = useTheme();
 
   const connectedNodes = React.useMemo(() => {
     if (!node) return [];
@@ -68,7 +70,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
               <div className="flex items-center gap-3">
                 <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: NODE_COLOR_MAP[node.type]?.light }}
+                  style={{ backgroundColor: NODE_COLOR_MAP[node.type]?.[theme] }}
                 />
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
@@ -178,7 +180,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
                     >
                       <span
                         className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: NODE_COLOR_MAP[cn.type]?.light }}
+                        style={{ backgroundColor: NODE_COLOR_MAP[cn.type]?.[theme] }}
                       />
                       {cn.label}
                     </span>
