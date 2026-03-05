@@ -3,6 +3,7 @@ import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ChatWelcomeProps {
+  heading: string;
   message: string;
   suggestedPrompts: string[];
   onPromptClick: (prompt: string) => void;
@@ -13,6 +14,7 @@ const springBounce = { type: 'spring' as const, stiffness: 320, damping: 20 };
 const springSnappy = { type: 'spring' as const, stiffness: 500, damping: 28 };
 
 export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
+  heading,
   message,
   suggestedPrompts,
   onPromptClick,
@@ -45,7 +47,7 @@ export const ChatWelcome: React.FC<ChatWelcomeProps> = ({
         transition={{ ...springBounce, delay: 0.15 }}
         className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-3 text-center"
       >
-        Charlie's Digital Twin
+        {heading}
       </motion.h2>
 
       {/* ── Greeting message ────────────────────────────────────────────── */}

@@ -77,6 +77,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       >
         {isInitialState ? (
           <ChatWelcome
+            heading={t.chat.heading}
             message={messages[0].text}
             suggestedPrompts={suggestedPrompts}
             onPromptClick={sendMessage}

@@ -27,6 +27,7 @@ export const TRANSLATIONS = {
       next: 'Next',
     },
     chat: {
+      heading: "Charlie's Digital Twin",
       greeting: "I'm Charlie's digital twin \u2014 an AI trained on my essays and experience in AI infrastructure at Google. Describe a challenge you're facing with AI strategy, and I'll give you my honest take.",
       inputPlaceholder: "Describe your AI challenge...",
       send: "Send",
@@ -105,6 +106,7 @@ export const TRANSLATIONS = {
       next: '下一篇',
     },
     chat: {
+      heading: "Charlie 的数字孪生",
       greeting: "我是Charlie的数字孪生——基于我在Google AI基础设施领域的文章和经验训练的AI。描述你在AI战略方面遇到的挑战，我会给你我的真实看法。",
       inputPlaceholder: "描述你的AI挑战...",
       send: "发送",
