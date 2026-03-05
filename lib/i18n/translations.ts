@@ -19,7 +19,7 @@ export const TRANSLATIONS = {
       skills: 'Skills',
     },
     actions: {
-      downloadPdf: 'Download PDF',
+      downloadPdf: 'Export Traditional Resume (PDF)',
       share: 'Share',
       copied: 'Copied!',
       viewLinkedin: 'View LinkedIn Profile',
@@ -76,6 +76,7 @@ export const TRANSLATIONS = {
       zoomIn: 'Zoom in',
       zoomOut: 'Zoom out',
       resetView: 'Reset view',
+      pdfHint: 'Prefer a traditional layout? Click "Export Traditional Resume" above to get a clean, printable PDF.',
     },
   },
   [Language.ZH]: {
@@ -96,7 +97,7 @@ export const TRANSLATIONS = {
       skills: '技能',
     },
     actions: {
-      downloadPdf: '下载 PDF',
+      downloadPdf: '导出传统简历 (PDF)',
       share: '分享',
       copied: '已复制!',
       viewLinkedin: '查看 LinkedIn 档案',
@@ -153,6 +154,7 @@ export const TRANSLATIONS = {
       zoomIn: '放大',
       zoomOut: '缩小',
       resetView: '重置视图',
+      pdfHint: '偏好传统布局？点击上方「导出传统简历」获取简洁的PDF版本。',
     },
   }
 };

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import { Download, Share2, Check, Linkedin, List, Network } from 'lucide-react';
+import React, { useState, useEffect, useMemo, lazy, Suspense, useCallback } from 'react';
+import { Download, Share2, Check, Linkedin, List, Network, FileText, X } from 'lucide-react';
 import { Resume } from './Resume';
 import { GraphListFallback } from './GraphListFallback';
 import { NodeDetailPanel } from './NodeDetailPanel';
@@ -78,6 +78,20 @@ export const KnowledgeGraphView: React.FC<KnowledgeGraphViewProps> = ({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [showList, setShowList] = useState(false);
+  const [showPdfHint, setShowPdfHint] = useState(() => {
+    try {
+      return localStorage.getItem('hidePdfHint') !== 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissPdfHint = useCallback(() => {
+    setShowPdfHint(false);
+    try {
+      localStorage.setItem('hidePdfHint', 'true');
+    } catch { /* noop */ }
+  }, []);
 
   const graphData = useMemo(() => getGraphData(language), [language]);
 
@@ -189,9 +203,9 @@ export const KnowledgeGraphView: React.FC<KnowledgeGraphViewProps> = ({
               onClick={() => window.print()}
               title={t.actions.downloadPdf}
               aria-label={t.actions.downloadPdf}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 text-slate-500 dark:text-slate-400 rounded-lg transition-all text-xs"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:border-blue-400 dark:hover:border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg transition-all text-xs font-medium"
             >
-              <Download size={14} />
+              <FileText size={14} />
               <span className="hidden sm:inline">{t.actions.downloadPdf}</span>
             </button>
           </div>
@@ -209,6 +223,23 @@ export const KnowledgeGraphView: React.FC<KnowledgeGraphViewProps> = ({
             </span>
           ))}
         </div>
+
+        {/* PDF hint banner */}
+        {showPdfHint && (
+          <div className="flex items-center gap-2 px-5 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/50 flex-shrink-0">
+            <FileText size={14} className="text-blue-500 dark:text-blue-400 flex-shrink-0" />
+            <p className="text-xs text-blue-700 dark:text-blue-300 flex-1">
+              {t.graph.pdfHint}
+            </p>
+            <button
+              onClick={dismissPdfHint}
+              className="p-0.5 text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 transition-colors flex-shrink-0"
+              aria-label="Dismiss"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Graph / List content */}
         <div className="flex-1 relative overflow-hidden">
