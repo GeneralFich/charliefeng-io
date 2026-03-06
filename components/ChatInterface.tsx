@@ -18,7 +18,7 @@ interface ChatInterfaceProps {
 const springSnap = { type: 'spring' as const, stiffness: 500, damping: 28 };
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, className, onFocusRef }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     messages,
     isLoading,
@@ -77,7 +77,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate, classN
       >
         {isInitialState ? (
           <ChatWelcome
-            message={messages[0].text}
+            heading={t.chat.heading}
+            message={messages[0].translations?.[language] ?? messages[0].text}
             suggestedPrompts={suggestedPrompts}
             onPromptClick={sendMessage}
           />
