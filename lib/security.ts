@@ -49,41 +49,30 @@ export function checkRateLimit(
   return { allowed: true, newTimestamps: [...validTimestamps, now] };
 }
 
-import { Message } from '../types';
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 export const MAX_NEW_MESSAGE_LENGTH = 2000;
 export const MAX_TOTAL_HISTORY_LENGTH = 100000;
 
 /**
  * Sanitizes input text to remove potentially harmful control characters.
- *
- * Why: To prevent log flooding, invisible character attacks, or confusion in downstream processing.
- *
- * @param input The raw input string.
- * @returns The sanitized string.
  */
 export function sanitizeInput(input: string): string {
     if (!input) return "";
-    // Remove control characters (ASCII 0-31) except for newline (10), carriage return (13), and tab (9)
-    // Also remove Delete (127)
     return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 }
 
 /**
- * Validates the chat input to prevent Denial of Service (DoS) and abuse.
- *
- * Why: Prevents processing of excessively large payloads that could crash the client
- * or consume excessive API tokens/costs. "Defense in Depth".
- *
- * @param history The conversation history.
- * @param newMessage The new message to append.
+ * Validates the chat input to prevent DoS and abuse.
  */
-export function validateChatInput(history: Message[], newMessage: string): { valid: boolean; error?: string } {
+export function validateChatInput(history: ChatMessage[], newMessage: string): { valid: boolean; error?: string } {
     if (!newMessage || newMessage.length > MAX_NEW_MESSAGE_LENGTH) {
         return { valid: false, error: "Message is too long. Please shorten your query." };
     }
 
-    // Basic structural validation
     if (!Array.isArray(history)) {
         return { valid: false, error: "Invalid history format." };
     }
@@ -91,19 +80,17 @@ export function validateChatInput(history: Message[], newMessage: string): { val
     let totalLength = newMessage.length;
 
     for (const msg of history) {
-        if (!msg || typeof msg !== 'object' || !msg.role || typeof msg.text !== 'string') {
+        if (!msg || typeof msg !== 'object' || !msg.role || typeof msg.content !== 'string') {
              return { valid: false, error: "Invalid message format in history." };
         }
-        totalLength += msg.text.length;
+        totalLength += msg.content.length;
     }
 
     if (totalLength > MAX_TOTAL_HISTORY_LENGTH) {
         return { valid: false, error: "Conversation history is too long. Please clear chat to continue." };
     }
 
-    // Check for repeated messages (spam prevention)
-    // Find last user message
-    let lastUserMessage: Message | null = null;
+    let lastUserMessage: ChatMessage | null = null;
     for (let i = history.length - 1; i >= 0; i--) {
         if (history[i].role === 'user') {
             lastUserMessage = history[i];
@@ -111,7 +98,7 @@ export function validateChatInput(history: Message[], newMessage: string): { val
         }
     }
 
-    if (lastUserMessage && lastUserMessage.text === newMessage) {
+    if (lastUserMessage && lastUserMessage.content === newMessage) {
         return { valid: false, error: "Please avoid repeating the same message." };
     }
 

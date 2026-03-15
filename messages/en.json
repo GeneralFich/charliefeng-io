@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "work": "Work",
+    "artifacts": "Artifacts",
+    "writing": "Writing",
+    "about": "About",
+    "resume": "Resume",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "hero": {
+    "headline": "I build AI systems for the infrastructure that runs the internet.",
+    "subline": "Product Leader at Google · ex-Amazon PM · Yale MBA"
+  },
+  "proof": {
+    "engineers": "Thousands of engineers served",
+    "assets": "Millions of assets automated",
+    "savings": "$50M+ operational savings",
+    "fleet": "4→100+ EV fleet scaled"
+  },
+  "featured": {
+    "heading": "Featured Work",
+    "cta": "Read Case Study →",
+    "rivian": {
+      "title": "Rivian EV Fleet Platform",
+      "description": "Scaled Amazon's electric delivery fleet from pilot to production"
+    },
+    "gemdc": {
+      "title": "GemDC",
+      "description": "AI-powered analytics platform for Google's global data center fleet"
+    },
+    "dcai": {
+      "title": "DCAI Agent Suite",
+      "description": "Autonomous AI agents for data center operations"
+    }
+  },
+  "thinking": {
+    "heading": "How I Think",
+    "p1": "Start with the decision, not the dashboard",
+    "p2": "Treat internal tools like real products",
+    "p3": "Use technical fluency to accelerate strategy",
+    "p4": "Design systems that scale judgment, not just workflow"
+  },
+  "writing": {
+    "heading": "Writing",
+    "subline": "Product thinking, technology trends, and lessons from building at scale.",
+    "latestHeading": "Latest Thinking",
+    "readMore": "Read →",
+    "minRead": "min read",
+    "noResults": "No essays found matching your filter.",
+    "all": "All"
+  },
+  "cta": {
+    "heading": "Looking for a product leader who bridges strategy, systems, and execution?",
+    "resume": "View Resume",
+    "contact": "Get in Touch"
+  },
+  "artifacts": {
+    "heading": "Product Artifacts",
+    "subline": "Frameworks, documents, and decision tools from real product work.",
+    "all": "All",
+    "prds": "PRDs",
+    "decisions": "Decision Docs",
+    "frameworks": "Frameworks",
+    "strategy": "Strategy",
+    "readTime": "min read"
+  },
+  "resume": {
+    "heading": "Resume",
+    "narrative": "Narrative",
+    "traditional": "Traditional",
+    "exportPdf": "Export PDF",
+    "present": "Present",
+    "skills": "Skills",
+    "languages": "Languages",
+    "capabilities": {
+      "strategy": "Product Strategy & Vision",
+      "platform": "Platform & Infrastructure Products",
+      "ai": "AI/ML Product Development",
+      "scaling": "Scaling & Operations",
+      "leadership": "Cross-functional Leadership"
+    }
+  },
+  "about": {
+    "heading": "About",
+    "exploring": "What I'm exploring",
+    "outside": "Outside work"
+  },
+  "chat": {
+    "placeholder": "Ask about my product experience...",
+    "send": "Send",
+    "heading": "Ask Charlie's AI",
+    "suggestion1": "What's your experience with AI products?",
+    "suggestion2": "Tell me about the Rivian fleet scaling",
+    "suggestion3": "What frameworks do you use for prioritization?"
+  },
+  "footer": {
+    "linkedin": "LinkedIn",
+    "substack": "Substack",
+    "email": "Email"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "This page doesn't exist.",
+    "back": "Back to Home"
+  }
+}
