@@ -45,6 +45,14 @@ function getMdxFiles(dir: string): string[] {
 function readMdxFile(filePath: string) {
   const raw = fs.readFileSync(filePath, 'utf-8');
   const { data, content } = matter(raw);
+
+  // gray-matter auto-parses dates into Date objects — serialize them back to strings
+  for (const key of Object.keys(data)) {
+    if (data[key] instanceof Date) {
+      data[key] = data[key].toISOString().split('T')[0];
+    }
+  }
+
   return { data, content };
 }
 
