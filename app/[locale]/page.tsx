@@ -1,20 +1,19 @@
-import { useTranslations } from 'next-intl';
-import { setRequestLocale } from 'next-intl/server';
+import { Hero } from '@/components/home/Hero';
+import { ProofBar } from '@/components/home/ProofBar';
+import { FeaturedWork } from '@/components/home/FeaturedWork';
+import { HowIThink } from '@/components/home/HowIThink';
+import { WritingPreview } from '@/components/home/WritingPreview';
+import { HomeCTA } from '@/components/home/HomeCTA';
 
-export default function HomePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  // Placeholder — P2 builds this out
+export default function HomePage() {
   return (
-    <div className="container-grid py-24">
-      <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-tight text-ghost">
-        Charlie Feng
-      </h1>
-      <p className="mt-4 text-lg text-steel max-w-2xl">
-        Product Leadership Studio — coming soon.
-      </p>
-    </div>
+    <>
+      <Hero />
+      <ProofBar />
+      <FeaturedWork />
+      <HowIThink />
+      <WritingPreview />
+      <HomeCTA />
+    </>
   );
 }
