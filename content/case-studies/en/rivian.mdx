@@ -1,0 +1,147 @@
+---
+title: "Scaling Amazon's Electric Delivery Fleet"
+company: "Amazon"
+role: "Senior Product Manager, Last Mile"
+dates: "Aug 2021 – Jul 2022"
+teamSize: "[PLACEHOLDER: e.g., 8-12 cross-functional]"
+metrics:
+  - label: "Vehicles Scaled"
+    value: "4 → 100+"
+  - label: "Markets Launched"
+    value: "[PLACEHOLDER]"
+  - label: "Delivery Success"
+    value: "+18%"
+  - label: "DA App Features"
+    value: "10+"
+tags:
+  - Electric Vehicles
+  - Fleet Operations
+  - Hardware-Software Integration
+skills:
+  - Product Strategy
+  - API Definition
+  - Stakeholder Management
+  - User Research
+  - Cross-functional Leadership
+---
+
+## The Problem
+
+Amazon committed to deploying 100,000 custom Rivian electric delivery vans — the largest EV fleet order in history. But going from a press release to vehicles on the road surfaced a cascade of product challenges that no one had solved before.
+
+The pilot fleet of 4 vehicles revealed a fundamental gap: **there was no integrated product layer** connecting Rivian's vehicle systems to Amazon's logistics platform. Each market had different charging infrastructure, route density, driver training requirements, and regulatory constraints. The existing fleet management tools were built for gas-powered vehicles and couldn't handle EV-specific concerns like battery state-of-charge, charging schedules, or range anxiety routing.
+
+[PLACEHOLDER: Specific anecdote about what broke during the pilot — e.g., a driver running out of charge, a charging schedule conflict, a market launch delay]
+
+## Why It Mattered
+
+This wasn't a technology experiment — it was a core operational bet. Amazon's Climate Pledge depended on this fleet. Every week of delay meant:
+
+- **Operational cost:** Gas vehicles continued running routes that EVs could serve more cheaply
+- **Climate commitment risk:** Public pledge to be net-zero carbon by 2040, with last-mile delivery as a key lever
+- **Competitive signal:** Amazon needed to prove that EVs could work at logistics scale, not just for consumer commutes
+- **Driver experience:** Delivery Associates were being asked to adopt unfamiliar vehicles without adequate tooling
+
+[PLACEHOLDER: Any internal pressure or executive attention that raised the stakes]
+
+## Product Framing
+
+### Users
+
+| User | Core Need | Pain Point |
+|------|-----------|------------|
+| **Delivery Associates** | Complete routes efficiently in an unfamiliar vehicle | Range anxiety, unfamiliar charging, different vehicle ergonomics |
+| **Dispatchers** | Assign routes that account for EV constraints | No visibility into battery state, charging availability |
+| **Fleet Managers** | Scale across markets with confidence | Each market required custom setup; no standardized playbook |
+| **Operations Leadership** | Hit deployment milestones | No single dashboard showing fleet health across markets |
+
+### Success Metrics
+
+1. **Primary:** Number of EVs in active daily operation (target: 100+ within 12 months)
+2. **Secondary:** First Time Delivery Success rate (baseline: [PLACEHOLDER]%, target: +18% improvement)
+3. **Guardrail:** Zero range-related delivery failures (driver stranded due to depleted battery)
+
+### Key Tradeoffs
+
+- **Speed vs. completeness:** Ship a minimum viable fleet management layer fast, or wait for a comprehensive platform?
+- **Standardization vs. market fit:** One playbook for all markets, or customized per-market configurations?
+- **Build vs. integrate:** Build EV-specific tools from scratch, or extend existing Amazon fleet tools?
+
+## Key Decisions
+
+### Decision 1: API-First Integration with Rivian
+
+**Options considered:**
+| Option | Pros | Cons |
+|--------|------|------|
+| Custom middleware layer | Full control, Amazon-specific optimizations | 6+ month build, maintenance burden |
+| Direct Rivian API integration | Faster, leverage Rivian's existing telemetry | Dependency on Rivian's roadmap, API stability risk |
+| Hybrid: API integration + Amazon abstraction layer | Best of both, future-proofed | More upfront architecture work |
+
+**Decision:** Hybrid approach. Defined the API requirements and acceptance criteria with Rivian's engineering team, creating an abstraction layer that let Amazon's systems consume Rivian vehicle data without tight coupling. This meant if Rivian's APIs changed, only the adapter layer needed updating.
+
+[PLACEHOLDER: Specific API challenge — e.g., battery telemetry latency, firmware version conflicts]
+
+### Decision 2: Market-by-Market vs. Big Bang Launch
+
+**Decision:** Market-by-market rollout with a standardized but configurable playbook. Each market launch followed the same product checklist (charging infrastructure verified, routes validated, drivers trained) but allowed for local adjustments.
+
+[PLACEHOLDER: Which markets launched first and why]
+
+### Decision 3: DA App Feature Prioritization
+
+Prioritized and shipped 10+ core capabilities for the Delivery Associate application serving 100,000+ users. Features were ranked by impact on First Time Delivery Success rate.
+
+[PLACEHOLDER: Top 3-4 features shipped and their impact]
+
+## Execution
+
+### Phase 1: Foundation (Months 1-3)
+- Resolved critical hardware-firmware interoperability blockers between Rivian vehicles and Amazon's logistics systems
+- Defined API requirements and acceptance criteria with Rivian engineering
+- Established telemetry pipeline for real-time battery, location, and vehicle health data
+
+### Phase 2: Scale (Months 4-8)
+- Launched fleet management dashboard for dispatchers and fleet managers
+- Deployed charging optimization logic that scheduled charging during off-peak hours
+- Rolled out market-by-market with standardized playbook
+
+### Phase 3: Optimize (Months 9-12)
+- Shipped DA app features driving First Time Delivery Success improvements
+- [PLACEHOLDER: Route optimization specific to EV range constraints]
+- Scaled from initial markets to [PLACEHOLDER] additional cities
+
+```
+[Architecture Diagram]
+┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
+│  Rivian      │────▶│  Abstraction │────▶│  Amazon Fleet   │
+│  Vehicle API │     │  Layer       │     │  Management     │
+└─────────────┘     └──────────────┘     └─────────────────┘
+                           │                       │
+                    ┌──────┴──────┐         ┌──────┴──────┐
+                    │  Telemetry  │         │  DA App     │
+                    │  Pipeline   │         │  (Driver)   │
+                    └─────────────┘         └─────────────┘
+```
+
+## Outcomes
+
+- **Scaled fleet from 4 to 100+ vehicles** across North America within 12 months
+- **+18% First Time Delivery Success** rate improvement through DA app features shipped to 100,000+ users
+- **Resolved critical hardware-firmware interoperability blockers** that were stalling deployment
+- **Established the API integration pattern** used for all subsequent Rivian vehicle rollouts
+- [PLACEHOLDER: Any operational cost savings or efficiency metrics]
+
+## Reflection
+
+**What worked:**
+- The hybrid API approach gave us speed without creating a brittle integration. When Rivian pushed firmware updates, our abstraction layer absorbed the changes.
+- Market-by-market rollout let us learn from each deployment and improve the playbook.
+
+**What I'd do differently:**
+- **Start driver research earlier.** We underestimated how much the DA experience differed between gas and electric vehicles. Starting user research in Month 1 instead of Month 3 would have surfaced UX issues sooner.
+- [PLACEHOLDER: Second lesson learned]
+- **Build a charging simulation tool.** We validated charging infrastructure manually in each market. A simulation tool could have predicted charging conflicts before they happened.
+
+**What this taught me about PM work:**
+This was the project that crystallized my product leadership philosophy: **hardware-software integration challenges are fundamentally product problems, not engineering problems.** The technical work of connecting APIs is straightforward. The hard part is defining what data matters, for whom, and when — and making tradeoff decisions when the hardware team and the software team have conflicting priorities.
