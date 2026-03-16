@@ -6,6 +6,7 @@ import { routing } from '@/i18n/routing';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { ChatWidget } from '@/components/chat/ChatWidget';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -59,6 +60,7 @@ export default async function LocaleLayout({
             <PageTransition>{children}</PageTransition>
           </main>
           <Footer />
+          <ChatWidget />
         </NextIntlClientProvider>
       </body>
     </html>
