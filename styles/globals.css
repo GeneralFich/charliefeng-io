@@ -85,3 +85,38 @@
     font-family: var(--font-geist-sans), system-ui, sans-serif;
   }
 }
+
+/* Print styles for PDF export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  .card,
+  .card-hover {
+    background: white !important;
+    border-color: #ddd !important;
+  }
+
+  a {
+    color: black !important;
+    text-decoration: none !important;
+  }
+
+  .badge,
+  .badge-sapphire,
+  .badge-emerald,
+  .badge-ruby,
+  .badge-steel {
+    background: #f0f0f0 !important;
+    color: #333 !important;
+    border-color: #ccc !important;
+  }
+}
