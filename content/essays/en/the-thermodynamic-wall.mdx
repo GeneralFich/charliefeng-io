@@ -118,7 +118,7 @@ leverage
 At 100,000+ GPU clusters, the network becomes the computer. And moving data between chips eats an increasing fraction of the total power budget.
 * The Problem: Traditional pluggable optical modules (transceivers) are hitting an efficiency wall. As speeds increase to 800G and 1.6T, the electrical energy required just to move data from the switch ASIC to the front panel (the "SerDes" power) becomes unsustainable.[^29] Pluggable optics consume ~15-20 pJ/bit.
 * The Solution: Co-Packaged Optics (CPO) moves the optical engine directly onto the same package as the switch ASIC, replacing copper traces with light.
-   * Impact: CPO cuts power consumption by over 50% (to &lt;5 pJ/bit) and eliminates power-hungry re-timers.[^29]
+   * Impact: CPO cuts power consumption by over 50% (to <5 pJ/bit) and eliminates power-hungry re-timers.[^29]
    * Adoption: Broadcom and Nvidia are moving to CPO for next-gen AI switches (51.2 Tbps and beyond). The math is compelling: every watt saved on networking is a watt redirected to computation.[^31]
 ### 4.2 Silicon Photonics (SiPh)
 Silicon Photonics is the underlying technology enabling CPO. By manufacturing optical components using standard CMOS semiconductor processes, SiPh allows for the integration of lasers and modulators directly onto silicon chips.[^32]
@@ -130,7 +130,7 @@ Table 2: Data Center Cabling Technologies Comparison
 | Feature | DAC (Direct Attach Copper) | AEC (Active Electrical Cable) | AOC (Active Optical Cable) |
 | :--- | :--- | :--- | :--- |
 | **Power Consumption** | Zero (Passive) [^34] | Low (~1-2W per end) [^35] | Moderate/High (2W+ per end) [^34] |
-| **Reach (at 400G+)** | Short (&lt;3 meters) | Medium (5-7 meters) | Long (100m+) |
+| **Reach (at 400G+)** | Short (<3 meters) | Medium (5-7 meters) | Long (100m+) |
 | **Cost** | Lowest | Moderate (Middle ground) | Highest |
 | **Airflow Impact** | Bulky, thick gauge blocks air | Thinner gauge, better airflow | Thinnest, best airflow |
 | **Use Case** | Top-of-Rack (ToR) | Inter-rack / Row | Cross-hall / Long haul |
