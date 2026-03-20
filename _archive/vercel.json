@@ -1,0 +1,93 @@
+{
+  "rewrites": [
+    {
+      "source": "/essays/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/essays/:slug/index.html"
+    },
+    {
+      "source": "/essays",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/essays/index.html"
+    },
+    {
+      "source": "/zh/essays/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/zh/essays/:slug/index.html"
+    },
+    {
+      "source": "/about",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/about/index.html"
+    },
+    {
+      "source": "/zh/about",
+      "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(bot|crawl|spider|slurp|GPTBot|ClaudeBot|PerplexityBot|ChatGPT|Bingbot|Googlebot).*" }],
+      "destination": "/_seo/zh/about/index.html"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:js|css|woff2?|ttf|otf|eot|ico|png|jpg|jpeg|gif|svg|webp|avif))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ]
+}

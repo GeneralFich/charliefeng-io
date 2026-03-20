@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "work": "作品",
+    "artifacts": "产品文档",
+    "writing": "文章",
+    "about": "关于",
+    "resume": "简历",
+    "menu": "菜单",
+    "close": "关闭"
+  },
+  "hero": {
+    "headline": "我为运行互联网的基础设施构建AI系统。",
+    "subline": "Google 产品负责人 · 前亚马逊产品经理 · 耶鲁MBA"
+  },
+  "proof": {
+    "engineers": "服务数千名工程师",
+    "assets": "自动化数百万资产",
+    "savings": "超过5000万美元运营节省",
+    "fleet": "电动车队从4辆扩展到100+"
+  },
+  "featured": {
+    "heading": "精选作品",
+    "cta": "阅读案例研究 →",
+    "rivian": {
+      "title": "Rivian 电动车队平台",
+      "description": "将亚马逊电动配送车队从试点扩展到生产"
+    },
+    "gemdc": {
+      "title": "GemDC",
+      "description": "Google 全球数据中心的AI分析平台"
+    },
+    "dcai": {
+      "title": "DCAI 智能代理套件",
+      "description": "数据中心运维自主AI代理"
+    }
+  },
+  "thinking": {
+    "heading": "我的思维方式",
+    "p1": "从决策出发，而非仪表盘",
+    "p2": "将内部工具视为真正的产品",
+    "p3": "用技术素养加速战略",
+    "p4": "设计能扩展判断力的系统，而非仅是工作流"
+  },
+  "writing": {
+    "heading": "文章",
+    "subline": "关于产品思维、技术趋势和大规模构建的经验。",
+    "latestHeading": "最新思考",
+    "readMore": "阅读 →",
+    "minRead": "分钟阅读",
+    "noResults": "未找到匹配的文章。",
+    "all": "全部"
+  },
+  "cta": {
+    "heading": "正在寻找连接战略、系统和执行的产品负责人？",
+    "resume": "查看简历",
+    "contact": "联系我"
+  },
+  "artifacts": {
+    "heading": "产品文档",
+    "subline": "来自真实产品工作的框架、文档和决策工具。",
+    "all": "全部",
+    "prds": "产品需求文档",
+    "decisions": "决策文档",
+    "frameworks": "框架",
+    "strategy": "战略",
+    "readTime": "分钟阅读"
+  },
+  "resume": {
+    "heading": "简历",
+    "narrative": "能力视图",
+    "traditional": "时间线视图",
+    "exportPdf": "导出PDF",
+    "present": "至今",
+    "skills": "技能",
+    "languages": "语言",
+    "capabilities": {
+      "strategy": "产品战略与愿景",
+      "platform": "平台与基础设施产品",
+      "ai": "AI/ML 产品开发",
+      "scaling": "扩展与运营",
+      "leadership": "跨职能领导力"
+    }
+  },
+  "about": {
+    "heading": "关于",
+    "exploring": "我在探索的领域",
+    "outside": "工作之外"
+  },
+  "chat": {
+    "placeholder": "询问我的产品经验...",
+    "send": "发送",
+    "heading": "问 Charlie 的AI",
+    "suggestion1": "你在AI产品方面有什么经验？",
+    "suggestion2": "介绍一下Rivian车队扩展",
+    "suggestion3": "你使用什么优先级框架？"
+  },
+  "footer": {
+    "linkedin": "领英",
+    "substack": "Substack",
+    "email": "邮箱"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "页面不存在。",
+    "back": "返回首页"
+  }
+}
