@@ -50,6 +50,26 @@ export function getGraphData(lang: Language): GraphData {
   const resume = getResumeAttributes(lang);
   const posts = getPosts(lang);
 
+  // Optimization: Pre-index posts into a Map for O(1) lookup within the nodes loop
+  const postMap = new Map(posts.map((p) => [p.slug, p]));
+
+  // Optimization: Cache lowercase entries for resume lookups
+  const experienceEntries = resume.experience.map(e => ({
+    lowerCompany: e.company.toLowerCase(),
+    data: e
+  }));
+  const educationEntries = resume.education.map(e => ({
+    lowerSchool: e.school.toLowerCase(),
+    data: e
+  }));
+  const skillMapRes = new Map(resume.skills.map(s => [s.category.toLowerCase(), s]));
+
+  const skillIdMap: Record<string, string> = {
+    'skill-product-strategy': 'product strategy',
+    'skill-ai-infra': 'ai & compute',
+    'skill-data-stack': 'data & technical',
+  };
+
   const nodes: GraphNode[] = raw.nodes.map((node) => {
     const n = { ...node };
 
@@ -60,7 +80,7 @@ export function getGraphData(lang: Language): GraphData {
 
     // Overlay essay titles and metadata from blog posts
     if (n.type === 'essay' && n.meta?.slug) {
-      const post = posts.find((p) => p.slug === n.meta!.slug);
+      const post = postMap.get(n.meta.slug);
       if (post) {
         n.label = post.attributes.title;
         n.meta = {
@@ -72,10 +92,10 @@ export function getGraphData(lang: Language): GraphData {
 
     // Overlay role data from resume
     if (n.type === 'role') {
-      const exp = resume.experience.find(
-        (e) => e.company.toLowerCase().includes(n.id.replace('role-', '').toLowerCase())
-      );
-      if (exp) {
+      const companyId = n.id.replace('role-', '').toLowerCase();
+      const entry = experienceEntries.find(e => e.lowerCompany.includes(companyId));
+      if (entry) {
+        const exp = entry.data;
         if (lang === Language.ZH && n.meta?.subtitleZh) {
           n.meta = { ...n.meta, subtitle: n.meta.subtitleZh };
         } else {
@@ -86,26 +106,19 @@ export function getGraphData(lang: Language): GraphData {
 
     // Overlay education data from resume
     if (n.type === 'education') {
-      const edu = resume.education.find(
-        (e) => e.school.toLowerCase().includes(n.id === 'edu-yale' ? 'yale' : 'new york')
-      );
-      if (edu) {
+      const schoolSearch = n.id === 'edu-yale' ? 'yale' : 'new york';
+      const entry = educationEntries.find(e => e.lowerSchool.includes(schoolSearch));
+      if (entry) {
+        const edu = entry.data;
         n.meta = { ...n.meta, subtitle: edu.degree, details: edu.details };
       }
     }
 
     // Overlay skill data from resume
     if (n.type === 'skill') {
-      const skillMap: Record<string, string> = {
-        'skill-product-strategy': 'product strategy',
-        'skill-ai-infra': 'ai & compute',
-        'skill-data-stack': 'data & technical',
-      };
-      const searchTerm = skillMap[n.id];
+      const searchTerm = skillIdMap[n.id];
       if (searchTerm) {
-        const skill = resume.skills.find(
-          (s) => s.category.toLowerCase().includes(searchTerm)
-        );
+        const skill = skillMapRes.get(searchTerm);
         if (skill) {
           n.meta = { ...n.meta, items: skill.items };
           if (lang === Language.EN) {
