@@ -78,11 +78,24 @@ export function getAllTags(posts: BlogPost[]): string[] {
 }
 
 /**
+ * Internal cache for slug-to-post mapping to optimize getRelatedPosts.
+ * Using WeakMap to avoid memory leaks when allPosts array is garbage collected.
+ */
+const relatedPostsCache = new WeakMap<BlogPost[], Map<string, BlogPost>>();
+
+/**
  * Gets related posts for a given post, based on relatedSlugs metadata.
  */
 export function getRelatedPosts(post: BlogPost, allPosts: BlogPost[]): BlogPost[] {
   if (post.relatedSlugs.length === 0) return [];
+
+  let postMap = relatedPostsCache.get(allPosts);
+  if (!postMap) {
+    postMap = new Map(allPosts.map(p => [p.slug, p]));
+    relatedPostsCache.set(allPosts, postMap);
+  }
+
   return post.relatedSlugs
-    .map(slug => allPosts.find(p => p.slug === slug))
+    .map(slug => postMap!.get(slug))
     .filter((p): p is BlogPost => p !== undefined);
 }
