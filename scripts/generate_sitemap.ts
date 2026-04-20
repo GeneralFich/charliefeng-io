@@ -103,9 +103,12 @@ function generateSitemap() {
   </url>
 `;
 
+  // Create maps for faster lookup
+  const zhMap = new Map(zhPosts.map(p => [p.slug, p]));
+
   // English essays
   for (const post of enPosts) {
-    const zhMatch = zhPosts.find(z => z.slug === post.slug);
+    const zhMatch = zhMap.get(post.slug);
     xml += `
   <!-- ${post.slug} -->
   <url>
@@ -118,9 +121,11 @@ function generateSitemap() {
   </url>`;
   }
 
+  const enMap = new Map(enPosts.map(p => [p.slug, p]));
+
   // Chinese essays
   for (const post of zhPosts) {
-    const enMatch = enPosts.find(e => e.slug === post.slug);
+    const enMatch = enMap.get(post.slug);
     xml += `
   <url>
     <loc>${escapeXml(SITE_URL)}/zh/essays/${escapeXml(post.slug)}</loc>
